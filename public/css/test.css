@@ -1,0 +1,511 @@
+* {
+    box-sizing: border-box;
+    padding: 0px;
+    margin: 0px;
+    font-family: "League-Spartan", sans-serif;
+    
+}
+body{
+    overflow-X: hidden;
+    background-color:#f9fafa;
+    text-align: center;
+}
+
+/* nav-bar section */
+nav {
+    background-color: #fff;
+    padding: 2rem;
+    box-shadow: 0 0.625rem 0.625rem rgb(128, 128, 128, 0.4);  
+    position: fixed;
+    width: 100%;
+    z-index: 10;
+}
+.nav-cont{
+   display: flex;
+   justify-content: space-around;
+   align-items: center;
+   gap: 80vh;
+}
+.logo-banner {
+    width: 250px;
+    position: relative;
+
+}
+.logo-banner img {
+    max-width: 24vh;
+}
+
+.lgn-btn {  
+    display: flex;
+    gap: 1rem;
+    width: 260px;
+    position: relative; 
+}
+.logex {
+    font-size: 2.2vh;
+    color: white;
+    font-weight: bolder;
+    border: #9dcd5a;
+    border-radius: 4vh;
+    background-color: #5e9918;
+    text-decoration: none;
+    transition: 0.2s;
+}
+#logb {
+    padding: 1vw 1.8vw;
+    background-color: aliceblue;
+    color: #5e9918;
+    border: solid #5e9918;
+    transition: 0.2s;
+}
+#logb1 {
+    padding: 1vw 2.4vw;
+    background-color: #5e9918;
+    color: white;
+    border: solid #5e9918;
+    transition: 0.2s;
+}
+#logb1:hover {
+    background-color: #7E84BD;
+    color: white;
+    border: solid #7E84BD;
+    padding: 1vw 2.8vw;
+}
+#logb:hover {
+    background-color: #5e9918;
+    color: white;
+    border: solid #5e9918;
+    
+}
+/* END */
+
+
+ #submitBtn{
+  width: 100%;
+ }
+    .container {
+  width: 90vh;
+  margin: 0 auto;
+  padding-top: 36vh; /* pushes it below the nav bar */
+}
+
+    .instruction {
+      text-align: center;
+      font-size: 2.5vh;
+      margin: 1rem 0 0.5rem;
+     
+    }
+    .subtext {
+      text-align: center;
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 2.1vh;
+    }
+    #progressPercent,#progressText{
+      font-size: 1.5vh;
+    }
+    .progress-section {
+      position: fixed;
+      margin-top: 14.6vh;
+      top: 0;
+      width: 90vh;
+      padding-top: 1rem;
+      z-index: 1;
+      padding: 2vh;
+      background-color: #f9fafa;
+     border-bottom-right-radius: 1vh;
+     border-bottom-left-radius:1vh ;
+     width: 90vh;
+    }
+
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+      color: #444;
+      padding: 0 0.2rem;
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 10px;
+      background-color: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+   
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #35a16c;
+      transition: width 0.4s ease-in-out;
+    }
+    .question {
+      margin-top: 2vh;
+     background-color: #f9f9f9;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 90vh;
+    }
+    .question h3 {
+      margin-bottom: 1rem;
+      font-weight: 500;
+      font-size: 2.3vh;
+      color: #333;
+    }
+    .likert {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .likert label {
+      display: inline-block;
+  
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      position: relative;
+    }
+    input[type="radio"] {
+      display: none;
+    }
+    input[type="radio"]:checked + label {
+      color: white;
+      position: relative;
+      background-image: none;
+    }
+    input[type="radio"]:checked + label::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: black;
+    }
+    input[type="radio"]:checked + .scale-1 { background-color: #35a16c; }
+    input[type="radio"]:checked + .scale-2 { background-color: #66bb6a; }
+    input[type="radio"]:checked + .scale-3 { background-color: #6cd87e; }
+    input[type="radio"]:checked + .scale-4 { background-color: 		#7E84BD}
+    input[type="radio"]:checked + .scale-5 { background-color: lightcoral; }
+    input[type="radio"]:checked + .scale-6 { background-color: #e45d4f; }
+    input[type="radio"]:checked + .scale-7 { background-color: #d4372a; }
+    .likert label:hover {
+      transform: scale(1.1);
+    }
+    .scale-1 { padding: 3.7vh; border: solid 3px #35a16c;  background-color: 	#e1f3ee;}
+    .scale-2 {  padding: 3.2vh;border: solid 3px #66bb6a;  background-color: 	#d9f5eb;}
+    .scale-3 {  padding: 2.8vh; border: solid 3px #6cd87e; background-color: #e1f3ee; }
+    .scale-4 {  padding: 2.5vh; border: solid 3px  		#7E84BD; background-color: #F0F2FA}
+    .scale-5 { padding: 2.8vh; border: solid 3px lightcoral; background-color: #fff0e6; }
+    .scale-6 { padding: 3.2vh;  border: solid 3px #e45d4f; background-color:#ffe8e5; }
+    .scale-7 { padding: 3.7vh;border: solid 3px #d4372a; background-color: #ffdbdb;  }
+
+    .nav-pagination {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 2rem 0;
+    
+      
+    }
+    .nav-pagination button {
+      padding: 2vh 3vh;
+      font-size: 2.2vh;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      background-color: #256650;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+    .nav-pagination button:hover{
+      background-color: #9370DB;
+    }
+
+    
+    .nav-pagination button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
+
+
+    /* SUMMARY MODAL REWORK */
+#summaryModal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  padding: 2vh;
+}
+
+#summaryModal .modal-content {
+  font-family: 'League Spartan', sans-serif;
+  width: 100%;
+  max-width: 1000px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  text-align: center;
+  overflow-y: auto;
+  max-height: 95vh;
+  position: relative;
+}
+
+#summaryModal h3 {
+  font-size: 4vh;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* User Info */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.user-profile .avatar {
+width: 12vh;
+height: 12vh;
+  border-radius: 50%;
+  border: 4px solid #528614;
+}
+
+.user-meta {
+  text-align: left;
+}
+
+.user-meta h2 {
+  margin: 0;
+  font-size: 2.5vh;
+  color: #222;
+}
+
+.user-meta p {
+  font-size: 2.2vh;
+  margin: 0.3rem 0;
+}
+
+/* Result Bar */
+.result-bar {
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.result-bar-title {
+  font-weight: 700;
+  font-size: 2.2vh;
+  margin-bottom: 0.5rem;
+}
+
+.result-bar-track {
+  background-color: #e0e0e0;
+  height: 2.7vh;
+  border-radius: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-bar-fill {
+  height: 100%;
+  border-radius: 30px;
+  position: relative;
+  transition: width 0.6s ease-in-out;
+}
+
+.result-bar-fill::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(50%, -50%);
+  right: 0;
+}
+
+.result-bar-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 2vh;
+  margin-top: 0.5rem;
+  color: #555;
+}
+
+/* Answer List */
+.answers-list h4 {
+  text-align: center;
+  font-size: 2.4vh;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.answers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+
+.answer-item {
+  background: #f9f9f9;
+  padding: 2vh;
+  border-radius: 12px;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  font-size: 2vh;
+  line-height: 1.4;
+  border-left: 4px solid #66bb6a;
+  
+}
+
+.answer-item strong {
+  color: #333;
+}
+
+.answer-item .your-answer {
+  display: block;
+  color: #528614;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  font-size: 2vh;
+  font-weight: bold;
+}
+
+/* Buttons */
+.action-buttons {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+
+.action-buttons .btn {
+  background: #528614;
+  color: white;
+  padding: 1rem 2.5rem;
+  font-size: 2vh;
+  border: none;
+  border-radius: 2vh;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+  background: #9370DB
+}
+
+
+/*LOAD OVERLAY */
+#loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255,255,255,0.95);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-box {
+  text-align: center;
+  font-family: "League-Spartan", sans-serif;
+  padding: 12vh;
+  border-radius: 2vh;
+
+}
+
+#loadingMessage {
+  font-size: 2.4vh;
+  margin-bottom: 1.5vh;
+  font-weight: bold;
+  color: #444;
+}
+.list-bar strong,em{
+  color: #528614;
+  font-weight: bold;
+}
+
+.loading-bar {
+  width: 300px;
+  height: 16px;
+  background-color: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1vh auto;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#loadingProgress {
+  height: 100%;
+  width: 0%;
+  background-color: #528614;
+  transition: width 0.1s linear;
+}
+
+#loadingPercent {
+  font-size: 2vh;
+  margin-top: 1vh;
+  color: #333;
+}
+
+#backToTop {
+  position: fixed;
+  bottom: 10vh;
+  right: 5vh;
+  padding: 2vh 3vh;
+  font-size: 1.6rem;
+  background-color: #5e9918;
+  color: white;
+  border: none;
+  border-radius: 100%;
+  cursor: pointer;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+
+}
+
+#backToTop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+.loading-gif{
+  width: 50vh;
+  position: relative;
+  bottom: 2vh;
+  left: 2vh;
+}
+.gif-load{
+  width: 50vh;
+}

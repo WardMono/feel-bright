@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FeelBright - E.I Test</title>
+
+  <!-- Fonts & Tailwind -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="icon" href="./img/fb-tab.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="./css/style.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8fbfb 0%, #f0faf0 50%, #f8fbfb 100%);
+    }
+
+    :root {
+      --fb-green: #7FC58B;
+      --fb-emerald: #10B981;
+      --self-awareness: #64B5F6;
+      --self-regulation: #81C784;
+      --motivation: #FFB74D;
+      --empathy: #9575CD;
+      --social-skills: #4DB6AC;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, rgba(127, 197, 139, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    }
+
+    /* Native sticky progress track */
+    #progressTrack {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 12px;
+      transition: height 0.3s ease, padding 0.3s ease;
+      z-index: 80;
+      height: 18px;
+      border-radius: 9999px;
+      background: #F3F4F6;
+      overflow: hidden;
+    }
+
+    /* bar */
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      border-radius: 9999px;
+      transition: width .28s ease, background-color .28s ease;
+    }
+
+    .question-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .question-card:hover,
+    .question-card:focus {
+      border-color: #7FC58B;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.1);
+      outline: none;
+      /* removes browser's default focus ring */
+    }
+
+    .ei-choice {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .donut-fg {
+      transition: stroke-dashoffset 0.5s ease-in-out;
+    }
+
+    .donut-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .donut-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .ei-choice::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.4s ease, height 0.4s ease;
+    }
+
+    .ei-choice:hover::before {
+      width: 100%;
+      height: 100%;
+    }
+
+    .ei-choice:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .ei-choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice-text {
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.2;
+      padding: 2px;
+    }
+
+    .progress-bar {
+      box-shadow: 0 2px 4px rgba(127, 197, 139, 0.3);
+    }
+
+    .category-chip {
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .category-chip.active {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      color: white;
+    }
+
+    .modal-backdrop {
+      backdrop-filter: blur(12px);
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 252, 248, 0.95) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(127, 197, 139, 0.2);
+    }
+
+    @keyframes spinSlow {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulseSoft {
+
+      0%,
+      100% {
+        opacity: .35
+      }
+
+      50% {
+        opacity: 1
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .slide-in {
+      animation: slideIn 0.6s ease-out;
+    }
+
+    /* Print specific styles */
+    @media print {
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: white !important;
+      }
+
+      nav,
+      main,
+      #summaryModal,
+      #resultsLoadingOverlay,
+      #leaveConfirm {
+        display: none !important;
+      }
+
+      #printReport {
+        display: block !important;
+      }
+
+      .print-container {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      .print-gradient-bg {
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    /* Avatar styles */
+    .initials-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #7FC58B 0%, #10B981 100%);
+      color: white;
+      font-weight: 700;
+      border-radius: 50%;
+    }
+
+    /* Navigation avatar styles */
+    img.nav-avatar,
+    img#desktop-avatar,
+    img#menuAvatarLarge,
+    img#mobile-avatar,
+    img#mMenuAvatarLarge {
+      display: inline-block;
+      object-fit: cover;
+      border-radius: 9999px;
+    }
+
+    .initials-fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7FC58B 0%, 100%);
+      color: white;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    #desktop-avatar,
+    .initials-fallback[data-initials-for="desktop-avatar"] {
+      width: 40px;
+      height: 40px;
+      font-size: 14px;
+    }
+
+    #menuAvatarLarge,
+    .initials-fallback[data-initials-for="menuAvatarLarge"] {
+      width: 80px;
+      height: 80px;
+      font-size: 29px;
+    }
+
+    #mobile-avatar,
+    .initials-fallback[data-initials-for="mobile-avatar"] {
+      width: 32px;
+      height: 32px;
+      font-size: 12px;
+    }
+
+    #catPanel {
+      max-height: 40vh;
+      /* Reduce from original value */
+      padding: 0.5rem;
+    }
+
+    #catTabs {
+      margin-top: 1rem;
+      /* Reduce spacing */
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .donut-wrapper {
+        width: 80% !important;
+        max-width: 200px;
+      }
+
+      #catPanel {
+        max-height: 35vh;
+      }
+    }
+
+    /* Target only nav avatar images (desktop/menu/mobile). Keep default inline-block so JS can remove hidden. */
+    img.nav-avatar,
+    img#desktop-avatar,
+    img#menuAvatarLarge,
+    img#mobile-avatar,
+    img#mMenuAvatarLarge {
+      display: inline-block;
+      object-fit: cover;
+      border-radius: 9999px;
+    }
+
+    /* Force-hidden state for nav avatars & nav initials (used when toggled) */
+    img.nav-avatar.hidden,
+    img#desktop-avatar.hidden,
+    img#menuAvatarLarge.hidden,
+    img#mobile-avatar.hidden,
+    img#mMenuAvatarLarge.hidden,
+    .initials-fallback.nav.hidden,
+    .initials-fallback[data-nav-initials].hidden {
+      display: none !important;
+    }
+
+    /* Default nav initials look (keeps consistent across nav slots) */
+    .initials-fallback.nav,
+    .initials-fallback[data-nav-initials] {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      box-sizing: border-box;
+      background-color: #DCFCE7;
+      color: #14532D;
+      font-weight: 700;
+      user-select: none;
+      line-height: 1;
+    }
+
+    /* sensible default sizes — override if you style elsewhere */
+    #desktop-avatar,
+    .initials-fallback[data-initials-for="desktop-avatar"] {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      font-size: 14px;
+    }
+
+    #menuAvatarLarge,
+    .initials-fallback[data-initials-for="menuAvatarLarge"] {
+      width: 64px;
+      height: 64px;
+      min-width: 64px;
+      min-height: 64px;
+      font-size: 18px;
+    }
+
+    #mobile-avatar,
+    .initials-fallback[data-initials-for="mobile-avatar"] {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      min-height: 32px;
+      font-size: 12px;
+    }
+
+    #menuAvatarLarge,
+    .initials-fallback[data-initials-for="menuAvatarLarge"] {
+      width: 80px;
+      height: 80px;
+      min-width: 80px;
+      min-height: 80px;
+      border-radius: 9999px;
+      object-fit: cover;
+      font-size: 29px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+  <!-- NAVIGATION BAR (paste to replace existing nav) -->
+  <nav class="bg-white p-5 shadow-md transition-all duration-300" x-data="{ open: false }">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+      <!-- LOGO -->
+      <div class="relative shrink-0">
+        <a href="./index.html">
+          <img src="./img/fb-banners.png" class="max-h-[6vh] sm:max-h-[6vh] md:max-h-[7vh]" alt="Logo" />
+        </a>
+      </div>
+
+      <!-- DESKTOP NAV LINKS -->
+      <div class="hidden xl:flex items-center gap-8 ml-8">
+        <a href="./index.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Home</a>
+        <a href="./features.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+        <a href="./resources.html" class="font-bold text-[#7FC58B] transition-colors duration-300">Resources</a>
+        <a href="./about.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+        <a href="#" class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+      </div>
+
+      <!-- RIGHT SIDE (desktop auth OR user) + hamburger -->
+      <div class="flex items-center gap-4">
+
+        <!-- DESKTOP AUTH BUTTONS (default state: hidden below xl) -->
+        <div id="auth-buttons-desktop" class="hidden xl:flex items-center gap-4">
+          <a href="javascript:void(0);" onclick="openLoginModal()"
+            class="font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+            Log in
+          </a>
+          <a href="javascript:void(0)" onclick="openRegisterModal()"
+            class="font-bold text-white bg-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+            Sign up
+          </a>
+        </div>
+
+        <!-- DESKTOP PROFILE (avatar left, name/email right) -->
+        <div id="user-profile-desktop" class="hidden xl:flex relative items-center gap-3">
+          <span id="desktop-username" class="text-[#1C1C1C] font-bold">Hi, User</span>
+
+          <!-- trigger -->
+          <button id="profile-trigger" class="relative focus:outline-none rounded-full shrink-0"
+            aria-label="Open profile menu">
+            <!-- desktop-avatar has object-fit:cover from CSS above -->
+            <img id="desktop-avatar" src="" alt="User"
+              class="w-9 h-9 nav-avatar rounded-full border border-[#7FC58B] cursor-pointer
+               transition-all duration-300 ease-out hover:scale-110 hover:-translate-y-0.5
+               hover:ring-4 hover:ring-[#7FC58B]/40 hover:ring-offset-2 hover:ring-offset-white
+               hover:shadow-lg hover:shadow-[#7FC58B]/40 focus-visible:ring-4 focus-visible:ring-[#7FC58B]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:transform-none">
+          </button>
+
+          <!-- wider hover bridge (for easier travel to the panel) -->
+          <div id="profile-bridge" class="absolute right-0 top-10 h-10 w-28"></div>
+
+          <!-- dropdown -->
+          <div id="profile-menu" role="menu" aria-hidden="true" class="absolute top-12 right-0 w-[22rem] bg-white border rounded-lg shadow-lg ring-1 ring-black/5 p-4 z-50
+                opacity-0 translate-y-2 pointer-events-none transition-all duration-200">
+            <div class="flex items-center gap-4">
+              <!-- avatar LEFT -->
+              <img id="menuAvatarLarge" src="" alt="Avatar preview"
+                class="w-16 h-16 nav-avatar rounded-full border border-[#7FC58B] shrink-0">
+              <!-- name/email RIGHT -->
+              <div class="min-w-0">
+                <div id="menuName" class="font-semibold text-gray-900 truncate">User Name</div>
+                <div id="menuEmail" class="text-xs text-gray-500 truncate">user@example.com</div>
+              </div>
+            </div>
+
+            <hr class="my-3 border-gray-200">
+
+            <!-- DESKTOP DROPDOWN MENU -->
+            <div class="grid gap-1">
+              <a href="/user/viewprofile.html#profile" @click.prevent="open=false; goToSettingsSection('profile')"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Profile Settings
+              </a>
+
+              <a href="./user/progress.html"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Track Progress
+              </a>
+
+              <hr class="my-3 border-gray-200">
+
+              <a href="/logout"
+                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">
+                Logout
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- HAMBURGER (mobile) -->
+        <button @click="open = !open" class="xl:hidden flex flex-col gap-1 focus:outline-none ml-2"
+          aria-label="Toggle Menu">
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'rotate-45 translate-y-1.5': open}"></span>
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'opacity-0': open}"></span>
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'-rotate-45 -translate-y-1.5': open}"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE MENU -->
+    <div x-show="open" x-transition class="xl:hidden w-full mt-4" @click.outside="open = false">
+      <div class="flex flex-col items-center space-y-4 px-4 py-6">
+        <a href="./index.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Home</a>
+        <a href="./features.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+        <a href="./resources.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+        <a href="./about.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+        <a href="#" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+
+        <!-- MOBILE AUTH BUTTONS -->
+        <div id="auth-buttons-mobile" class="flex flex-col gap-3 w-full pt-4 border-t border-gray-200 mt-4">
+          <a href="javascript:void(0);" onclick="openLoginModal()"
+            class="text-center font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+            Log in
+          </a>
+          <a href="javascript:void(0)" onclick="openRegisterModal()"
+            class="text-center font-bold text-white bg-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+            Sign up
+          </a>
+        </div>
+
+        <!-- MOBILE PROFILE -->
+        <div id="user-profile-mobile" class="hidden w-full pt-4 border-t border-gray-200 mt-4"
+          x-data="{ openProfile:false }">
+
+          <!-- Trigger row -->
+          <button @click="openProfile = !openProfile" :aria-expanded="openProfile"
+            class="w-full flex items-center justify-between px-1 py-2">
+            <div class="flex items-center gap-3">
+              <img id="mobile-avatar" src="" class="w-8 h-8 nav-avatar rounded-full border border-[#7FC58B] shrink-0"
+                alt="User">
+              <span id="mobile-username" class="font-bold text-[#1C1C1C]">Hi, User</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transition-transform duration-200"
+              :class="openProfile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <!-- Dropdown card -->
+          <div x-show="openProfile" x-transition @click.outside="openProfile=false"
+            class="mt-3 max-w-full bg-white rounded-lg p-4">
+            <div class="flex flex-col items-center text-center gap-3">
+              <img id="mMenuAvatarLarge"
+                src="/uploads/profiles/1756213865748-Screenshot 2023-09-08 233746.png?v=1756230921086"
+                class="w-20 h-20 nav-avatar rounded-full border border-[#7FC58B]" alt="Avatar preview" />
+              <div id="mMenuName" class="font-semibold text-gray-900">User Name</div>
+              <div id="mMenuEmail" class="text-xs text-gray-500">UserExample@Example.com</div>
+            </div>
+
+            <hr class="my-3 border-gray-200">
+
+            <div class="grid gap-1">
+              <a href="javascript:void(0)" onclick="goToSettingsSection('profile'); open=false;"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">Profile
+                Setings</a>
+              <a href="progress.html"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">Track
+                Progress</a>
+
+              <hr class="my-3 border-gray-200">
+
+              <a href="/logout"
+                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ASSESSMENT -->
+  <main class="mx-auto max-w-6xl px-4 py-12">
+    <section class="mb-8 text-center slide-in">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Emotional Intelligence Assessment</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">Discover your emotional intelligence through this comprehensive
+        assessment. Answer honestly and spontaneously for the most accurate results.</p>
+    </section>
+
+    <section id="progressSection"
+      class="rounded-3xl border border-[color:var(--fb-green)]/20 bg-white p-6 shadow-md mb-8 slide-in">
+      <!-- sentinel placed before the sticky element to detect when it leaves the flow -->
+      <div id="progressSentinel" class="relative h-0 w-full"></div>
+
+      <!-- only this wrapper is sticky -->
+      <div id="progressSticky" class="sticky top-4 z-40">
+        <!-- non-sticky info text remains below (still visible in normal flow) -->
+        <div class="mt-4">
+          <div class="flex items-center justify-between text-sm font-semibold mb-3">
+            <span id="progressPercent" class="text-gray-900 text-lg">0% Complete</span>
+            <span id="progressText" class="text-gray-600">Step 1 of 5 • Self-Awareness</span>
+          </div>
+        </div>
+        <!-- progress track (this is the element that visually sticks & shrinks) -->
+        <div id="progressTrack" class="overflow-hidden rounded-full bg-gray-100 transition-all duration-150"
+          style="height:12px;">
+          <div id="progressBar" class="h-full rounded-full transition-all duration-500" style="width:0%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="mb-8 flex flex-wrap items-center justify-center gap-3 slide-in">
+      <span
+        class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--self-awareness)]/30 text-sm font-semibold"
+        data-chip="0" style="background: linear-gradient(135deg, #64B5F6, #64B5F6dd);">Self-Awareness</span>
+      <span
+        class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--self-regulation)]/30 text-sm font-semibold"
+        data-chip="1" style="background: linear-gradient(135deg, #81C784, #81C784dd);">Self-Regulation</span>
+      <span
+        class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--motivation)]/30 text-sm font-semibold"
+        data-chip="2" style="background: linear-gradient(135deg, #FFB74D, #FFB74Ddd);;">Motivation</span>
+      <span
+        class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--empathy)]/30 text-sm font-semibold"
+        data-chip="3" style="background: linear-gradient(135deg, #9575CD, #9575CDdd);;">Empathy</span>
+      <span
+        class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--social-skills)]/30 text-sm font-semibold"
+        data-chip="4" style="background: linear-gradient(135deg, #4DB6AC, #4DB6ACdd);">Social Skills</span>
+    </div>
+
+    <div id="questionnaire" class="space-y-6"></div>
+
+    <div class="mt-8 flex items-center justify-between">
+      <button id="prevBtn" onclick="goToPreviousPage()"
+        class="h-12 px-8 text-white border border-[#6FB07C] rounded-xl font-semibold transition-all duration-300 bg-[#7FC58B] hover:bg-[#6FB07C] disabled:opacity-50 disabled:cursor-not-allowed">
+        Previous
+      </button>
+
+      <div class="flex gap-4">
+        <button id="nextBtn" onclick="goToNextPage()"
+          class="h-12 px-8 text-white border border-[#6FB07C] rounded-xl font-semibold transition-all duration-300 bg-[#7FC58B] hover:bg-[#6FB07C] ">
+          Next
+        </button>
+        <button id="submitBtn" onclick="showSummary()" class="hidden h-12 px-8 text-white border border-[#6FB07C] rounded-xl font-semibold transition-all duration-300 
+          bg-[#6FB07C] hover:bg-[#5fa373] shadow-sm">
+          Finish
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- RESULTS MODAL -->
+  <div id="summaryModal" class="modal-backdrop fixed inset-0 z-[60] hidden items-center justify-center p-4">
+    <div class="modal-content w-full max-w-6xl rounded-3xl shadow-2xl max-h-[120vh] overflow-hidden">
+
+      <!-- PAGE 1 -->
+      <section id="resPage1" class="px-6 pt-6 pb-4">
+        <h2 class="text-center text-2xl md:text-3xl font-extrabold tracking-wide text-gray-900 mb-6">Assessment Results
+          Review</h2>
+        <div id="catTabs" class="flex items-center justify-center gap-3 mt-5 mb-5 flex-wrap"></div>
+        <div id="catPanel" class="max-h-[20vh] overflow-y-auto"></div>
+
+        <div class="mt-6 flex items-center justify-center">
+          <button id="continueToP2"
+            class="px-8 py-2 text-white rounded-xl font-semibold transition-all duration-300 bg-[#7FC58B] hover:bg-[#5fa373] shadow-sm"
+            onclick="showResPage(2); setTimeout(() => { animateOverallDonut(); }, 100)">
+            View Overall Results
+          </button>
+        </div>
+      </section>
+
+      <!-- PAGE 2 -->
+      <section id="resPage2" class="hidden px-6 pt-6 pb-4">
+        <h2 class="text-center text-3xl md:text-4xl font-extrabold tracking-wide text-gray-900 mb-8">Overall EI Score
+        </h2>
+
+        <div class="mt-8 flex items-center justify-center donut-container">
+          <div id="overallDonutSVG" aria-label="overall donut"></div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="gradient-bg rounded-3xl p-4 shadow-lg border border-emerald-100">
+            <div class="text-xl font-bold text-gray-900 mb-4">Assessment Feedback</div>
+            <div id="p2Feedback" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">—</div>
+          </div>
+          <div class="gradient-bg rounded-3xl p-4 shadow-lg border border-emerald-100">
+            <div class="text-xl font-bold text-gray-900 mb-4">Key Insights</div>
+            <div class="text-sm text-gray-700 leading-relaxed">
+              Your assessment results provide valuable insights into your emotional intelligence capabilities across
+              five core areas. Use these findings to identify growth opportunities and build upon your existing
+              strengths.
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex items-center justify-center gap-4 flex-wrap">
+          <button id="toPage21"
+            class="px-6 py-3 rounded-xl font-md text-medium transition-all duration-300 border border-blue-300 text-gray-700 hover:bg-blue-100 bg-blue-50"
+            onclick="showResPage(21)">
+            View Detailed Chart
+          </button>
+          <button id="saveBtnP2"
+            class="px-6 py-3 text-gray-700 bg-yellow-50 border rounded-xl border-yellow-400 font-md text-medium hover:bg-yellow-100 hover:border-yellow-400 transition"
+            onclick="confirmSaveAndExit()">
+            Save Results
+          </button>
+          <button id="printBtnP2"
+            class="px-6 py-3 text-white rounded-xl font-md text-medium transition-all duration-300 bg-[#7FC58B] hover:bg-[#5fa373]"
+            onclick="downloadResultAsPDF()">
+            Download Report
+          </button>
+        </div>
+      </section>
+
+      <!-- PAGE 21 -->
+      <section id="resPage21" class="hidden px-6 pt-6 pb-4">
+        <h2 class="text-center text-2xl md:text-3xl font-extrabold tracking-wide text-gray-900 mb-8">Detailed Category
+          Analysis</h2>
+
+        <div class="mt-6 flex items-center justify-center">
+          <div class="w-full max-w-4xl h-96">
+            <canvas id="mixDonut" aria-label="category donut"></canvas>
+          </div>
+        </div>
+
+        <div id="mixLegendGrid" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        </div>
+
+        <div class="mt-8 flex justify-center">
+          <button
+            class="px-8 py-3 text-gray-700 bg-white border rounded-xl border-gray-300 font-semibold hover:bg-gray-50 transition-all duration-300"
+            onclick="showResPage(2)">
+            Back to Results
+          </button>
+        </div>
+      </section>
+
+      <div class="px-8 pb-6"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS LOADING OVERLAY -->
+  <div id="resultsLoadingOverlay"
+    class="fixed inset-0 z-[70] hidden items-center justify-center bg-white/95 backdrop-blur-xl">
+    <div class="flex flex-col items-center">
+      <div class="relative h-24 w-24">
+        <div class="absolute inset-3 rounded-full border-[6px] border-[color:var(--fb-green)] border-t-transparent"
+          style="animation:spinSlow 1.2s linear infinite;"></div>
+      </div>
+      <div class="mt-6 text-lg font-semibold tracking-wide text-[color:var(--fb-green)]"
+        style="animation:pulseSoft 1.6s ease-in-out infinite;">Generating your personalized results…</div>
+    </div>
+  </div>
+
+  <!-- LEAVE CONFIRMATION -->
+  <div id="leaveConfirm" class="modal-backdrop fixed inset-0 z-[80] hidden items-center justify-center p-4">
+    <div class="modal-content border border-emerald-200 rounded-3xl max-w-md w-full p-8">
+      <h3 id="leaveTitle" class="text-xl font-bold text-gray-900 mb-4">Leave Assessment?</h3>
+      <p id="leaveText" class="text-sm text-gray-600 mb-6 leading-relaxed">
+        If you leave now, your current assessment progress will be cleared. Do you want to continue?
+      </p>
+      <div class="flex justify-center gap-4">
+        <button id="leaveCancel"
+          class="flex-1 max-w-[140px] h-12 px-4 text-gray-700 bg-white border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300">
+          Stay Here
+        </button>
+        <button id="leaveConfirmBtn"
+          class="flex-1 max-w-[140px] h-12 px-4 text-white rounded-lg font-semibold transition-all duration-300 bg-[#7FC58B] to-[#6FB07C] hover:bg-[#5fa373]">
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINT REPORT -->
+  <div id="printReport" class="hidden print-container">
+    <div class="max-w-full mx-auto">
+      <div class="text-center mb-4">
+        <img src="./img/fb-banners.png" alt="FeelBright" class="h-10 mx-auto mb-2">
+        <h1 class="text-2xl font-extrabold text-[#065F46] mb-1">Emotional Intelligence Assessment Report</h1>
+        <div class="w-20 h-0.5 bg-gradient-to-r from-[#7FC58B] to-[#6FB07C] mx-auto"></div>
+      </div>
+
+      <div class="flex justify-center mb-4">
+        <div id="prAvatar-wrapper" class="w-16 h-16"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="print-gradient-bg rounded-lg p-3 border border-emerald-100">
+          <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Participant Name</div>
+          <div id="prName" class="text-sm font-bold text-gray-900">User</div>
+        </div>
+        <div class="print-gradient-bg rounded-lg p-3 border border-emerald-100">
+          <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Email Address</div>
+          <div id="prEmail" class="text-sm font-bold text-gray-900">user@example.com</div>
+        </div>
+        <div class="print-gradient-bg rounded-lg p-3 border border-emerald-100">
+          <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Assessment Date</div>
+          <div id="prDate" class="text-sm font-bold text-gray-900"></div>
+        </div>
+        <div class="print-gradient-bg rounded-lg p-3 border border-emerald-100">
+          <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Overall EI Score</div>
+          <div id="prOverall" class="text-lg font-extrabold text-emerald-700"></div>
+          <div id="prInterpretation" class="text-[10px] font-medium text-emerald-600"></div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-gray-900 mb-3 text-center">Category Breakdown</h2>
+        <div id="prCats" class="space-y-2"></div>
+      </div>
+
+      <div class="text-center text-[10px] text-gray-500 mt-4 pt-3 border-t border-gray-200">
+        <p>© FeelBright Emotional Intelligence Assessment Platform</p>
+        <p class="mt-1">This report summarizes your self-assessment responses and provides estimated emotional
+          intelligence indicators for personal development purposes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden classes for dynamic styling -->
+  <div class="hidden">
+    ring-rose-500 ring-rose-400 ring-gray-400 ring-emerald-400 ring-emerald-600
+    bg-red-50 hover:bg-red-100 border-red-200
+    bg-rose-50 hover:bg-rose-100 border-rose-200
+    bg-gray-50 hover:bg-gray-100 border-gray-200
+    bg-emerald-50 hover:bg-emerald-100 border-emerald-200 border-emerald-300
+    ring-2 scale-110 w-12 h-12 w-14 h-14 w-16 h-16 w-20 h-20 w-24 h-24
+  </div>
+
+  <script>
+   
+    const questions = [
+      // Self-Awareness (20 questions)
+      { text: "I can easily identify my emotions as I experience them.", reverse: false },
+      { text: "I notice physical changes (e.g., heart rate, breathing) when my emotions shift.", reverse: false },
+      { text: "I can recognize when my mood influences my decisions.", reverse: false },
+      { text: "I am aware of my emotional triggers.", reverse: false },
+      { text: "I reflect on how my feelings affect my behavior.", reverse: false },
+      { text: "I can explain my emotions clearly to others.", reverse: false },
+      { text: "I recognize the link between my emotions and my values.", reverse: false },
+      { text: "I can predict how I will feel in different situations.", reverse: false },
+      { text: "I am able to evaluate my strengths accurately.", reverse: false },
+      { text: "I acknowledge my weaknesses without defensiveness.", reverse: false },
+      { text: "I understand how stress affects my emotional state.", reverse: false },
+      { text: "I am aware of how my emotions affect those around me.", reverse: false },
+      { text: "I can detect subtle changes in my mood throughout the day.", reverse: false },
+      { text: "I reflect on how my past experiences shape my emotions.", reverse: false },
+      { text: "I seek feedback to better understand how I come across emotionally.", reverse: false },
+      { text: "I know how my emotional patterns influence my relationships.", reverse: false },
+      { text: "I can differentiate between primary emotions (anger, sadness, fear, joy).", reverse: false },
+      { text: "I often journal, meditate, or reflect to track my emotions.", reverse: false },
+      { text: "I can identify whether my emotions are rational or impulsive.", reverse: false },
+      { text: "I reflect on how my emotions influence my daily choices.", reverse: false },
+
+      // Self-Regulation (20 questions)
+      { text: "I stay calm under pressure.", reverse: false },
+      { text: "I avoid saying things I might later regret when upset.", reverse: false },
+      { text: "I can delay immediate gratification for long-term goals.", reverse: false },
+      { text: "I manage my stress effectively.", reverse: false },
+      { text: "I adapt easily to unexpected changes.", reverse: false },
+      { text: "I take ownership of my actions, even when outcomes are unfavorable.", reverse: false },
+      { text: "I recover quickly after emotional setbacks.", reverse: false },
+      { text: "I avoid reacting impulsively when angry.", reverse: false },
+      { text: "I consider the consequences before making emotional decisions.", reverse: false },
+      { text: "I can manage my frustration in challenging situations.", reverse: false },
+      { text: "I am able to keep negative emotions from overwhelming me.", reverse: false },
+      { text: "I pause and breathe before responding in conflict situations.", reverse: false },
+      { text: "I can control my tone and body language when irritated.", reverse: false },
+      { text: "I remain optimistic even during setbacks.", reverse: false },
+      { text: "I am open to feedback without becoming defensive.", reverse: false },
+      { text: "I recognize when I need rest to prevent emotional burnout.", reverse: false },
+      { text: "I regulate my emotions to maintain professionalism.", reverse: false },
+      { text: "I use relaxation techniques to manage stress.", reverse: false },
+      { text: "I am able to stay focused even when I feel upset.", reverse: false },
+      { text: "I practice self-control in emotionally charged situations.", reverse: false },
+
+      // Motivation (20 questions)
+      { text: "I set personal goals and work persistently toward them.", reverse: false },
+      { text: "I find ways to stay engaged even in tasks that feel repetitive or boring.", reverse: false },
+      { text: "I maintain focus even when facing obstacles.", reverse: false },
+      { text: "I seek opportunities for self-improvement.", reverse: false },
+      { text: "I bounce back quickly from failures.", reverse: false },
+      { text: "I remain optimistic about achieving my goals.", reverse: false },
+      { text: "I find purpose in what I do.", reverse: false },
+      { text: "I am passionate about achieving excellence.", reverse: false },
+      { text: "I take initiative without waiting for instructions.", reverse: false },
+      { text: "I see challenges as opportunities to grow.", reverse: false },
+      { text: "I set high standards for my own performance.", reverse: false },
+      { text: "I am willing to put in extra effort to reach goals.", reverse: false },
+      { text: "I enjoy learning new skills.", reverse: false },
+      { text: "I stay motivated even when tasks are tedious.", reverse: false },
+      { text: "I celebrate small achievements along the way.", reverse: false },
+      { text: "I visualize my long-term success regularly.", reverse: false },
+      { text: "I stay focused on goals despite distractions.", reverse: false },
+      { text: "I am willing to sacrifice short-term comfort for long-term growth.", reverse: false },
+      { text: "I seek feedback to improve my performance.", reverse: false },
+      { text: "I persevere even when results are slow.", reverse: false },
+
+      // Empathy (20 questions)
+      { text: "I can sense when others are upset even if they don't say it.", reverse: false },
+      { text: "I listen attentively when someone shares their feelings.", reverse: false },
+      { text: "I try to put myself in others' shoes.", reverse: false },
+      { text: "I recognize non-verbal cues such as body language and tone.", reverse: false },
+      { text: "I validate other people's emotions.", reverse: false },
+      { text: "I avoid judging others before understanding their perspective.", reverse: false },
+      { text: "I can adapt my response based on how others feel.", reverse: false },
+      { text: "I recognize when I'm emotionally overwhelmed by others' problems and take steps to protect my well-being.", reverse: false },
+      { text: "I respect cultural and emotional differences.", reverse: false },
+      { text: "I make people feel heard and understood.", reverse: false },
+      { text: "I recognize when my words affect others emotionally.", reverse: false },
+      { text: "I am aware when someone is uncomfortable in a situation.", reverse: false },
+      { text: "I show compassion to people who are struggling.", reverse: false },
+      { text: "I adjust my communication style depending on who I'm speaking with.", reverse: false },
+      { text: "I am able to comfort others when they are distressed.", reverse: false },
+      { text: "I understand the needs of people even without being told.", reverse: false },
+      { text: "I recognize when someone needs space instead of comfort.", reverse: false },
+      { text: "I can anticipate how people might react emotionally.", reverse: false },
+      { text: "I take time to consider how decisions affect others.", reverse: false },
+      { text: "I respond with patience to people in emotional distress.", reverse: false },
+
+      // Social Skills (20 questions)
+      { text: "I build rapport easily with new people.", reverse: false },
+      { text: "I communicate my ideas clearly and confidently.", reverse: false },
+      { text: "I actively listen in conversations.", reverse: false },
+      { text: "I manage conflict in a constructive way.", reverse: false },
+      { text: "I collaborate effectively in group settings.", reverse: false },
+      { text: "I maintain positive relationships even under stress.", reverse: false },
+      { text: "I can influence others without being forceful.", reverse: false },
+      { text: "I adapt my communication style to different audiences.", reverse: false },
+      { text: "I am skilled at giving constructive feedback.", reverse: false },
+      { text: "I resolve misunderstandings quickly.", reverse: false },
+      { text: "I make an effort to include others in discussions.", reverse: false },
+      { text: "I am comfortable leading group activities.", reverse: false },
+      { text: "I show appreciation for others' contributions.", reverse: false },
+      { text: "I handle criticism gracefully in social situations.", reverse: false },
+      { text: "I can persuade others toward a shared vision.", reverse: false },
+      { text: "I am effective at networking and building connections.", reverse: false },
+      { text: "I recognize group dynamics and adjust my role as needed.", reverse: false },
+      { text: "I know how to keep conversations going and make others feel comfortable in social settings.", reverse: false },
+      { text: "I help mediate when others are in conflict.", reverse: false },
+      { text: "I foster teamwork and cooperation among peers.", reverse: false }
+    ];
+
+    const categories = [
+      { key: "Self-Awareness", start: 0, end: 19 },
+      { key: "Self-Regulation", start: 20, end: 39 },
+      { key: "Motivation", start: 40, end: 59 },
+      { key: "Empathy", start: 60, end: 79 },
+      { key: "Social Skills", start: 80, end: 99 }
+    ];
+
+    // Colors mapping for EQ categories
+    const EQ_COLOR_MAP = {
+      'Self-Awareness': '#64B5F6',
+      'Self-Regulation': '#81C784',
+      'Motivation': '#FFB74D',
+      'Empathy': '#9575CD',
+      'Social Skills': '#4DB6AC'
+    };
+
+    const totalSteps = categories.length;
+
+    /* ======================= STORAGE KEYS ======================= */
+    const STORAGE_PREFIX = 'ei_assessment';
+    function qKey(i) { return `${STORAGE_PREFIX}:q:${i}`; }
+    function pageKey() { return `${STORAGE_PREFIX}:page`; }
+    function recordKey() { return `${STORAGE_PREFIX}:records`; }
+
+    function getAnswer(i) {
+      if (typeof (Storage) === "undefined") return null;
+      return sessionStorage.getItem(qKey(i));
+    }
+    function setAnswer(i, v) {
+      if (typeof (Storage) === "undefined") return;
+      sessionStorage.setItem(qKey(i), String(v));
+    }
+    function clearCurrentParticipant() {
+      if (typeof (Storage) === "undefined") return;
+      for (let i = 0; i < questions.length; i++) sessionStorage.removeItem(qKey(i));
+      sessionStorage.removeItem(pageKey());
+    }
+    function hasProgress() {
+      if (typeof (Storage) === "undefined") return false;
+      for (let i = 0; i < questions.length; i++) {
+        if (getAnswer(i)) return true;
+      }
+      return false;
+    }
+
+    /* ======================= UI HELPERS ======================= */
+    function smoothScrollToEl(el, duration = 800) {
+      if (!el) return;
+      const start = window.scrollY || window.pageYOffset;
+      const rect = el.getBoundingClientRect();
+      const target = start + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+      const startTime = performance.now();
+      const ease = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      function step(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const y = start + (target - start) * ease(p);
+        window.scrollTo(0, y);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    const choiceSize = (n) =>
+      n === 1 || n === 5 ? "w-28 h-28"
+        : n === 2 || n === 4 ? "w-24 h-24"
+          : "w-20 h-20";
+
+    const choiceBase =
+      "ei-choice inline-flex items-center justify-center rounded-full border font-medium transition-all duration-200 select-none cursor-pointer";
+
+    const choicePalette = (n) =>
+      n === 1
+        ? "bg-[#FCE8E8] text-[#A33B3B] border-[#e0baba] hover:bg-[#f8d6d6]"
+        : n === 2
+          ? "bg-[#FFF3E8] text-[#B85D30] border-[#e5c3a3] hover:bg-[#ffdfc2]"
+          : n === 3
+            ? "bg-[#F7F7F7] text-[#666666] border-[#d1d1d1] hover:bg-[#ececec]"
+            : n === 4
+              ? "bg-[#E8FBEE] text-[#2F9A63] border-[#a8d9b8] hover:bg-[#d0f6d9]"
+              : "bg-[#E6F9E6] text-[#2B8F3B] border-[#9ed09e] hover:bg-[#c9f2c9]";
+
+    const ringClr = (n) =>
+      n === 1 ? "ring-red-400"
+        : n === 2 ? "ring-orange-400"
+          : n === 3 ? "ring-gray-400"
+            : n === 4 ? "ring-emerald-400"
+              : "ring-green-400";
+
+    // Interactive states: SAME ring thickness for hover + selected
+    const choiceInteractive = (selected = false, n = 3) => {
+      const hover = `hover:scale-100 hover:ring hover:${ringClr(n)} hover:ring-offset`;
+      if (selected) {
+        // Selected = same thickness, same hue
+        return `ring ${ringClr(n)} ring-offset scale-105 shadow-sm`;
+      }
+      return hover;
+    };
+
+    // Labels (unchanged but cleaned up)
+    const answerLabel = (n) => ["Not at All", "Slightly", "Moderately", "Mostly", "Completely"][n - 1] || "—";
+    const answerDescription = answerLabel;
+
+    // Tiny, lighter answer-pill HTML (thin border, very light bg)
+    function answerPillHTML(val) {
+      const base = "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border";
+      if (!val) return `<span class="${base} bg-[#F5F5F5] text-[#717171] border-[#EDEDED]">No answer</span>`;
+      if (val === 1) return `<span class="${base} bg-[#FFF1F1] text-[#A33B3B] border-[#F4DCDC]">Not at All</span>`;
+      if (val === 2) return `<span class="${base} bg-[#FFF7EF] text-[#B85D30] border-[#FFE6D8]">Slightly</span>`;
+      if (val === 3) return `<span class="${base} bg-[#F7F7F7] text-[#666666] border-[#ECECEC]">Moderately</span>`;
+      if (val === 4) return `<span class="${base} bg-[#F1FFF4] text-[#2F9A63] border-[#DFF6E6]">Mostly</span>`;
+      return `<span class="${base} bg-[#F0FFF0] text-[#2B8F3B] border-[#DFF2DF]">Completely</span>`;
+    }
+
+
+    /* ======================= AVATAR MANAGEMENT ======================= */
+    function getInitials(name) {
+      if (!name) return 'U';
+      const parts = name.trim().split(' ').filter(Boolean);
+      if (parts.length === 0) return 'U';
+      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
+    function createAvatarElement(wrapper, user = {}, sizeClass = 'w-10 h-10', fontSize = 'text-sm') {
+      if (!wrapper) return;
+
+      const hasImage = user.avatar && user.avatar !== '/img/default-avatar.png' && !user.avatar.includes('default-avatar');
+
+      if (hasImage) {
+        wrapper.innerHTML = `<img src="${user.avatar}" alt="${user.name || 'User'}" class="${sizeClass} rounded-full border border-[#7FC58B] object-cover">`;
+      } else {
+        const initials = getInitials(user.name || 'User');
+        wrapper.innerHTML = `<div class="initials-avatar ${sizeClass} ${fontSize}">${initials}</div>`;
+      }
+    }
+
+    /* ======================= ASSESSMENT RENDER ======================= */
+    const questionnaire = document.getElementById("questionnaire");
+    const progressBar = document.getElementById("progressBar");
+    const progressPercent = document.getElementById("progressPercent");
+    const progressText = document.getElementById("progressText");
+    const chipEls = Array.from(document.querySelectorAll("[data-chip]"));
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    let currentPage = 0;
+
+    function renderQuestions(step) {
+      questionnaire.innerHTML = "";
+      const { start, end, key } = categories[step];
+      const color = EQ_COLOR_MAP[key] || '#64B5F6';
+
+      chipEls.forEach(el => {
+        const chipIdx = parseInt(el.dataset.chip);
+        const chipCat = categories[chipIdx];
+        const chipColor = EQ_COLOR_MAP[chipCat.key] || '#64B5F6';
+        const isActive = chipIdx === step;
+
+        if (isActive) {
+          el.className = "category-chip active px-4 py-2 rounded-xl text-sm font-semibold";
+          el.style.background = chipColor;
+          el.style.borderColor = chipColor;
+        } else {
+          el.className = "category-chip px-4 py-2 rounded-xl border text-sm font-semibold";
+          el.style.background = '#FFFFFF';
+          el.style.borderColor = '#D1D5DB';
+          el.style.color = 'text-gray-700';
+        }
+      });
+
+      for (let i = start; i <= end; i++) {
+        const saved = getAnswer(i);
+        const card = document.createElement("div");
+        card.className = "question-card question rounded-3xl p-4 md:p-6 slide-in";
+        card.setAttribute("data-question-index", i);
+
+        const scale = [1, 2, 3, 4, 5].map(n => {
+          const selected = saved == n;
+          const ring = selected ? ` ring-2 ${ringClr(n)} hover:shadow-[0_4px_8px_rgba(187,247,208,0.8)]` : "";
+          return `
+        <label class="${choiceBase} ${choicePalette(n)} ${choiceSize(n)} ${ring}">
+            <input type="radio" id="q${i}_${n}" name="q${i}" value="${n}" ${selected ? "checked" : ""}/>
+            <span class="choice-text pointer-events-none">${answerDescription(n)}</span>
+        </label>`;
+        }).join("");
+
+        card.innerHTML = `
+      <p class="text-center text-base md:text-lg text-gray-700 mb-8">${questions[i].text}</p>
+      <div class="flex items-center justify-center gap-6 md:gap-8">${scale}</div>`;
+        questionnaire.appendChild(card);
+      }
+
+      addInteractions();
+      updateProgressUI();
+      toggleNavButtons();
+      progressText.textContent = `Step ${step + 1} of ${totalSteps} • ${key}`;
+
+      const firstUnanswered = Array.from(questionnaire.querySelectorAll(".question")).find(q => {
+        const idx = parseInt(q.dataset.questionIndex, 10);
+        return !getAnswer(idx);
+      }) || questionnaire.querySelector(".question");
+      if (firstUnanswered) smoothScrollToEl(firstUnanswered, 500);
+    }
+
+    function addInteractions() {
+      questionnaire.querySelectorAll('input[type="radio"]').forEach(r => {
+        r.addEventListener('change', function () {
+          const idx = parseInt(this.name.replace("q", ""), 10);
+          const val = parseInt(this.value, 10);
+          setAnswer(idx, val);
+
+          const card = this.closest(".question");
+
+          // Reset all choices in this question
+          card.querySelectorAll(".ei-choice").forEach(l =>
+            l.classList.remove("ring-2", "scale-105", "shadow-md",
+              "ring-red-400", "ring-orange-400", "ring-gray-400", "ring-emerald-400", "ring-green-400")
+          );
+
+          // Apply selection style
+          const selectedLabel = this.closest(".ei-choice");
+          selectedLabel.classList.add("ring-2", ringClr(val), "scale-105", "shadow-md");
+
+          updateProgressUI();
+
+          // Auto-scroll to next question
+          const next = card.nextElementSibling;
+          if (next) {
+            setTimeout(() => smoothScrollToEl(next, 700), 300);
+          }
+        });
+      });
+    }
+
+    function updateProgressUI() {
+      let answered = 0;
+      for (let i = 0; i < questions.length; i++) if (getAnswer(i)) answered++;
+      const percent = Math.round((answered / questions.length) * 100);
+
+      if (progressBar) {
+        progressBar.style.width = percent + "%";
+
+        // Use currentPage instead of step
+        const currentCategory = categories[currentPage].key;
+        if (progressBar) {
+          progressBar.style.background = EQ_COLOR_MAP[currentCategory] || '#7FC58B';
+        }
+      }
+
+      if (progressPercent) progressPercent.textContent = `${percent}% Complete`;
+
+      if (answered === questions.length && currentPage === totalSteps - 1) {
+        submitBtn.classList.remove("hidden");
+        nextBtn.classList.add("hidden");
+      } else {
+        submitBtn.classList.add("hidden");
+        if (currentPage === totalSteps - 1) nextBtn.classList.add("hidden");
+        else nextBtn.classList.remove("hidden");
+      }
+    }
+
+    function toggleNavButtons() {
+      if (currentPage === 0) {
+        prevBtn.disabled = true;
+        prevBtn.classList.add("opacity-50", "cursor-not-allowed");
+      } else {
+        prevBtn.disabled = false;
+        prevBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      }
+    }
+
+    function goToPreviousPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        if (typeof (Storage) !== "undefined") sessionStorage.setItem(pageKey(), currentPage);
+        renderQuestions(currentPage);
+      }
+    }
+
+    function goToNextPage() {
+      const { start, end } = categories[currentPage];
+      for (let i = start; i <= end; i++) {
+        const answered = getAnswer(i);
+        const qBlock = document.querySelector(`.question[data-question-index="${i}"]`);
+        if (!answered) {
+          if (qBlock) {
+            qBlock.style.borderColor = "#ef4444";
+            qBlock.style.boxShadow = "0 0 0 3px rgba(239, 68, 68, 0.3)";
+            smoothScrollToEl(qBlock, 700);
+            setTimeout(() => {
+              qBlock.style.borderColor = "";
+              qBlock.style.boxShadow = "";
+            }, 2000);
+          }
+          return;
+        }
+      }
+      if (currentPage < totalSteps - 1) {
+        currentPage++;
+        if (typeof (Storage) !== "undefined") sessionStorage.setItem(pageKey(), currentPage);
+        renderQuestions(currentPage);
+      }
+    }
+
+    window.goToPreviousPage = goToPreviousPage;
+    window.goToNextPage = goToNextPage;
+
+    /* ======================= RESULTS ======================= */
+    const summaryModal = document.getElementById("summaryModal");
+    const resPage1 = document.getElementById("resPage1");
+    const resPage2 = document.getElementById("resPage2");
+    const resPage21 = document.getElementById("resPage21");
+
+    let mixInstance = null;
+    let lastOverallPct = 0;
+    let lastBreakdown = [];
+
+    function computeBreakdown() {
+      return categories.map(cat => {
+        let subtotal = 0, count = 0;
+        for (let i = cat.start; i <= cat.end; i++) {
+          let v = parseInt(getAnswer(i) || "0", 10);
+          if (v > 0) {
+            subtotal += v;
+            count++;
+          }
+        }
+        const rawScore = subtotal;
+        const pct = Math.round((rawScore / 100) * 100);
+        return { key: cat.key, pct, rawScore, start: cat.start, end: cat.end };
+      });
+    }
+
+    // Fix the function name mismatch in showResPage
+    function showResPage(n) {
+      resPage1.classList.toggle("hidden", n !== 1);
+      resPage2.classList.toggle("hidden", n !== 2);
+      resPage21.classList.toggle("hidden", n !== 21);
+
+      // Fix the function name mismatch
+      if (n === 21) { renderMixDonutEnhanced(lastBreakdown); }
+
+      if (n === 2) {
+        const svgWrap = document.getElementById("overallDonutSVG");
+        if (svgWrap) {
+          // Use green color for overall score - make sure parameters match donutSVG function
+          svgWrap.innerHTML = donutSVG(0, 280, 20, '#10B981');
+
+          // Start animation immediately without delay
+          requestAnimationFrame(() => {
+            animateDonut(svgWrap, 0, lastOverallPct, 1500);
+          });
+        }
+      }
+    }
+    window.showResPage = showResPage;
+
+    function animateOverallDonut() {
+      const svgWrap = document.getElementById("overallDonutSVG");
+      if (svgWrap) {
+        // Reset to 0% first
+        updateDonutInContainer(svgWrap, 0);
+
+        // Animate after a short delay to ensure DOM is updated
+        setTimeout(() => {
+          animateDonut(svgWrap, 0, lastOverallPct, 1500);
+        }, 50);
+      }
+    }
+
+    function showSummary() {
+      let score = 0;
+      for (let i = 0; i < questions.length; i++) {
+        const stored = getAnswer(i);
+        if (!stored) {
+          alert("Please answer all the questions before submitting.");
+          return;
+        }
+        let val = parseInt(stored, 10);
+        score += val;
+      }
+
+      const overlay = document.getElementById("resultsLoadingOverlay");
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+        overlay.classList.remove("flex");
+        displayResultsEnhanced(score);
+      }, 3000);
+
+      document.querySelectorAll('#questionnaire input[type="radio"]').forEach(r => {
+        r.disabled = true;
+        r.removeAttribute('name');
+      });
+    }
+    window.showSummary = showSummary;
+
+    /* ---------- Responsive donut helper ---------- */
+
+
+    function updateDonutInContainer(containerEl, pct) {
+      const container = (typeof containerEl === 'string') ? document.querySelector(containerEl) : containerEl;
+      if (!container) return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+      const fg = svg.querySelector('.donut-fg');
+      if (!fg) return;
+
+      // compute circumference from r attribute (string)
+      const r = parseFloat(fg.getAttribute('r'));
+      const c = 2 * Math.PI * r;
+      const offset = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+
+      // ensure dasharray is set (in case)
+      fg.setAttribute('stroke-dasharray', `${c.toFixed(2)}`);
+      // animate by writing style in next frame
+      requestAnimationFrame(() => {
+        fg.style.strokeDashoffset = offset.toFixed(2);
+      });
+
+      // update center label if present
+      const label = svg.querySelector('.donut-label-value');
+      if (label) label.textContent = `${Math.round(pct)}%`;
+    }
+
+    function displayResultsEnhanced(score) {
+      const maxScore = questions.length * 5;
+      lastOverallPct = Math.round((score / maxScore) * 100);
+      lastBreakdown = computeBreakdown();
+
+      // Page 1 - Category Review
+      const catTabs = document.getElementById("catTabs");
+      const catPanel = document.getElementById("catPanel");
+      let activeCat = 0;
+
+      function renderTabs() {
+        catTabs.innerHTML = lastBreakdown.map((b, i) => {
+          const color = EQ_COLOR_MAP[b.key] || '#64B5F6';
+          const isActive = i === activeCat;
+          return `<button data-tab="${i}" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive
+            ? 'text-white shadow-lg transform scale-105'
+            : 'text-gray-700 bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md'
+            }" style="${isActive ? `background: linear-gradient(135deg, ${color}, ${color}dd);` : ''}">${b.key}</button>`
+        }).join("");
+
+        catTabs.querySelectorAll("button").forEach(btn => {
+          btn.onclick = () => {
+            activeCat = +btn.dataset.tab;
+            renderTabs();
+            renderCatPanel();
+          };
+        });
+      }
+
+      // Part 1: Enhanced donutSVG function with green background
+      function donutSVG(pct, size = 280, stroke = 20) {
+        const r = (size / 2) - stroke;
+        const c = 2 * Math.PI * r;
+        const dashArray = c.toFixed(2);
+        const dashOffset = (c * (1 - pct / 100)).toFixed(2);
+
+        const color = arguments[3] || '#10B981'; // Use passed color or default green
+
+        return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="drop-shadow-lg">
+        <!-- Background circle -->
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" 
+                stroke="#E5E7EB" 
+                stroke-width="${stroke}" 
+                fill="none">
+        </circle>
+        <!-- Progress circle - ALWAYS GREEN -->
+        <circle class="donut-fg" 
+                cx="${size / 2}" cy="${size / 2}" r="${r}" 
+                stroke="${color}" 
+                stroke-width="${stroke}" 
+                fill="none"
+                stroke-linecap="round" 
+                stroke-dasharray="${dashArray}" 
+                stroke-dashoffset="${dashArray}"
+                transform="rotate(-90 ${size / 2} ${size / 2})">
+        </circle>
+        <text class="donut-label-value" x="50%" y="50%" dy="8" text-anchor="middle" 
+              font-size="${size * 0.18}" font-weight="800" fill="#065F46">0%</text>
+        <text x="50%" y="50%" dy="42" text-anchor="middle" 
+              font-size="${size * 0.08}" font-weight="600" fill="#6B7280">EI Score</text>
+    </svg>`;
+      }
+
+      // Part 2: Donut animation function
+      function animateDonut(containerEl, fromPct, toPct, duration = 1000) {
+        const container = (typeof containerEl === 'string') ? document.querySelector(containerEl) : containerEl;
+        if (!container) return;
+
+        const svg = container.querySelector('svg');
+        if (!svg) return;
+
+        const fg = svg.querySelector('.donut-fg');
+        const label = svg.querySelector('.donut-label-value');
+        if (!fg || !label) return;
+
+        const r = parseFloat(fg.getAttribute('r'));
+        const c = 2 * Math.PI * r;
+
+        const startTime = performance.now();
+        const startPct = Math.max(0, Math.min(100, fromPct));
+        const endPct = Math.max(0, Math.min(100, toPct));
+        const pctDiff = endPct - startPct;
+
+        // Easing function for smooth animation
+        const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+
+        function animate(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeOutQuart(progress);
+
+          const currentPct = startPct + (pctDiff * easedProgress);
+          const offset = c * (1 - currentPct / 100);
+
+          // Update circle
+          fg.style.strokeDashoffset = offset.toFixed(2);
+
+          // Update label
+          label.textContent = `${Math.round(currentPct)}%`;
+
+          // Continue animation
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      // Replacement renderCatPanel() — places donut above #catTabs, then renders #catPanel content
+      function renderCatPanel() {
+        const b = lastBreakdown[activeCat];
+        const color = EQ_COLOR_MAP[b.key] || '#64B5F6';
+        const cards = [];
+
+        for (let i = b.start; i <= b.end; i++) {
+          const raw = getAnswer(i);
+          const val = raw ? parseInt(raw, 10) : null;
+          cards.push(`
+      <div class="question-card rounded-2xl bg-white p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+        <div class="text-xs font-semibold text-gray-500 mb-2">Question ${i + 1}</div>
+        <div class="text-sm text-gray-700 mb-3 leading-relaxed">${questions[i].text}</div>
+        <div>${answerPillHTML(val)}</div>
+      </div>
+    `);
+        }
+
+        // Ensure references to existing nodes
+        const catTabs = document.getElementById('catTabs');
+        const catPanel = document.getElementById('catPanel');
+
+        // Remove any previous donut inserted by this function
+        const prevDonut = document.getElementById('catDonutTop');
+        if (prevDonut) prevDonut.remove();
+
+        // Create donut container (centered) and insert it ABOVE catTabs (or above catPanel as fallback)
+        const donutContainer = document.createElement('div');
+        donutContainer.id = 'catDonutTop';
+        donutContainer.className = 'w-full flex justify-center items-center mb-3';
+        donutContainer.innerHTML = `
+  <div class="donut-wrapper w-32 sm:w-40 md:w-48 lg:w-56 flex justify-center items-center">
+    ${donutSVG(0, Math.min(180, window.innerWidth * 0.35), 14, color)}
+  </div>
+`;
+
+        if (catTabs && catTabs.parentNode) {
+          catTabs.parentNode.insertBefore(donutContainer, catTabs);
+        } else if (catPanel && catPanel.parentNode) {
+          catPanel.parentNode.insertBefore(donutContainer, catPanel);
+        }
+
+        // Put category title + question cards into existing #catPanel (no donut inside panel)
+        if (catPanel) {
+          catPanel.innerHTML = `
+      <div class="w-full max-w-4xl mx-auto">
+        <div class="grid gap-3 lg:grid-cols-2">
+          ${cards.join('')}
+        </div>
+      </div>
+    `;
+          // reset scroll position when switching tabs
+          catPanel.scrollTop = 0;
+        }
+
+        // Animate the donut after inserting it
+        const wrapper = document.querySelector('#catDonutTop .donut-wrapper');
+        if (wrapper) {
+          animateDonut(wrapper, 0, b.pct, 1000);
+        }
+      }
+
+
+      /* initialize */
+      renderTabs();
+      renderCatPanel();
+
+      // Page 2 - Overall results
+      const svgWrap = document.getElementById("overallDonutSVG");
+      if (svgWrap) {
+        // Use green color for overall score
+        svgWrap.innerHTML = donutSVG(0, 280, 20, '#10B981');
+
+        // Start animation immediately without delay
+        animateDonut(svgWrap, 0, lastOverallPct, 1000);
+      }
+
+      const top = [...lastBreakdown].sort((a, b) => b.pct - a.pct)[0];
+      const low = [...lastBreakdown].sort((a, b) => a.pct - b.pct)[0];
+
+      // Interpret overall score
+      let overallInterpretation = '';
+      if (lastOverallPct >= 85) overallInterpretation = 'Exceptional Emotional Intelligence';
+      else if (lastOverallPct >= 70) overallInterpretation = 'Strong Emotional Intelligence';
+      else if (lastOverallPct >= 55) overallInterpretation = 'Moderate Emotional Intelligence';
+      else if (lastOverallPct >= 40) overallInterpretation = 'Developing Emotional Intelligence';
+      else overallInterpretation = 'Needs Significant Development';
+
+      // Interpret category scores
+      function interpretCategoryScore(pct) {
+        if (pct >= 85) return 'Excellent';
+        if (pct >= 70) return 'Good';
+        if (pct >= 55) return 'Moderate';
+        if (pct >= 40) return 'Low';
+        return 'Very Low';
+      }
+
+      document.getElementById("p2Feedback").textContent =
+        `Overall EI Score: ${lastOverallPct}% (${overallInterpretation})\n\n` +
+        `Strongest area: ${top.key} (${top.pct}% - ${interpretCategoryScore(top.pct)})\n\n` +
+        `Growth opportunity: ${low.key} (${low.pct}% - ${interpretCategoryScore(low.pct)})`;
+
+      const user = getUserProfileForReport();
+      if (user.email && user.email !== "Guest@Email.com") {
+        const answers = [];
+        for (let i = 0; i < questions.length; i++) {
+          answers.push({ q: i + 1, text: questions[i].text, answer: getAnswer(i) });
+        }
+
+        // Save to server if available
+        if (typeof fetch !== 'undefined') {
+          fetch("/api/save-results", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: user.email,
+              overallPct: lastOverallPct,
+              breakdown: lastBreakdown,
+              answers: answers
+            })
+          })
+            .then(res => res.json())
+            .then(data => console.log("Results saved:", data))
+            .catch(err => console.log("Save note:", err.message));
+        }
+      }
+
+      summaryModal.classList.remove("hidden");
+      summaryModal.classList.add("flex");
+      showResPage(1);
+    }
+
+    /* ======================= CHART RENDERING ======================= */
+
+    // Part 8: Enhanced Chart Container for Page 21
+    function renderMixDonutEnhanced(breakdown) {
+      const labels = breakdown.map(b => b.key);
+      const vals = breakdown.map(b => b.pct);
+      const colors = breakdown.map(b => EQ_COLOR_MAP[b.key] || '#64B5F6');
+      const canvas = document.getElementById("mixDonut");
+
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      if (window.mixInstance) {
+        try { window.mixInstance.destroy(); } catch (e) { }
+        window.mixInstance = null;
+      }
+
+      // Enhanced responsive sizing
+      const container = canvas.parentElement;
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight || 384; // h-96 = 384px
+
+      canvas.style.width = '100%';
+      canvas.style.height = containerHeight + 'px';
+
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.round(containerWidth * dpr));
+      canvas.height = Math.max(1, Math.round(containerHeight * dpr));
+
+      window.mixInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: vals,
+            backgroundColor: colors,
+            borderWidth: 3,
+            borderColor: '#ffffff',
+            hoverOffset: 10,
+            hoverBorderWidth: 4,
+            hoverBorderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2000,
+            easing: 'easeOutQuart'
+          },
+          cutout: '60%',
+          layout: {
+            padding: {
+              top: 20,
+              bottom: 20,
+              left: 20,
+              right: 20
+            }
+          },
+          elements: {
+            arc: {
+              borderWidth: 3,
+              borderRadius: 4
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#374151',
+              bodyColor: '#6B7280',
+              borderColor: '#E5E7EB',
+              borderWidth: 1,
+              cornerRadius: 12,
+              displayColors: true,
+              padding: 12,
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 13 },
+              callbacks: {
+                label: function (context) {
+                  return `${context.label}: ${context.parsed}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Enhanced legend with better spacing
+      const legend = document.getElementById("mixLegendGrid");
+      if (legend) {
+        legend.className = "mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto px-4";
+        legend.innerHTML = labels.map((l, i) => `
+      <div class="gradient-bg flex items-center justify-between gap-3 rounded-xl border border-gray-200 p-3 shadow-sm transition-all duration-300 hover:shadow-md">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="inline-block w-4 h-4 rounded-full shadow-sm flex-shrink-0" style="background:${colors[i]}"></span>
+          <span class="text-sm font-semibold text-gray-800 truncate">${l}</span>
+        </div>
+        <span class="text-lg font-bold text-gray-700 flex-shrink-0">${vals[i]}%</span>
+      </div>
+    `).join("");
+      }
+    }
+
+    /* ======================= PDF DOWNLOAD FUNCTIONALITY ======================= */
+
+    // Replace your existing downloadResultAsPDF function with this corrected version:
+
+    async function downloadResultAsPDF() {
+      try {
+        console.log('Starting PDF download process...');
+
+        // Show loading state
+        const downloadBtn = document.getElementById('printBtnP2');
+        const originalContent = downloadBtn ? downloadBtn.innerHTML : '';
+
+        if (downloadBtn) {
+          downloadBtn.disabled = true;
+          downloadBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Generating PDF...
+      `;
+        }
+
+        // Check authentication
+        const authResponse = await fetch('/auth/user', {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!authResponse.ok) {
+          throw new Error('Authentication check failed. Please log in again.');
+        }
+
+        const authData = await authResponse.json();
+        if (!authData.loggedIn) {
+          throw new Error('Please log in to download your results');
+        }
+
+        console.log('User authenticated, preparing PDF data...');
+
+        // Ensure we have the required data
+        if (!lastOverallPct || !lastBreakdown || !Array.isArray(lastBreakdown)) {
+          throw new Error('Assessment data is missing. Please complete the assessment first.');
+        }
+
+        // Prepare the request data
+        const requestData = {
+          overallPct: lastOverallPct,
+          breakdown: lastBreakdown.reduce((acc, item) => {
+            acc[item.key] = item.pct;
+            return acc;
+          }, {})
+        };
+
+        console.log('Sending PDF request with data:', requestData);
+
+        // Make request to generate PDF
+        const response = await fetch('/api/results/download-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(requestData)
+        });
+
+        console.log('PDF Response status:', response.status);
+        console.log('PDF Response content-type:', response.headers.get('content-type'));
+
+        if (!response.ok) {
+          let errorMessage = `Server error: ${response.status}`;
+          try {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } else {
+              const textError = await response.text();
+              errorMessage = textError || errorMessage;
+            }
+          } catch (parseError) {
+            console.error('Error parsing error response:', parseError);
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Get the PDF blob
+        const blob = await response.blob();
+        console.log('PDF blob size:', blob.size, 'bytes');
+        console.log('PDF blob type:', blob.type);
+
+        if (blob.size === 0) {
+          throw new Error('PDF file is empty');
+        }
+
+        // Create and trigger download
+        const user = getUserProfileForReport();
+        const sanitizedName = (user.name || 'User').replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-');
+        const dateStr = new Date().toISOString().split('T')[0];
+        let filename = `EI-Assessment-Report-${sanitizedName}-${dateStr}.pdf`;
+
+        // Try to get filename from response headers
+        const contentDisposition = response.headers.get('content-disposition');
+        if (contentDisposition) {
+          const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+          if (matches && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+          }
+        }
+
+        // Method 1: Try using the modern approach
+        if (window.showSaveFilePicker) {
+          try {
+            const fileHandle = await window.showSaveFilePicker({
+              suggestedName: filename,
+              types: [{
+                description: 'PDF files',
+                accept: { 'application/pdf': ['.pdf'] }
+              }]
+            });
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            console.log('PDF saved using File System Access API');
+            showPDFSuccessNotification(filename);
+            return;
+          } catch (err) {
+            console.log('File System Access API failed, falling back to download link');
+          }
+        }
+
+        // Method 2: Traditional download link approach
+        try {
+          const url = URL.createObjectURL(blob);
+          console.log('Created object URL:', url);
+
+          // Create a temporary link element
+          const downloadLink = document.createElement('a');
+          downloadLink.href = url;
+          downloadLink.download = filename;
+          downloadLink.style.display = 'none';
+
+          // Add to DOM, click, and remove
+          document.body.appendChild(downloadLink);
+          console.log('Triggering download click...');
+          downloadLink.click();
+
+          // Clean up after a short delay
+          setTimeout(() => {
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+            console.log('Cleanup completed');
+          }, 1000);
+
+          console.log('PDF download initiated successfully:', filename);
+          showPDFSuccessNotification(filename);
+
+        } catch (linkError) {
+          console.error('Download link method failed:', linkError);
+
+          // Method 3: Fallback - open in new tab
+          try {
+            const url = URL.createObjectURL(blob);
+            const newTab = window.open(url, '_blank');
+            if (newTab) {
+              // Set the title to suggest saving
+              setTimeout(() => {
+                try {
+                  newTab.document.title = filename;
+                } catch (e) {
+                  console.log('Could not set tab title');
+                }
+              }, 100);
+
+              showPDFSuccessNotification('PDF opened in new tab - right-click to save');
+            } else {
+              throw new Error('Popup blocked - please allow popups for this site');
+            }
+
+            // Clean up URL after some time
+            setTimeout(() => {
+              URL.revokeObjectURL(url);
+            }, 60000);
+
+          } catch (tabError) {
+            console.error('All download methods failed:', tabError);
+            throw new Error('Unable to download PDF. Please check your browser settings and try again.');
+          }
+        }
+
+      } catch (error) {
+        console.error('Error downloading PDF:', error);
+        showPDFErrorNotification(error.message);
+      } finally {
+        // Reset button state
+        const downloadBtn = document.getElementById('printBtnP2');
+        if (downloadBtn) {
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = 'Download Report';
+        }
+      }
+    }
+
+    // Enhanced notification functions
+    function showPDFSuccessNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[100] max-w-sm';
+      notification.innerHTML = `
+    <div class="flex items-start gap-3">
+      <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <div>
+        <div class="font-semibold">Download Successful!</div>
+        <div class="text-sm opacity-90 mt-1">${message}</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-2 flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  `;
+
+      document.body.appendChild(notification);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+
+    function showPDFErrorNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-[100] max-w-sm';
+      notification.innerHTML = `
+    <div class="flex items-start gap-3">
+      <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+      <div>
+        <div class="font-semibold">Download Failed</div>
+        <div class="text-sm opacity-90 mt-1">${message}</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-2 flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  `;
+
+      document.body.appendChild(notification);
+
+      // Auto-remove after 8 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 8000);
+    }
+
+    // Ensure the function is available globally
+    function prepDownloadReport() {
+      console.log('prepDownloadReport called');
+      downloadResultAsPDF();
+    }
+
+    // Make functions globally available
+    window.downloadResultAsPDF = downloadResultAsPDF;
+    window.prepDownloadReport = prepDownloadReport;
+    window.showPDFSuccessNotification = showPDFSuccessNotification;
+    window.showPDFErrorNotification = showPDFErrorNotification;
+    /* ======================= USER PROFILE MANAGEMENT ======================= */
+    function updateUserProfileForReport(profile = {}) {
+      const p = normalizeUser(profile);
+
+      if (typeof (Storage) !== "undefined") {
+        try {
+          if (p.name) sessionStorage.setItem('fb_name', p.name); else sessionStorage.removeItem('fb_name');
+          if (p.email) sessionStorage.setItem('fb_email', p.email); else sessionStorage.removeItem('fb_email');
+          if (p.avatar) sessionStorage.setItem('fb_avatar', p.avatar); else sessionStorage.removeItem('fb_avatar');
+        } catch (e) { }
+      }
+
+      window.__lastUserData = Object.assign(window.__lastUserData || {}, {
+        name: p.name || window.__lastUserData?.name,
+        email: p.email || window.__lastUserData?.email,
+        profile_picture: p.avatar || window.__lastUserData?.profile_picture
+      });
+
+      refreshProfileUI(window.__lastUserData);
+
+      try {
+        window.dispatchEvent(new CustomEvent('user:updated', { detail: window.__lastUserData }));
+      } catch (e) { }
+    }
+
+    function fetchAndSyncUser() {
+      if (!window.fetch) return;
+
+      fetch('/auth/user', { credentials: 'include' })
+        .then(res => {
+          if (!res.ok) return null;
+          return res.json().catch(() => null);
+        })
+        .then(data => {
+          if (!data) return;
+          if (data.loggedIn) {
+            const serverUser = {
+              first_name: data.first_name || '',
+              last_name: data.last_name || '',
+              name: (data.first_name || data.name) ? `${data.first_name || ''} ${data.last_name || ''}`.trim() : (data.name || ''),
+              email: data.email || '',
+              profile_picture: data.profile_picture || data.profile_picture_url || ''
+            };
+            window.__lastUserData = Object.assign(window.__lastUserData || {}, serverUser);
+
+            if (typeof (Storage) !== "undefined") {
+              try {
+                if (serverUser.name) sessionStorage.setItem('fb_name', serverUser.name);
+                if (serverUser.email) sessionStorage.setItem('fb_email', serverUser.email);
+                if (serverUser.profile_picture) sessionStorage.setItem('fb_avatar', serverUser.profile_picture);
+              } catch (e) { }
+            }
+
+            refreshProfileUI(window.__lastUserData);
+          } else {
+            refreshProfileUI(window.__lastUserData || {});
+          }
+        })
+        .catch(err => {
+          refreshProfileUI(window.__lastUserData || {});
+        });
+    }
+
+    window.getUserProfileForReport = getUserProfileForReport;
+    window.updateUserProfileForReport = updateUserProfileForReport;
+    window.refreshProfileUI = refreshProfileUI;
+
+    function refreshProfileUI(user = {}) {
+      const u = normalizeUser(user);
+
+      const firstName = (u.name || '').split(' ')[0] || '';
+      const greeting = firstName ? `Hi, ${firstName}` : 'Welcome';
+
+      const avatarSrc = u.avatar
+        ? (u.avatar.includes('?') ? `${u.avatar}&v=${Date.now()}` : `${u.avatar}?v=${Date.now()}`)
+        : '/img/default-avatar.png';
+
+      const avatarIds = ['menuAvatarLarge', 'desktop-avatar', 'mobile-avatar', 'mMenuAvatarLarge'];
+      avatarIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.src = avatarSrc;
+      });
+
+      // Update avatar elements with initials if needed
+      if (!u.avatar || u.avatar.includes('default-avatar')) {
+        const initials = getInitials(u.name || 'User');
+
+        // Desktop avatar
+        const desktopAvatar = document.getElementById('desktop-avatar');
+        if (desktopAvatar && desktopAvatar.parentElement) {
+          desktopAvatar.style.display = 'none';
+          const initialsEl = document.querySelector('[data-initials-for="desktop-avatar"]');
+          if (initialsEl) {
+            initialsEl.textContent = initials;
+            initialsEl.style.display = 'inline-flex';
+          } else {
+            const newInitials = document.createElement('div');
+            newInitials.className = 'initials-fallback';
+            newInitials.setAttribute('data-initials-for', 'desktop-avatar');
+            newInitials.style.display = 'inline-flex';
+            newInitials.textContent = initials;
+            desktopAvatar.parentElement.appendChild(newInitials);
+          }
+        }
+
+        // Menu avatar
+        const menuAvatar = document.getElementById('menuAvatarLarge');
+        if (menuAvatar && menuAvatar.parentElement) {
+          menuAvatar.style.display = 'none';
+          const initialsEl = document.querySelector('[data-initials-for="menuAvatarLarge"]');
+          if (initialsEl) {
+            initialsEl.textContent = initials;
+            initialsEl.style.display = 'inline-flex';
+          } else {
+            const newInitials = document.createElement('div');
+            newInitials.className = 'initials-fallback';
+            newInitials.setAttribute('data-initials-for', 'menuAvatarLarge');
+            newInitials.style.display = 'inline-flex';
+            newInitials.textContent = initials;
+            menuAvatar.parentElement.appendChild(newInitials);
+          }
+        }
+      } else {
+        // Show image avatars
+        document.querySelectorAll('.initials-fallback').forEach(el => {
+          el.style.display = 'none';
+        });
+        document.querySelectorAll('#desktop-avatar, #menuAvatarLarge, #mobile-avatar, #mMenuAvatarLarge').forEach(el => {
+          el.style.display = 'inline-block';
+        });
+      }
+
+      const elements = {
+        'menuName': u.name || 'Participant',
+        'menuEmail': u.email || '',
+        'mMenuName': u.name || 'Participant',
+        'mMenuEmail': u.email || '',
+        'desktop-username': greeting,
+        'mobile-username': greeting,
+        'prName': u.name || 'Participant',
+        'prEmail': u.email || 'Guest@Email.com'
+      };
+
+      Object.entries(elements).forEach(([id, text]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      });
+    }
+
+    function normalizeUser(obj = {}) {
+      const name = (obj.name || `${(obj.first_name || '').trim()} ${(obj.last_name || '').trim()}`.trim() || '').trim();
+      const email = obj.email || '';
+      const avatar = obj.profile_picture || obj.profile_image || obj.avatar || obj.profile_picture_url || '';
+      return { name, email, avatar };
+    }
+
+    function getUserProfileForReport() {
+      const fetched = window.__lastUserData ? normalizeUser(window.__lastUserData) : null;
+
+      let lsName = '', lsEmail = '', lsAvatar = '';
+      if (typeof (Storage) !== "undefined") {
+        lsName = (sessionStorage.getItem('fb_name') || '').trim();
+        lsEmail = (sessionStorage.getItem('fb_email') || '').trim();
+        lsAvatar = (sessionStorage.getItem('fb_avatar') || '').trim();
+      }
+
+      const name = fetched?.name || lsName || 'Participant';
+      const email = fetched?.email || lsEmail || 'Guest@Email.com';
+      const avatarCandidates = [
+        lsAvatar,
+        fetched?.avatar,
+        resolveAvatarUrlForPrint()
+      ].filter(Boolean);
+      const avatar = avatarCandidates[0] || '/img/default-avatar.png';
+
+      return { name, email, avatar };
+    }
+
+    /* ======================= NAVIGATION GUARDS ======================= */
+    let leaveConfirmAction = null;
+
+    function showLeaveConfirm({ title, text, confirmLabel, onConfirm }) {
+      const wrap = document.getElementById('leaveConfirm');
+      document.getElementById('leaveTitle').textContent = title || 'Leave Assessment?';
+      document.getElementById('leaveText').textContent = text || 'If you leave now, your current assessment progress will be cleared. Do you want to continue?';
+      const btn = document.getElementById('leaveConfirmBtn');
+      btn.textContent = confirmLabel || 'Continue';
+      leaveConfirmAction = onConfirm || null;
+      wrap.classList.remove('hidden');
+      wrap.classList.add('flex');
+    }
+
+    function hideLeaveConfirm() {
+      const wrap = document.getElementById('leaveConfirm');
+      wrap.classList.add('hidden');
+      wrap.classList.remove('flex');
+      leaveConfirmAction = null;
+    }
+
+    document.getElementById('leaveCancel').onclick = hideLeaveConfirm;
+    document.getElementById('leaveConfirmBtn').onclick = () => {
+      if (typeof leaveConfirmAction === 'function') leaveConfirmAction();
+      hideLeaveConfirm();
+    };
+
+    function recordAndResetThenGo(url = 'index.html') {
+      if (typeof (Storage) !== "undefined") {
+        try {
+          const recs = JSON.parse(sessionStorage.getItem(recordKey()) || '[]');
+          recs.push({ at: new Date().toISOString(), overall: lastOverallPct, breakdown: lastBreakdown });
+          sessionStorage.setItem(recordKey(), JSON.stringify(recs));
+        } catch (e) { }
+      }
+      clearCurrentParticipant();
+      window.location.href = url;
+    }
+
+    function confirmSaveAndExit() {
+      showLeaveConfirm({
+        title: 'Save & Return to Home?',
+        text: 'We will record your result, reset the assessment, and take you back to Home.',
+        confirmLabel: 'Save & Exit',
+        onConfirm: () => recordAndResetThenGo('index.html')
+      });
+    }
+    window.confirmSaveAndExit = confirmSaveAndExit;
+
+    function setupNavigationGuards() {
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        if (a.closest('nav')) return;
+        const href = a.getAttribute('href') || '';
+        if (a.dataset.noconfirm === 'true') return;
+        if (!href || href === '#' || href.startsWith('javascript:')) return;
+        if (href.startsWith('#')) return;
+
+        if (hasProgress()) {
+          e.preventDefault();
+          showLeaveConfirm({
+            title: 'Leave Assessment?',
+            text: 'Leaving now will clear your current assessment progress. Continue?',
+            confirmLabel: 'Leave',
+            onConfirm: () => {
+              window.onbeforeunload = null;
+              window.removeEventListener('beforeunload', beforeUnloadHandler);
+              window.location.href = href;
+            }
+          });
+        }
+      }, true);
+
+      try { history.replaceState({ fb_guard: true }, ''); } catch { }
+      try { history.pushState({ fb_guard: true }, ''); } catch { }
+
+      window.addEventListener('popstate', () => {
+        if (!hasProgress()) return;
+        try { history.pushState({ fb_guard: true }, ''); } catch { }
+        showLeaveConfirm({
+          title: 'Go Back?',
+          text: 'Going back will reset your assessment progress. Continue?',
+          confirmLabel: 'Go Back',
+          onConfirm: () => {
+            window.onbeforeunload = null;
+            window.removeEventListener('beforeunload', beforeUnloadHandler);
+            history.go(-2);
+          }
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        const reloadKeys = (e.key === 'F5') || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r');
+        if (reloadKeys && hasProgress()) {
+          e.preventDefault();
+          showLeaveConfirm({
+            title: 'Reload Page?',
+            text: 'Reloading will restart your assessment progress. Continue?',
+            confirmLabel: 'Reload',
+            onConfirm: () => {
+              window.onbeforeunload = null;
+              window.removeEventListener('beforeunload', beforeUnloadHandler);
+              location.reload();
+            }
+          });
+        }
+      });
+
+      window.addEventListener('beforeunload', beforeUnloadHandler);
+    }
+
+    function beforeUnloadHandler(e) {
+      if (!hasProgress()) return;
+      e.preventDefault();
+      e.returnValue = '';
+    }
+
+    /* ======================= INITIALIZATION ======================= */
+    document.addEventListener('DOMContentLoaded', () => {
+      setupNavigationGuards();
+
+      // Load saved progress
+      if (typeof (Storage) !== "undefined") {
+        const lsName = (sessionStorage.getItem('fb_name') || '').trim();
+        const lsEmail = (sessionStorage.getItem('fb_email') || '').trim();
+        const lsAvatar = (sessionStorage.getItem('fb_avatar') || '').trim();
+
+        if (lsName || lsEmail || lsAvatar) {
+          window.__lastUserData = Object.assign(window.__lastUserData || {}, {
+            name: lsName || window.__lastUserData?.name,
+            email: lsEmail || window.__lastUserData?.email,
+            profile_picture: lsAvatar || window.__lastUserData?.profile_picture
+          });
+          refreshProfileUI(window.__lastUserData);
+        }
+
+        const savedPage = parseInt(sessionStorage.getItem(pageKey()) || '0', 10);
+        currentPage = isNaN(savedPage) ? 0 : Math.min(Math.max(savedPage, 0), totalSteps - 1);
+      }
+
+      fetchAndSyncUser();
+      renderQuestions(currentPage);
+
+      const first = document.querySelector(".question");
+      if (first) smoothScrollToEl(first, 600);
+    });
+
+    // Profile menu interactions
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileTrigger = document.getElementById('profile-trigger');
+      const profileMenu = document.getElementById('profile-menu');
+      const profileBridge = document.getElementById('profile-bridge');
+
+      if (profileTrigger && profileMenu) {
+        let menuTimeout;
+
+        const showMenu = () => {
+          clearTimeout(menuTimeout);
+          profileMenu.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+          profileMenu.classList.add('opacity-100', 'translate-y-0');
+          profileMenu.setAttribute('aria-hidden', 'false');
+        };
+
+        const hideMenu = () => {
+          menuTimeout = setTimeout(() => {
+            profileMenu.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+            profileMenu.classList.remove('opacity-100', 'translate-y-0');
+            profileMenu.setAttribute('aria-hidden', 'true');
+          }, 150);
+        };
+
+        profileTrigger.addEventListener('mouseenter', showMenu);
+        profileTrigger.addEventListener('mouseleave', hideMenu);
+        profileBridge?.addEventListener('mouseenter', showMenu);
+        profileBridge?.addEventListener('mouseleave', hideMenu);
+        profileMenu.addEventListener('mouseenter', showMenu);
+        profileMenu.addEventListener('mouseleave', hideMenu);
+
+        profileTrigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isVisible = profileMenu.classList.contains('opacity-100');
+          if (isVisible) hideMenu();
+          else showMenu();
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!profileTrigger.contains(e.target) && !profileMenu.contains(e.target)) {
+            hideMenu();
+          }
+        });
+      }
+    });
+
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      const progressTrack = document.getElementById('progressTrack');
+
+      if (currentScrollY > 100) { // After scrolling 100px
+        progressTrack.style.height = '8px'; // Shrink to half
+      } else {
+        progressTrack.style.height = '18px'; // Original size
+      }
+
+      lastScrollY = currentScrollY;
+    });
+  </script>
+
+  <!-- Font Awesome -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
+
+  <!-- Include JavaScript file -->
+  <script src="./script/auth-user.js"></script>
+  <script src="./script/login-mods.js"></script>
+  <script src="./script/navigation.js"></script>
+  <script src="./script/reloadtest.js"></script>
+  <script src="./script/session-timeout.js"></script>
+
+</body>
+
+</html>

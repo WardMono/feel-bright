@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Content Management – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;600;700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./css/content.css">
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <nav id="sidebar"
+    class="bg-white border-r border-gray-200 h-screen sticky top-0 flex flex-col justify-between z-50 shadow-sm">
+    <div>
+
+      <!--AdminLogo-->
+      <div class="p-5 pb-7 pt-7 border-b border-gray-200 flex items-center gap-2">
+        <img src="../img/fb-tabs-icn.png" alt="Tabs Icon" class="h-7 w-7 ml-1 sidebar-icon" />
+        <h1 id="logo-text" class="text-xl ml-1 font-bold text-[#62c273]"><span style="color: #3d1200;">Feel</span>Bright
+        </h1>
+      </div>
+      <!--EndLogo-->
+
+      <!-- Menu -->
+      <ul class="p-4 space-y-2 ">
+        <!-- Dashboard -->
+        <li>
+          <a href="adminreports.html"
+            class="sidebar-item rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition">
+            <i class="fas fa-home text-[#7FC58B] text-lg sidebar-icon"></i>
+            <span class="menu-text text-sm">Dashboard</span>
+          </a>
+        </li>
+
+        <!-- Users  -->
+        <li><a href="./userlist.html">
+            <button id="users-btn"
+              class="sidebar-item w-full rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition flex justify-between items-center"
+              aria-expanded="false">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-users text-[#7FC58B] sidebar-icon"></i>
+                <span class="menu-text text-sm ">Users</span>
+              </div>
+              <i id="users-arrow"
+                class="fas fa-chevron-down text-sm text-[#6FB07C] transition-transform duration-300"></i>
+            </button>
+          </a>
+
+          <ul id="users-submenu" aria-hidden="true" class="">
+            <li>
+              <a href="archive.html" class="sidebar-item rounded-lg hover:bg-green-100 transition pl-12">
+                <i class="fas fa-archive text-[#7FC58B] sidebar-icon"></i>
+                <span class="menu-text text-sm">Archive</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Content -->
+        <li>
+          <a href="content.html"
+            class="sidebar-item w-full rounded-lg hover:bg-green-100 bg-green-100 text-green-700 transition flex items-center">
+            <i class="fas fa-file-alt text-[#7FC58B] text-lg sidebar-icon"></i>
+            <span class="menu-text text-sm">Content Management</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Logout -->
+    <div class="p-4 border-t border-gray-200">
+      <button onclick="window.location.href='/logout'"
+        class="sidebar-item w-full rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition">
+        <i class="fas fa-sign-out-alt sidebar-icon"></i>
+        <span class="menu-text">Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content transition-all duration-300">
+    <!-- Header -->
+    <header class="flex items-center mb-6 pb-4 border-b border-gray-200 gap-4">
+      <button onclick="toggleSidebar()" class="text-[#7FC58B] hover:text-green-600 transition-colors"
+        aria-label="Toggle sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-panel-left">
+          <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+          <path d="M9 3v18"></path>
+        </svg>
+      </button>
+      <h2 class="text-2xl font-semibold">Content Management</h2>
+    </header>
+
+    <main class="container space-y-12">
+      <!-- CREATE NEW CONTENT -->
+      <section>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <!-- Article -->
+          <a href="../admin/contents/step1-article.html"
+            onclick="localStorage.removeItem('articleStep1'); localStorage.removeItem('articleStep2');" class="group rounded-2xl p-8 shadow-md cursor-pointer flex flex-col items-center outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb]
+      bg-gradient-to-br from-[#4CAF50] via-[#6FCF97] to-[#2F9E44]
+      hover:border-[#6FCF97] hover:shadow-[0_0_0_4px_rgba(111,207,151,0.2)]
+      focus:border-[#6FCF97] focus:shadow-[0_0_0_4px_rgba(111,207,151,0.2)] focus:outline-none focus:ring-0">
+            <div class="bg-white p-5 rounded-full mb-4 
+        shadow-[0_8px_20px_rgba(0,0,0,0.25),_inset_0_2px_4px_rgba(255,255,255,0.6)] 
+        overflow-hidden group-hover:scale-105 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6 text-[#4CAF50]">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" />
+              </svg>
+            </div>
+            <span class="font-semibold text-white text-lg">Article</span>
+            <p class="text-sm text-white/80 mt-2">Write and publish new articles</p>
+          </a>
+
+          <!-- Reading Material -->
+          <a href="../admin/contents/step1-reading.html" onclick="localStorage.removeItem('readingStep1');" class="group rounded-2xl p-8 shadow-md cursor-pointer flex flex-col items-center outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb]
+      bg-gradient-to-br from-[#56CCF2] via-[#2F80ED] to-[#1B6DC1]
+      hover:border-[#56CCF2] hover:shadow-[0_0_0_4px_rgba(86,204,242,0.2)]
+      focus:border-[#56CCF2] focus:shadow-[0_0_0_4px_rgba(86,204,242,0.2)] focus:outline-none focus:ring-0">
+            <div class="bg-white p-5 rounded-full mb-4 
+        shadow-[0_8px_20px_rgba(0,0,0,0.25),_inset_0_2px_4px_rgba(255,255,255,0.6)] 
+        overflow-hidden group-hover:scale-105 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6 text-[#2F80ED]">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+              </svg>
+            </div>
+            <span class="font-semibold text-white text-lg">Reading Material</span>
+            <p class="text-sm text-white/80 mt-2">Add learning resources</p>
+          </a>
+
+          <!-- Quote -->
+          <a href="../admin/contents/step-quote.html" onclick="localStorage.removeItem('quoteStep1');" class="group rounded-2xl p-8 shadow-md cursor-pointer flex flex-col items-center outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb]
+      bg-gradient-to-br from-[#F2994A] via-[#F2C94C] to-[#F2994A]
+      hover:border-[#F2C94C] hover:shadow-[0_0_0_4px_rgba(242,201,76,0.2)]
+      focus:border-[#F2C94C] focus:shadow-[0_0_0_4px_rgba(242,201,76,0.2)] focus:outline-none focus:ring-0">
+            <div class="bg-white p-5 rounded-full mb-4 
+        shadow-[0_8px_20px_rgba(0,0,0,0.25),_inset_0_2px_4px_rgba(255,255,255,0.6)] 
+        overflow-hidden group-hover:scale-105 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="size-6 text-[#F2994A]">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+              </svg>
+            </div>
+            <span class="font-semibold text-white text-lg">Quote</span>
+            <p class="text-sm text-white/80 mt-2">Share motivational quotes</p>
+          </a>
+        </div>
+      </section>
+
+
+      <!-- SUMMARY PANELS -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Published -->
+        <div class="bg-white/95 rounded-2xl p-6 shadow-md ring-1 ring-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <h3 class="ml-3 text-lg font-semibold text-slate-800">
+                Published Cards <span id="pub-count" class="font-bold text-emerald-600">0</span>
+              </h3>
+            </div>
+          </div>
+
+          <p class="text-sm text-slate-500 mt-2 mb-4 max-w-[44ch]">Your published content</p>
+
+          <div class="flex flex-wrap gap-3 mb-3">
+            <!-- Category Dropdown -->
+            <div class="relative flex-1 min-w-[12rem] max-w-sm transition-all duration-200 ease-in-out">
+              <select id="pub-type-filter" class="hidden">
+                <option value="all">All Categories</option>
+                <option value="article">Article</option>
+                <option value="reading">Reading</option>
+                <option value="quote">Quote</option>
+              </select>
+
+              <button id="pub-type-btn"
+                class="w-full bg-white rounded-xl px-4 py-2 text-left inline-flex justify-between items-center border border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.04)]
+                 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+                <span id="pub-type-text" class="text-sm text-slate-700">All Categories</span>
+                <i class="fas fa-chevron-down w-4 h-4 ml-2 text-slate-400 transition-transform duration-200"></i>
+              </button>
+
+              <ul id="pub-type-menu"
+                class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-xl shadow-sm mt-2 w-full text-sm text-gray-700">
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="all">All Categories</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="article">Article</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="reading">Reading</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="quote">Quote</li>
+              </ul>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="relative flex-1 min-w-[12rem] max-w-sm transition-all duration-200 ease-in-out">
+              <select id="pub-sort-by" class="hidden">
+                <option value="new">Newest First</option>
+                <option value="old">Oldest First</option>
+                <option value="az">A–Z</option>
+              </select>
+
+              <button id="pub-sort-btn"
+                class="w-full bg-white rounded-xl px-4 py-2 text-left inline-flex justify-between items-center border border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.04)]
+                 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+                <span id="pub-sort-text" class="text-sm text-slate-700">Newest First</span>
+                <i class="fas fa-chevron-down w-4 h-4 ml-2 text-slate-400 transition-transform duration-200"></i>
+              </button>
+
+              <ul id="pub-sort-menu"
+                class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-xl shadow-sm mt-2 w-full text-sm text-gray-700">
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="new">Newest First</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="old">Oldest First</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="az">A–Z</li>
+              </ul>
+            </div>
+          </div>
+
+          <p id="pub-empty" class="text-sm text-slate-400 italic">No published content yet</p>
+          <div id="published-list" class="mt-4 space-y-3"></div>
+        </div>
+
+        <!-- Drafts -->
+        <div class="bg-white/95 rounded-2xl p-6 shadow-md ring-1 ring-slate-100">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              <h3 class="ml-3 text-lg font-semibold text-slate-800">
+                Edit in Progress <span id="draft-count" class="font-bold text-indigo-600">0</span>
+              </h3>
+            </div>
+          </div>
+
+          <p class="text-sm text-slate-500 mt-2 mb-4 max-w-[44ch]">Content waiting to be completed</p>
+
+          <div class="flex flex-wrap gap-3 mb-3">
+
+            <!-- Category Filter -->
+            <div class="relative flex-1 min-w-[12rem] max-w-sm transition-all duration-200 ease-in-out">
+              <select id="type-filter" class="hidden">
+                <option value="all">All Categories</option>
+                <option value="article">Article</option>
+                <option value="reading">Reading</option>
+                <option value="quote">Quote</option>
+              </select>
+
+              <button id="type-btn"
+                class="w-full bg-white rounded-xl px-4 py-2 text-left inline-flex justify-between items-center border border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.04)]
+                 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+                <span id="type-text" class="text-sm text-slate-700">All Categories</span>
+                <i class="fas fa-chevron-down w-4 h-4 ml-2 text-slate-400 transition-transform duration-200"></i>
+              </button>
+
+              <ul id="type-menu"
+                class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-xl shadow-sm mt-2 w-full text-sm text-gray-700">
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="all">All Categories</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="article">Article</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="reading">Reading</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="quote">Quote</li>
+              </ul>
+            </div>
+
+            <!-- Sort Filter -->
+            <div class="relative flex-1 min-w-[12rem] max-w-sm transition-all duration-200 ease-in-out">
+              <select id="sort-by" class="hidden">
+                <option value="new">Newest First</option>
+                <option value="old">Oldest First</option>
+                <option value="az">A–Z</option>
+              </select>
+
+              <button id="sort-btn"
+                class="w-full bg-white rounded-xl px-4 py-2 text-left inline-flex justify-between items-center border border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.04)]
+                 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+                <span id="sort-text" class="text-sm text-slate-700">Newest First</span>
+                <i class="fas fa-chevron-down w-4 h-4 ml-2 text-slate-400 transition-transform duration-200"></i>
+              </button>
+
+              <ul id="sort-menu"
+                class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-xl shadow-sm mt-2 w-full text-sm text-gray-700">
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="new">Newest First</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="old">Oldest First</li>
+                <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer" value="az">A–Z</li>
+              </ul>
+            </div>
+          </div>
+
+          <p id="draft-empty" class="text-sm text-slate-400 italic">No drafts in progress</p>
+          <div id="draft-list" class="mt-4 space-y-3"></div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+
+
+
+    (function () {
+      function setupCustomDropdown({ selectId, btnId, menuId, textId, defaultLabelMap }) {
+        const hiddenSelect = document.getElementById(selectId); // original select (kept hidden)
+        const btn = document.getElementById(btnId);
+        const menu = document.getElementById(menuId);
+        const textEl = document.getElementById(textId);
+
+        if (!hiddenSelect || !btn || !menu) return;
+
+        // Initialize button label from select's current option
+        const setBtnLabelFromSelect = () => {
+          const opt = hiddenSelect.options[hiddenSelect.selectedIndex];
+          textEl.textContent = opt ? opt.textContent : (defaultLabelMap?.[hiddenSelect.value] ?? hiddenSelect.value);
+        };
+        setBtnLabelFromSelect();
+
+        // Toggle menu on button click
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menu.classList.toggle('hidden');
+          btn.querySelector('i')?.classList.toggle('rotate-180');
+        });
+
+        // When an li is clicked, set the hidden select value, update label, dispatch change event
+        menu.querySelectorAll('li').forEach(li => {
+          li.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            const val = li.getAttribute('value') ?? li.dataset.value ?? li.textContent.trim();
+            // update hidden select
+            hiddenSelect.value = val;
+            // update visible label
+            textEl.textContent = li.textContent.trim();
+            // close menu + reset arrow
+            menu.classList.add('hidden');
+            btn.querySelector('i')?.classList.remove('rotate-180');
+            // dispatch native change event so existing listeners run
+            hiddenSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        });
+
+        // close menu if clicked outside
+        window.addEventListener('click', (e) => {
+          if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+            btn.querySelector('i')?.classList.remove('rotate-180');
+          }
+        });
+
+        // If select value changes elsewhere, keep button label in sync
+        hiddenSelect.addEventListener('change', () => setBtnLabelFromSelect());
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        setupCustomDropdown({
+          selectId: 'pub-type-filter',
+          btnId: 'pub-type-btn',
+          menuId: 'pub-type-menu',
+          textId: 'pub-type-text'
+        });
+
+        setupCustomDropdown({
+          selectId: 'pub-sort-by',
+          btnId: 'pub-sort-btn',
+          menuId: 'pub-sort-menu',
+          textId: 'pub-sort-text'
+        });
+
+        setupCustomDropdown({
+          selectId: 'type-filter',
+          btnId: 'type-btn',
+          menuId: 'type-menu',
+          textId: 'type-text'
+        });
+
+        setupCustomDropdown({
+          selectId: 'sort-by',
+          btnId: 'sort-btn',
+          menuId: 'sort-menu',
+          textId: 'sort-text'
+        });
+      });
+    })();
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentPage = window.location.pathname.split("/").pop();
+
+      document.querySelectorAll(".sidebar-item[href]").forEach(item => {
+        const link = item.getAttribute("href");
+        if (link && link.includes(currentPage)) {
+          item.classList.add("active");
+
+          const submenu = item.closest("#users-submenu");
+          if (submenu) {
+            submenu.classList.add("open");
+            submenu.setAttribute("aria-hidden", "false");
+
+            const usersBtn = document.getElementById("users-btn");
+            const arrow = document.getElementById("users-arrow");
+            usersBtn.classList.add("active");
+            usersBtn.setAttribute("aria-expanded", "true");
+
+            // Show arrow only if sidebar is expanded
+            const sidebar = document.getElementById("sidebar");
+            arrow.style.display = sidebar.classList.contains("collapsed") ? "none" : "inline-block";
+            if (sidebar.classList.contains("collapsed")) {
+              arrow.classList.remove("rotate-180");
+            } else {
+              arrow.classList.add("rotate-180"); // rotate if submenu open
+            }
+          }
+        }
+      });
+    });
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const arrow = document.getElementById('users-arrow');
+
+      sidebar.classList.toggle('collapsed');
+
+      // Arrow visible only if sidebar expanded
+      if (sidebar.classList.contains('collapsed')) {
+        arrow.style.display = 'none';
+      } else {
+        arrow.style.display = 'inline-block';
+      }
+    }
+
+    // Users submenu toggle
+    document.getElementById('users-btn').addEventListener('click', function () {
+      const submenu = document.getElementById('users-submenu');
+      const arrow = document.getElementById('users-arrow');
+
+      const isOpen = submenu.classList.toggle('open'); // toggle submenu
+      submenu.setAttribute('aria-hidden', String(!isOpen));
+      this.setAttribute('aria-expanded', isOpen);
+
+      // Rotate arrow only if sidebar is expanded
+      if (!document.getElementById('sidebar').classList.contains('collapsed')) {
+        arrow.classList.toggle('rotate-180', isOpen);
+      }
+    });
+
+    // Optional: toggleSubmenu function if needed elsewhere
+    function toggleSubmenu(event) {
+      const sidebar = document.getElementById("sidebar");
+      const submenu = document.getElementById("users-submenu");
+      const usersBtn = document.getElementById("users-btn");
+      const arrow = document.getElementById("users-arrow");
+
+      if (sidebar.classList.contains("collapsed")) {
+        event.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      const opening = !submenu.classList.contains("open");
+      submenu.classList.toggle("open", opening);
+      submenu.setAttribute("aria-hidden", String(!opening));
+      usersBtn.setAttribute("aria-expanded", String(opening));
+
+      // Rotate arrow if sidebar expanded
+      if (!sidebar.classList.contains("collapsed")) {
+        arrow.classList.toggle("rotate-180", opening);
+      }
+    }
+
+
+
+    // Content Management System Code
+    (function () {
+      const STORAGE_KEY = "contentDrafts";
+
+      // ---------- IndexedDB for thumbnails ----------
+      const IDB_DB_NAME = "ContentDraftDB";
+      const IDB_DB_VER = 1;
+      const IDB_IMG_STORE = "images";
+      function idbOpen() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(IDB_DB_NAME, IDB_DB_VER);
+          req.onupgradeneeded = (ev) => {
+            const db = ev.target.result;
+            if (!db.objectStoreNames.contains(IDB_IMG_STORE)) db.createObjectStore(IDB_IMG_STORE);
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+      async function idbGet(key) {
+        if (!key) return null;
+        const db = await idbOpen();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_IMG_STORE, "readonly");
+          tx.onerror = () => reject(tx.error);
+          const req = tx.objectStore(IDB_IMG_STORE).get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function idbPut(key, value) {
+        const db = await idbOpen();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction("images", "readwrite");
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+          tx.objectStore("images").put(value, key);
+        });
+      }
+
+      async function fetchJSON(url) {
+        const res = await fetch(withTs(url), fetchOpts);
+        if (!res.ok) throw new Error(`Fetch failed: ${url}`);
+        return await res.json();
+      }
+
+      async function fetchFullForArticle(id) {
+        const a = await fetchJSON(`/resources/article/${id}`);
+        return {
+          id: a.id,
+          type: "article",
+          title: a.previewTitle || a.title || "Untitled",
+          summary: a.summary || "",
+          category: a.category || "Uncategorized",
+          thumbnail: a.thumbnail || "",
+          hero: a.heroImage || "",
+          sections: (a.sections || []).map((s, i) => s.isQuote
+            ? { type: "quote", quoteText: s.text || "", author: s.author || "", order: Number.isInteger(s.order) ? s.order : i }
+            : { type: "text", subtitle: s.subtitle || "", text: s.text || "", order: Number.isInteger(s.order) ? s.order : i }
+          ),
+        };
+      }
+
+      async function fetchFullForReading(id) {
+        const r = await fetchJSON(`/resources/reading/${id}`);
+        return {
+          id: r.id,
+          type: "reading",
+          title: r.previewTitle || r.title || "Untitled",
+          summary: r.summary || "",
+          category: r.category || "Uncategorized",
+          thumbnail: r.thumbnail || "",
+          hero: r.heroImage || "",
+          sections: (r.sections || []).map((s, i) => s.isQuote
+            ? { type: "quote", quoteText: s.text || "", author: s.author || "", order: Number.isInteger(s.order) ? s.order : i }
+            : { type: "text", subtitle: s.subtitle || "", text: s.text || "", order: Number.isInteger(s.order) ? s.order : i }
+          ),
+        };
+      }
+
+      async function fetchFullForQuote(id) {
+        const q = await fetchJSON(`/resources/quote/${id}`);
+        return {
+          id: q.id,
+          type: "quote",
+          title: q.quoteTitle || q.title || q.author || "Untitled",
+          summary: q.quote || q.text || "",
+          category: q.category || "Quote",
+          thumbnail: q.thumbnail || "",
+          author: q.author || "",
+          country: q.country || "",
+          famous: q.famousFor || "",
+          text: q.quote || q.text || "",
+          sections: []
+        };
+      }
+
+      // Optional: store images in IDB so edit resumes offline-safe & not broken by deletes
+      async function persistImagesToIDB(d) {
+        const ops = [];
+        if (d.thumbnail) {
+          try {
+            const resp = await fetch(d.thumbnail, { credentials: "include", cache: "no-store" });
+            if (resp.ok) {
+              const blob = await resp.blob();
+              const key = `thumb:${d.id}`;
+              await idbPut(key, blob);
+              d.thumbnailRef = key;
+            }
+          } catch { }
+        }
+        if (d.hero) {
+          try {
+            const resp = await fetch(d.hero, { credentials: "include", cache: "no-store" });
+            if (resp.ok) {
+              const blob = await resp.blob();
+              const key = `hero:${d.id}`;
+              await idbPut(key, blob);
+              d.heroRef = key;
+            }
+          } catch { };
+        }
+        await Promise.allSettled(ops);
+        return d;
+      }
+
+      // ===== Relative time helpers =====
+      const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+      function parseTimestamp(isoLike) {
+        if (!isoLike) return NaN;
+        if (typeof isoLike === "number") return isoLike;
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(isoLike)) return Date.parse(isoLike + "Z");
+        const t = Date.parse(isoLike);
+        return Number.isNaN(t) ? NaN : t;
+      }
+      function formatRelativeTime(input) {
+        const target = parseTimestamp(input);
+        if (!Number.isFinite(target)) return "";
+        let diffSec = Math.round((Date.now() - target) / 1000);
+        const direction = diffSec >= 0 ? -1 : 1;
+        diffSec = Math.abs(diffSec);
+        const MIN = 60, HOUR = 3600, DAY = 86400, MONTH = 2629800, YEAR = 31557600;
+        if (diffSec < MIN) return rtf.format(direction * Math.round(diffSec), "second");
+        if (diffSec < HOUR) return rtf.format(direction * Math.round(diffSec / MIN), "minute");
+        if (diffSec < DAY) return rtf.format(direction * Math.round(diffSec / HOUR), "hour");
+        if (diffSec < MONTH) return rtf.format(direction * Math.round(diffSec / DAY), "day");
+        if (diffSec < YEAR) return rtf.format(direction * Math.round(diffSec / MONTH), "month");
+        return rtf.format(direction * Math.round(diffSec / YEAR), "year");
+      }
+      function refreshRelativeTimes() {
+        document.querySelectorAll(".rel-time").forEach(el => {
+          const t = el.getAttribute("data-time");
+          el.textContent = formatRelativeTime(t);
+        });
+      }
+      function computeLatestChangeLabel(items, { capitalize = false } = {}) {
+        if (!items || !items.length) return "";
+        const EDIT_GRACE_MS = 2 * 60 * 1000;
+        let latestTime = null, latestLabel = "published";
+        for (const it of items) {
+          const updatedAt = it.updatedAt || it.updated_at || null;
+          const publishedAt = it.publishedAt || it.published_at || null;
+          const createdAt = it.createdAt || it.created_at || null;
+          let label = "published";
+          let ts = publishedAt ?? createdAt ?? updatedAt ?? null;
+          if (updatedAt && publishedAt) {
+            const du = Math.abs(parseTimestamp(updatedAt) - parseTimestamp(publishedAt));
+            if (Number.isFinite(du) && du > EDIT_GRACE_MS) { label = "edited"; ts = updatedAt; }
+          } else if (updatedAt && !publishedAt) { label = "edited"; ts = updatedAt; }
+          const t = parseTimestamp(ts);
+          if (!Number.isFinite(t)) continue;
+          if (latestTime === null || t > latestTime) { latestTime = t; latestLabel = label; }
+        }
+        if (latestTime === null) return "";
+        const rel = formatRelativeTime(latestTime);
+        if (capitalize) latestLabel = latestLabel.charAt(0).toUpperCase() + latestLabel.slice(1);
+        return `${latestLabel} ${rel}`;
+      }
+
+
+      function refreshPublishedBadge() {
+        const lastEl = document.querySelector("#pub-last-updated");
+        if (!lastEl) return;
+        const typeSel = document.querySelector("#pub-type-filter");
+        const currentType = typeSel ? typeSel.value : "all";
+        let items = [...PUBLISHED_CACHE];
+        if (currentType !== "all") items = items.filter(i => i.type === currentType);
+        const label = computeLatestChangeLabel(items, { capitalize: true });
+        if (label) { lastEl.textContent = "• " + label; lastEl.style.display = "inline"; }
+        else { lastEl.textContent = ""; lastEl.style.display = "none"; }
+      }
+      function startRelativeTimer() {
+        refreshRelativeTimes();
+        refreshPublishedBadge();
+        if (window.__relTimer) clearInterval(window.__relTimer);
+        window.__relTimer = setInterval(() => {
+          refreshRelativeTimes();
+          refreshPublishedBadge();
+        }, 60 * 1000);
+      }
+
+      // Routes/icons
+      const EDIT_ROUTES = {
+        article: "../admin/contents/step2-article.html",
+        reading: "../admin/contents/step2-reading.html",
+        quote: "../admin/contents/step-quote.html",
+      };
+      const PREVIEW_ROUTES = {
+        article: "../admin/contents/article-preview.html",
+        reading: "../admin/contents/reading-preview.html",
+      };
+      const ICONS = {
+        article: `<svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5l5 5v11a2 2 0 01-2 2z"/></svg>`,
+        reading: `<svg class="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 20h9M12 4h9M12 4v16M3 8h6M3 16h6"/></svg>`,
+        quote: `<svg class="w-6 h-6 text-yellow-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M7 8h.01M7 12h.01M7 16h.01M11 8h.01M11 12h.01M11 16h.01"/></svg>`,
+      };
+      const $ = (sel) => document.querySelector(sel);
+
+      // Label meta
+      function statusMeta(item, context) {
+        const updatedAt = item.updatedAt || item.updated_at || null;
+        const publishedAt = item.publishedAt || item.published_at || null;
+        const createdAt = item.createdAt || item.created_at || null;
+        const savedAt = item.savedAt || null;
+        if (context === "draft") {
+          if (item.archivedAt) return { label: "archived", time: item.archivedAt };
+          return { label: "edited", time: savedAt || updatedAt || createdAt || null };
+        }
+        if (updatedAt && updatedAt !== publishedAt) return { label: "edited", time: updatedAt };
+        return { label: "published", time: publishedAt || createdAt || savedAt || null };
+      }
+
+      // Row renderer
+      async function renderRow({ container, item, rightActions, context }) {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between border shadow-sm rounded-2xl p-3 hover:bg-gray-50 border-[1.5px] border-[#e5e7eb]";
+
+        const left = document.createElement("div");
+        left.className = "flex items-center gap-3";
+
+        const thumb = document.createElement("div");
+        thumb.className = "w-12 h-12 rounded-md border flex items-center justify-center bg-white overflow-hidden";
+
+        if (item.thumbnail) {
+          thumb.innerHTML = `<img src="${item.thumbnail}" class="w-12 h-12 object-cover" />`;
+        } else {
+          thumb.innerHTML = `${ICONS[item.type] || ICONS.article}`;
+          if (item.thumbnailRef) {
+            try {
+              const blob = await idbGet(item.thumbnailRef);
+              if (blob) {
+                const url = URL.createObjectURL(blob);
+                thumb.innerHTML = `<img src="${url}" class="w-12 h-12 object-cover" />`;
+              }
+            } catch (e) { console.warn("Could not load thumbnail blob", e); }
+          }
+        }
+
+        const meta = document.createElement("div");
+        const safeTitle = (item.title || "Untitled").replace(/"/g, "&quot;");
+        // normalize + fix the "Quote • Quote" duplication
+        const norm = v => (v ?? "").toString().trim();
+        const rawType = norm(item.type || "article");
+        const rawCat = norm(item.category || "Uncategorized");
+
+        const type = rawType.toLowerCase() === "quote" ? "Quote" : rawType;
+        const cat = rawCat.toLowerCase() === "quote" ? "Quote" : rawCat;
+
+        const { label, time } = statusMeta(item, context);
+        const typeCatLabel = type.toLowerCase() === cat.toLowerCase() ? type : `${type} • ${cat}`;
+        meta.innerHTML = `
+  <div class="font-semibold break-words" title="${safeTitle}">${item.title || "Untitled"}</div>
+  <div class="text-xs text-gray-500 capitalize">
+    ${typeCatLabel} • ${label} <span class="rel-time" data-time="${time || ""}"></span>
+  </div>`;
+
+        left.appendChild(thumb);
+        left.appendChild(meta);
+
+        const right = document.createElement("div");
+        right.className = "flex items-center gap-2";
+        rightActions.forEach((btn) => right.appendChild(btn));
+
+        row.appendChild(left);
+        row.appendChild(right);
+        container.appendChild(row);
+      }
+
+      // ===== Drafts =====
+      function readDrafts() {
+        try {
+          const arr = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          const byId = new Map();
+
+          // Remove drafts that match a published item by ID OR by type+title
+          const filtered = arr.filter(d => {
+            return !PUBLISHED_CACHE.some(p =>
+              p.id === d.id ||
+              (p.type === d.type && (p.title || "").trim().toLowerCase() === (d.title || "").trim().toLowerCase())
+            );
+          });
+
+          filtered.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt))
+            .forEach(d => { if (!byId.has(d.id)) byId.set(d.id, d); });
+
+          return Array.from(byId.values());
+        } catch {
+          return [];
+        }
+      }
+
+      function writeDrafts(list) {
+        const seen = new Set();
+        const deduped = [];
+        for (const d of list) {
+          if (!seen.has(d.id)) {
+            deduped.push(d);
+            seen.add(d.id);
+          }
+        } localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
+      }
+      function removeDraft(id) { writeDrafts(readDrafts().filter(d => d.id !== id)); renderDraftsPanel(); }
+
+      function setResumePayload(d) {
+        if (d.type === "article") {
+          localStorage.setItem("articleStep1", JSON.stringify({
+            title: d.title,
+            desc: d.summary,
+            cat: d.category,
+            img: d.thumbnail || "",
+            thumbnailRef: d.thumbnailRef || null,
+            draftId: d.id
+          }));
+          localStorage.setItem("articleStep2", JSON.stringify({
+            heroSrc: d.hero || "",
+            heroRef: d.heroRef || null,
+            sections: d.sections || [],
+            draftId: d.id
+          }));
+
+        } else if (d.type === "reading") {
+          localStorage.setItem("readingStep1", JSON.stringify({
+            title: d.title,
+            desc: d.summary,
+            cat: d.category,
+            img: d.thumbnail || "",
+            thumbnailRef: d.thumbnailRef || null,
+            draftId: d.id
+          }));
+          localStorage.setItem("readingStep2", JSON.stringify({
+            heroSrc: d.hero || "",
+            heroRef: d.heroRef || null,
+            sections: d.sections || [],
+            draftId: d.id
+          }));
+
+        } else if (d.type === "quote") {
+          localStorage.setItem("quoteStep1", JSON.stringify({
+            title: d.title || "",
+            author: d.author || "",
+            country: d.country || "",
+            famous: d.famous || d.famousFor || "",
+            text: d.text || d.quoteText || d.summary || "",
+            cat: d.category || "Quote",
+            img: d.thumbnail || "",
+            thumbnailRef: d.thumbnailRef || null,
+            draftId: d.id
+          }));
+        }
+      }
+
+      async function renderDraftsPanel() {
+        const listEl = $("#draft-list"), emptyEl = $("#draft-empty"), countEl = $("#draft-count");
+        const typeSel = $("#type-filter"), sortSel = $("#sort-by");
+        if (!listEl) return;
+
+        let items = readDrafts();
+        const t = typeSel.value; if (t !== "all") items = items.filter(i => i.type === t);
+        const s = sortSel.value;
+        if (s === "new") items.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
+        else if (s === "old") items.sort((a, b) => new Date(a.savedAt) - new Date(b.savedAt));
+        else items.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+
+        countEl.textContent = items.length;
+        emptyEl.style.display = items.length ? "none" : "block";
+        listEl.innerHTML = "";
+
+        // same action button style you requested previously
+        const actionBtnBaseClass = "inline-flex items-center justify-center p-2 rounded-full transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0";
+
+        for (const d of items) {
+          // EDIT button (pencil) — uses supplied SVG
+          const editBtn = document.createElement("button");
+          editBtn.className = actionBtnBaseClass;
+          editBtn.title = "Edit";
+          editBtn.setAttribute("aria-label", "Edit");
+          editBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-sky-600" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+      </svg>
+    `;
+          editBtn.onclick = () => {
+            setResumePayload(d);
+            const url = EDIT_ROUTES[d.type] || "#";
+            if (url !== "#") location.href = url;
+          };
+
+          // DELETE button (trash) — uses supplied SVG, red tinted
+          const delBtn = document.createElement("button");
+          delBtn.className = actionBtnBaseClass;
+          delBtn.title = "Delete";
+          delBtn.setAttribute("aria-label", "Delete");
+          delBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-red-600" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+      </svg>
+    `;
+          delBtn.onclick = () => {
+            if (confirm("Delete this draft? This action cannot be undone.")) removeDraft(d.id);
+          };
+
+          await renderRow({
+            container: listEl,
+            item: d,
+            rightActions: [editBtn, delBtn],
+            context: "draft"
+          });
+        }
+
+        startRelativeTimer();
+      }
+
+
+      // ===== Published =====
+      let PUBLISHED_CACHE = [];
+
+      // Force fresh network each time we load the lists
+      const fetchOpts = { credentials: "include", cache: "no-store", headers: { "Cache-Control": "no-cache" } };
+      function withTs(u) { const sp = u.includes("?") ? "&" : "?"; return `${u}${sp}ts=${Date.now()}`; }
+
+      async function fetchArticles() {
+        const res = await fetch(withTs("/resources/articles"), fetchOpts);
+        if (!res.ok) throw new Error("Failed to fetch articles");
+        const rows = await res.json();
+        return (rows || []).map(a => ({
+          id: a.id,
+          type: "article",
+          title: a.title || "Untitled",
+          category: a.category || "Uncategorized",
+          thumbnail: a.thumbnail || "",
+          updatedAt: a.updatedAt || a.updated_at || null,
+          publishedAt: a.publishedAt || a.published_at || null,
+          createdAt: a.createdAt || a.created_at || null,
+          savedAt: (a.updatedAt || a.updated_at || a.publishedAt || a.published_at || a.createdAt || a.created_at || null),
+        }));
+      }
+      async function fetchReadings() {
+        const res = await fetch(withTs("/resources/reading-materials"), fetchOpts);
+        if (!res.ok) throw new Error("Failed to fetch readings");
+        const rows = await res.json();
+        return (rows || []).map(r => ({
+          id: r.id,
+          type: "reading",
+          title: r.title || "Untitled",
+          category: r.category || "Uncategorized",
+          thumbnail: r.thumbnail || "",
+          updatedAt: r.updatedAt || r.updated_at || null,
+          publishedAt: r.publishedAt || r.published_at || null,
+          createdAt: r.createdAt || r.created_at || null,
+          savedAt: (r.updatedAt || r.updated_at || r.publishedAt || r.published_at || r.createdAt || r.created_at || null),
+        }));
+      }
+      async function fetchQuotes() {
+        const res = await fetch(withTs('/resources/quotes'), fetchOpts);
+        if (!res.ok) throw new Error('Failed to fetch quotes');
+        const rows = await res.json();
+        return (rows || []).map(q => ({
+          id: q.id,
+          type: 'quote',
+          title: q.quoteTitle || q.author || 'Untitled',
+          category: 'Quote',
+          thumbnail: q.thumbnail || '',
+          updatedAt: q.updatedAt || q.updated_at || null,
+          publishedAt: q.publishedAt || q.published_at || null,
+          createdAt: q.createdAt || q.created_at || null,
+          savedAt: (q.updatedAt || q.updated_at || q.publishedAt || q.published_at || q.createdAt || q.created_at || null),
+        }));
+      }
+
+      async function fetchPublished() {
+        const [a, r, q] = await Promise.allSettled([
+          fetchArticles(), fetchReadings(), fetchQuotes()
+        ]);
+        const out = [];
+        if (a.status === 'fulfilled') out.push(...a.value);
+        if (r.status === 'fulfilled') out.push(...r.value);
+        if (q.status === 'fulfilled') out.push(...q.value); // Ensure quotes are handled here
+        return out;
+      }
+
+      function readDraftsHard() {
+        try { return JSON.parse(localStorage.getItem("contentDrafts") || "[]"); }
+        catch { return []; }
+      }
+      function writeDraftsHard(list) { localStorage.setItem("contentDrafts", JSON.stringify(list)); }
+
+      async function archivePublishedItem(a) {
+        if (!confirm(`Archive this ${a.type}? It will be removed from public view and moved to Edit in Progress.`)) return;
+
+        // 1) Fetch the full record (best effort)
+        let full = null;
+        try {
+          if (a.type === "quote") full = await fetchFullForQuote(a.id);
+          else if (a.type === "reading") full = await fetchFullForReading(a.id);
+          else if (a.type === "article") full = await fetchFullForArticle(a.id);
+        } catch (e) {
+          console.warn("Could not fetch full content; falling back to minimal card.", e);
+        }
+
+        // 2) Normalize helpers
+        const pick = (...vals) => vals.find(v => typeof v === "string" && v.trim().length) || "";
+        const normType = (t) => (t || a.type || "article");
+
+        // 3) Build the incoming draft we store locally
+        let incoming;
+        if (full && (full.id || a.id)) {
+          const type = normType(full.type);
+          incoming = {
+            id: full.id || a.id,
+            type,
+            title: pick(full.title, full.quoteTitle, a.title, a.author, "Untitled"),
+            summary: pick(full.summary, full.text, full.quote, full.quoteText, ""),
+            category: full.category || (type === "quote" ? "Quote" : "Uncategorized"),
+
+            // images
+            thumbnail: full.thumbnail || a.thumbnail || "",
+            thumbnailRef: null,
+            hero: full.hero || "",
+            heroRef: null,
+
+            // body/sections
+            sections: Array.isArray(full.sections) ? full.sections : [],
+
+            // timestamps
+            savedAt: new Date().toISOString(),
+            archivedAt: new Date().toISOString(),
+
+            // quote extras (safe to include for all types)
+            author: full.author || "",
+            country: full.country || "",
+            text: pick(full.text, full.quote, full.quoteText, ""),
+            famous: pick(full.famous, full.famousFor, ""),
+          };
+        } else {
+          // Fallback if we couldn't fetch the full record
+          const type = normType(a.type);
+          incoming = {
+            id: a.id,
+            type,
+            title: pick(a.title, a.author, "Untitled"),
+            summary: "",
+            category: a.category || (type === "quote" ? "Quote" : "Uncategorized"),
+            thumbnail: a.thumbnail || "",
+            thumbnailRef: null,
+            hero: "",
+            heroRef: null,
+            sections: [],
+            savedAt: new Date().toISOString(),
+            archivedAt: new Date().toISOString(),
+
+            // keep these empty if we have no full data
+            author: "",
+            country: "",
+            text: "",
+            famous: "",
+          };
+        }
+
+        // 4) Unpublish on server (move to draft)
+        try {
+          const url =
+            a.type === "quote" ? `/admin/quote/draft/${a.id}` :
+              a.type === "reading" ? `/admin/reading/draft/${a.id}` :
+                `/admin/article/draft/${a.id}`;
+          const res = await fetch(url, { method: "POST", credentials: "include" });
+          if (!res.ok) throw new Error("Failed to archive");
+        } catch (e) {
+          console.error(e);
+          alert("Could not archive this item (it will remain published).");
+          return;
+        }
+
+        // 5) Remove from published cache
+        PUBLISHED_CACHE = PUBLISHED_CACHE.filter(x => x.id !== a.id);
+
+        // 6) Persist images to IDB (best effort)
+        try {
+          incoming = await persistImagesToIDB(incoming);
+        } catch (e) {
+          console.warn("Persisting images to IDB failed — continuing without refs.", e);
+        }
+
+        // 7) Seed the step page payload NOW (extra safety so Edit always has data)
+        if (incoming.type === "quote") {
+          localStorage.setItem("quoteStep1", JSON.stringify({
+            title: incoming.title || "",
+            author: incoming.author || "",
+            country: incoming.country || "",
+            famous: pick(incoming.famous, incoming.famousFor),
+            text: pick(incoming.text, incoming.summary, incoming.quote, incoming.quoteText),
+            cat: incoming.category || "Quote",
+            img: incoming.thumbnail || "",
+            thumbnailRef: incoming.thumbnailRef || null,
+            draftId: incoming.id
+          }));
+        } else if (incoming.type === "reading") {
+          localStorage.setItem("readingStep1", JSON.stringify({
+            title: incoming.title || "",
+            desc: incoming.summary || "",
+            cat: incoming.category || "Uncategorized",
+            img: incoming.thumbnail || "",
+            thumbnailRef: incoming.thumbnailRef || null,
+            draftId: incoming.id
+          }));
+          localStorage.setItem("readingStep2", JSON.stringify({
+            heroSrc: incoming.hero || "",
+            heroRef: incoming.heroRef || null,
+            sections: incoming.sections || [],
+            draftId: incoming.id
+          }));
+        } else if (incoming.type === "article") {
+          localStorage.setItem("articleStep1", JSON.stringify({
+            title: incoming.title || "",
+            desc: incoming.summary || "",
+            cat: incoming.category || "Uncategorized",
+            img: incoming.thumbnail || "",
+            thumbnailRef: incoming.thumbnailRef || null,
+            draftId: incoming.id
+          }));
+          localStorage.setItem("articleStep2", JSON.stringify({
+            heroSrc: incoming.hero || "",
+            heroRef: incoming.heroRef || null,
+            sections: incoming.sections || [],
+            draftId: incoming.id
+          }));
+        }
+
+        // 8) Signal & upsert into local drafts list (so it appears in "Edit in Progress")
+        localStorage.setItem("draft:upsert", JSON.stringify(incoming));
+        let drafts = readDraftsHard().filter(d =>
+          !(d.type === incoming.type && d.id !== incoming.id &&
+            (d.title || "").trim().toLowerCase() === (incoming.title || "").trim().toLowerCase())
+        );
+        const i = drafts.findIndex(d => d.id === incoming.id);
+        if (i >= 0) drafts[i] = incoming; else drafts.unshift(incoming);
+        writeDraftsHard(drafts);
+
+        await renderPublishedPanel();
+        await renderDraftsPanel();
+      }
+
+      async function renderPublishedPanel() {
+        const typeSel = $("#pub-type-filter"), sortSel = $("#pub-sort-by");
+        const listEl = $("#published-list"), emptyEl = $("#pub-empty"),
+          countEl = $("#pub-count"), lastEl = $("#pub-last-updated");
+        if (!listEl) return;
+
+        let items = [...PUBLISHED_CACHE];
+        const t = typeSel.value;
+        if (t !== "all") items = items.filter(i => i.type === t);
+
+        const s = sortSel.value;
+        if (s === "new") items.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
+        else if (s === "old") items.sort((a, b) => new Date(a.savedAt) - new Date(b.savedAt));
+        else items.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+
+        countEl.textContent = items.length;
+        emptyEl.style.display = items.length ? "none" : "block";
+        listEl.innerHTML = "";
+
+        if (lastEl) refreshPublishedBadge();
+
+        // common classes you asked for
+        const actionBtnBaseClass = "inline-flex items-center justify-center p-2 rounded-full transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0";
+
+        for (const a of items) {
+          // VIEW (public page) — using provided eye SVG, with requested hover/border style
+          const viewBtn = document.createElement("a");
+          viewBtn.href =
+            a.type === "quote"
+              ? `/features/quote.html?id=${encodeURIComponent(a.id)}`
+              : a.type === "reading"
+                ? `/view-reading.html?id=${a.id}`
+                : `/view-article.html?id=${a.id}`;
+          viewBtn.className = actionBtnBaseClass;
+          viewBtn.title = "View";
+          viewBtn.setAttribute("aria-label", "View");
+          viewBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-sky-600" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+    `;
+
+          // ARCHIVE (unpublish + move to drafts) — using provided archive SVG, same hover/border style
+          const archiveBtn = document.createElement("button");
+          archiveBtn.className = actionBtnBaseClass;
+          archiveBtn.title = "Archive";
+          archiveBtn.setAttribute("aria-label", "Archive");
+          archiveBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-yellow-600" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+      </svg>
+    `;
+          archiveBtn.onclick = () => archivePublishedItem(a);
+
+          // Pass both buttons directly to renderRow (no container/wrapper)
+          await renderRow({
+            container: listEl,
+            item: a,
+            rightActions: [viewBtn, archiveBtn],
+            context: "published"
+          });
+        }
+
+        startRelativeTimer();
+      }
+
+
+
+      async function loadPublishedArticles() {
+        const listEl = document.querySelector("#published-list");
+        if (!listEl) return;
+
+        try {
+          PUBLISHED_CACHE = await fetchPublished();
+
+          // Remove only the draft whose id matches a published item
+          const remainingDrafts = readDraftsHard().filter(d =>
+            !PUBLISHED_CACHE.some(p => p.id === d.id)
+          );
+          writeDrafts(remainingDrafts);
+
+          await renderDraftsPanel();
+          await renderPublishedPanel();
+        } catch (e) {
+          console.error(e);
+          document.querySelector("#pub-empty").style.display = "block";
+          document.querySelector("#pub-count").textContent = "0";
+          listEl.innerHTML = "";
+        }
+      }
+
+      function consumeSignalsOnce() {
+        const pubId = localStorage.getItem("published:removeDraftId");
+        if (pubId) {
+          writeDrafts(readDrafts().filter(d => d.id !== pubId));
+          localStorage.removeItem("published:removeDraftId");
+        }
+        const draftSignal = localStorage.getItem("draft:upsert");
+        if (draftSignal) {
+          try {
+            const item = JSON.parse(draftSignal);
+            const all = readDrafts();
+            const i = all.findIndex(d => d.id === item.id);
+            if (i >= 0) all[i] = item; else all.push(item);
+            writeDrafts(all);
+          } catch { }
+          localStorage.removeItem("draft:upsert");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        consumeSignalsOnce();
+        await renderDraftsPanel();
+        await loadPublishedArticles();
+
+        document.querySelector("#type-filter")?.addEventListener("change", renderDraftsPanel);
+        document.querySelector("#sort-by")?.addEventListener("change", renderDraftsPanel);
+        document.querySelector("#pub-type-filter")?.addEventListener("change", renderPublishedPanel);
+        document.querySelector("#pub-sort-by")?.addEventListener("change", renderPublishedPanel);
+
+        startRelativeTimer();
+      });
+    })();
+
+  </script>
+</body>
+
+</html>

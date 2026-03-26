@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FeelBright - Guest E.I Test</title>
+
+    <!-- Fonts & Tailwind -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="icon" href="./img/fb-tab.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="./css/style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fbfb 0%, #f0faf0 50%, #f8fbfb 100%);
+        }
+
+        :root {
+            --fb-green: #7FC58B;
+            --fb-emerald: #10B981;
+            --self-awareness: #64B5F6;
+            --self-regulation: #81C784;
+            --motivation: #FFB74D;
+            --empathy: #9575CD;
+            --social-skills: #4DB6AC;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(127, 197, 139, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        }
+
+        /* Native sticky progress track */
+        #progressTrack {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 12px;
+            transition: height 0.3s ease, padding 0.3s ease;
+            z-index: 80;
+            height: 18px;
+            border-radius: 9999px;
+            background: #F3F4F6;
+            overflow: hidden;
+        }
+
+        /* bar */
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            border-radius: 9999px;
+            transition: width .28s ease, background-color .28s ease;
+        }
+
+        .question-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #D1D5DB;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover,
+        .question-card:focus {
+            border-color: #7FC58B;
+            box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.1);
+            outline: none;
+            /* removes browser's default focus ring */
+        }
+
+        .ei-choice {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .donut-fg {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+
+        .donut-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .donut-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ei-choice::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        .ei-choice:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .ei-choice:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .ei-choice input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .choice-text {
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+            padding: 2px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--fb-green) 0%, var(--fb-emerald) 100%);
+            box-shadow: 0 2px 4px rgba(127, 197, 139, 0.3);
+        }
+
+        .category-chip {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-chip.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .modal-backdrop {
+            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 252, 248, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(127, 197, 139, 0.2);
+        }
+
+        @keyframes spinSlow {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulseSoft {
+
+            0%,
+            100% {
+                opacity: .35
+            }
+
+            50% {
+                opacity: 1
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        /* Avatar styles */
+        .initials-avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #7FC58B 0%, #10B981 100%);
+            color: white;
+            font-weight: 700;
+            border-radius: 50%;
+        }
+
+        /* Navigation avatar styles */
+        img.nav-avatar,
+        img#desktop-avatar,
+        img#menuAvatarLarge,
+        img#mobile-avatar,
+        img#mMenuAvatarLarge {
+            display: inline-block;
+            object-fit: cover;
+            border-radius: 9999px;
+        }
+
+        .initials-fallback {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #7FC58B 0%, #10B981 100%);
+            color: white;
+            font-weight: 700;
+            user-select: none;
+        }
+
+        #desktop-avatar,
+        .initials-fallback[data-initials-for="desktop-avatar"] {
+            width: 40px;
+            height: 40px;
+            font-size: 14px;
+        }
+
+        #menuAvatarLarge,
+        .initials-fallback[data-initials-for="menuAvatarLarge"] {
+            width: 80px;
+            height: 80px;
+            font-size: 29px;
+        }
+
+        #mobile-avatar,
+        .initials-fallback[data-initials-for="mobile-avatar"] {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+
+        #catPanel {
+            max-height: 40vh;
+            /* Reduce from original value */
+            padding: 0.5rem;
+        }
+
+        #catTabs {
+            margin-top: 1rem;
+            /* Reduce spacing */
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .donut-wrapper {
+                width: 80% !important;
+                max-width: 200px;
+            }
+
+            #catPanel {
+                max-height: 35vh;
+            }
+        }
+
+        /* custom checkbox */
+        .checkbox-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 4px;
+            background: #fff;
+            display: inline-block;
+            vertical-align: middle;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        /* checked: green background with a white check SVG centered */
+        .checkbox-input:checked {
+            background-color: #7FC58B;
+            border-color: #7FC58B;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath fill='white' d='M4.5 7.5L1 4l1.2-1.2L4.5 5.1 9.8.8 11 2z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 70% 70%;
+        }
+
+        /* focus ring */
+        .checkbox-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.12);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white p-5 shadow-md transition-all duration-300" x-data="{ open: false }">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+            <!-- LOGO -->
+            <div class="relative shrink-0">
+                <a href="./index.html">
+                    <img src="./img/fb-banners.png" class="max-h-[6vh] sm:max-h-[6vh] md:max-h-[7vh]" alt="Logo" />
+                </a>
+            </div>
+
+            <!-- DESKTOP NAV LINKS -->
+            <div class="hidden xl:flex items-center gap-8 ml-8">
+                <a href="./index.html" class="font-bold text-[#7FC58B] transition-colors duration-300">Home</a>
+                <a href="./features.html"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+                <a href="./resources.html"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+                <a href="./about.html"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+                <a href="#"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+            </div>
+
+            <!-- RIGHT SIDE (desktop auth OR user) + hamburger -->
+            <div class="flex items-center gap-4">
+
+                <!-- DESKTOP AUTH BUTTONS (default state: hidden below xl) -->
+                <div id="auth-buttons-desktop" class="hidden xl:flex items-center gap-4">
+                    <a href="javascript:void(0);" onclick="openLoginModal()"
+                        class="font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+                        Log in
+                    </a>
+                    <a href="javascript:void(0)" onclick="openRegisterModal()"
+                        class="font-bold text-white bg-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+                        Sign up
+                    </a>
+                </div>
+
+                <!-- DESKTOP PROFILE (avatar left, name/email right) -->
+                <div id="user-profile-desktop" class="hidden xl:flex relative items-center gap-3">
+                    <span id="desktop-username" class="text-[#1C1C1C] font-bold">Hi, Guest</span>
+
+                    <!-- trigger -->
+                    <button id="profile-trigger" class="relative focus:outline-none rounded-full shrink-0"
+                        aria-label="Open profile menu">
+                        <img id="desktop-avatar" src="/img/default-avatar.png" alt="Guest" class="w-9 h-9 rounded-full border border-[#7FC58B] cursor-pointer
+         transition-all duration-300 ease-out
+         hover:scale-110 hover:-translate-y-0.5
+         hover:ring-4 hover:ring-[#7FC58B]/40 hover:ring-offset-2 hover:ring-offset-white
+         hover:shadow-lg hover:shadow-[#7FC58B]/40
+         focus-visible:ring-4 focus-visible:ring-[#7FC58B]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+         motion-reduce:transform-none">
+                    </button>
+
+                    <!-- wider hover bridge (for easier travel to the panel) -->
+                    <div id="profile-bridge" class="absolute right-0 top-10 h-10 w-28"></div>
+
+                    <!-- dropdown -->
+                    <div id="profile-menu" role="menu" aria-hidden="true" class="absolute top-12 right-0 w-[22rem] bg-white border rounded-lg shadow-lg ring-1 ring-black/5 p-4 z-50
+                  opacity-0 translate-y-2 pointer-events-none transition-all duration-200">
+                        <div class="flex items-center gap-4">
+                            <!-- avatar LEFT -->
+                            <img id="menuAvatarLarge" src="/img/default-avatar.png" alt="Avatar preview"
+                                class="w-16 h-16 rounded-full border border-[#7FC58B] shrink-0">
+                            <!-- name/email RIGHT -->
+                            <div class="min-w-0">
+                                <div id="menuName" class="font-semibold text-gray-900 truncate">Guest User</div>
+                                <div id="menuEmail" class="text-xs text-gray-500 truncate">guest@example.com</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3 border-gray-200">
+
+                        <!-- DESKTOP DROPDOWN MENU - ADDED TRACK PROGRESS HERE -->
+                        <div class="grid gap-1">
+                            <a href="javascript:void(0);" onclick="openLoginModal()"
+                                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                                Log in
+                            </a>
+
+                            <a href="javascript:void(0);" onclick="openUnlockModal(); showGateRegisterForm(); open=false;"
+    class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+    Sign up
+</a>
+
+                            <hr class="my-3 border-gray-200">
+
+                            <a href="index.html"
+                                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">
+                                Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HAMBURGER (mobile) -->
+                <button @click="open = !open" class="xl:hidden flex flex-col gap-1 focus:outline-none ml-2"
+                    aria-label="Toggle Menu">
+                    <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'rotate-45 translate-y-1.5': open}"></span>
+                    <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'opacity-0': open}"></span>
+                    <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'-rotate-45 -translate-y-1.5': open}"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MOBILE MENU -->
+        <div x-show="open" x-transition class="xl:hidden w-full mt-4" @click.outside="open = false">
+            <div class="flex flex-col items-center space-y-4 px-4 py-6">
+                <a href="./index.html" @click="open=false"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Home</a>
+                <a href="./features.html" @click="open=false"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+                <a href="./resources.html" @click="open=false"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+                <a href="./about.html" @click="open=false"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+                <a href="#" @click="open=false"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+
+                <!-- MOBILE AUTH BUTTONS (visible when logged OUT) -->
+                <div id="auth-buttons-mobile" class="flex flex-col gap-3 w-full pt-4 border-t border-gray-200 mt-4">
+                    <a href="javascript:void(0);" onclick="openLoginModal()"
+                        class="text-center font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+                        Log in
+                    </a>
+                    <a href="javascript:void(0)" onclick="openRegisterModal()"
+                        class="text-center font-bold text-white bg-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+                        Sign up
+                    </a>
+                </div>
+
+                <!-- MOBILE PROFILE (desktop-like dropdown) -->
+                <div id="user-profile-mobile" class="hidden w-full pt-4 border-t border-gray-200 mt-4"
+                    x-data="{ openProfile:false }">
+
+                    <!-- Trigger row -->
+                    <button @click="openProfile = !openProfile" :aria-expanded="openProfile"
+                        class="w-full flex items-center justify-between px-1 py-2">
+                        <div class="flex items-center gap-3">
+                            <img id="mobile-avatar" src="/img/default-avatar.png"
+                                class="w-8 h-8 rounded-full border border-[#7FC58B] shrink-0" alt="User">
+                            <span id="mobile-username" class="font-bold text-[#1C1C1C]">Hi, Guest</span>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-500 transition-transform duration-200"
+                            :class="openProfile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown card -->
+                    <div x-show="openProfile" x-transition @click.outside="openProfile=false"
+                        class="mt-3 max-w-full bg-white rounded-lg  p-4">
+                        <!-- vertical profile: avatar on top, name below -->
+                        <div class="flex flex-col items-center text-center gap-3">
+                            <img id="mMenuAvatarLarge" src="/img/default-avatar.png"
+                                class="w-20 h-20 rounded-full border border-[#7FC58B]" alt="Avatar preview" />
+                            <div id="mMenuName" class="font-semibold text-gray-900">
+                                Guest User
+                            </div>
+                            <!-- optional subtitle; delete if you don't want it -->
+                            <div id="mMenuEmail" class="text-xs text-gray-500">
+                                guest@example.com
+                            </div>
+                        </div>
+
+                        <hr class="my-3 border-gray-200">
+
+                        <div class="grid gap-1">
+                            <a href="javascript:void(0);" onclick="openLoginModal(); open=false;"
+                                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                                Log in
+                            </a>
+
+                            <a href="javascript:void(0);" onclick="openUnlockModal(); showGateRegisterForm();"
+    class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+    Sign up
+</a>
+
+                            <hr class="my-3 border-gray-200">
+
+                            <a href="index.html"
+                                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">
+                                Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ASSESSMENT -->
+    <main class="mx-auto max-w-6xl px-4 py-12">
+        <section class="mb-8 text-center slide-in">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Emotional Intelligence Assessment</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Discover your emotional intelligence through this
+                comprehensive
+                assessment. Answer honestly and spontaneously for the most accurate results.</p>
+        </section>
+
+        <section id="progressSection"
+            class="rounded-3xl border border-[color:var(--fb-green)]/20 bg-white p-6 shadow-md mb-8 slide-in">
+            <!-- sentinel placed before the sticky element to detect when it leaves the flow -->
+            <div id="progressSentinel" class="relative h-0 w-full"></div>
+
+            <!-- only this wrapper is sticky -->
+            <div id="progressSticky" class="sticky top-4 z-40">
+                <!-- non-sticky info text remains below (still visible in normal flow) -->
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-sm font-semibold mb-3">
+                        <span id="progressPercent" class="text-gray-900 text-lg">0% Complete</span>
+                        <span id="progressText" class="text-gray-600">Step 1 of 5 • Self-Awareness</span>
+                    </div>
+                </div>
+                <!-- progress track (this is the element that visually sticks & shrinks) -->
+                <div id="progressTrack" class="overflow-hidden rounded-full bg-gray-100 transition-all duration-150"
+                    style="height:12px;">
+                    <div id="progressBar" class="h-full rounded-full transition-all duration-500" style="width:0%;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="mb-8 flex flex-wrap items-center justify-center gap-3 slide-in">
+            <span
+                class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--self-awareness)]/30 text-sm font-semibold"
+                data-chip="0" style="background: linear-gradient(135deg, #64B5F6, #64B5F6dd);">Self-Awareness</span>
+            <span
+                class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--self-regulation)]/30 text-sm font-semibold"
+                data-chip="1" style="background: linear-gradient(135deg, #81C784, #81C784dd);">Self-Regulation</span>
+            <span
+                class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--motivation)]/30 text-sm font-semibold"
+                data-chip="2" style="background: linear-gradient(135deg, #FFB74D, #FFB74Ddd);;">Motivation</span>
+            <span
+                class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--empathy)]/30 text-sm font-semibold"
+                data-chip="3" style="background: linear-gradient(135deg, #9575CD, #9575CDdd);;">Empathy</span>
+            <span
+                class="category-chip px-4 py-2 text-gray shadow-sm rounded-full border border-[color:var(--social-skills)]/30 text-sm font-semibold"
+                data-chip="4" style="background: linear-gradient(135deg, #4DB6AC, #4DB6ACdd);">Social Skills</span>
+        </div>
+
+        <div id="questionnaire" class="space-y-6"></div>
+
+        <div class="mt-8 flex items-center justify-between">
+            <button id="prevBtn" onclick="goToPreviousPage()"
+                class="h-12 px-8 text-white border border-[#6FB07C] rounded-xl font-semibold transition-all duration-300 bg-[#7FC58B] hover:bg-[#6FB07C] disabled:opacity-50 disabled:cursor-not-allowed">
+                Previous
+            </button>
+
+            <div class="flex gap-4">
+                <button id="nextBtn" onclick="goToNextPage()"
+                    class="h-12 px-8 text-white border border-[#6FB07C] rounded-xl font-semibold transition-all duration-300 bg-[#7FC58B] hover:bg-[#6FB07C] ">
+                    Next
+                </button>
+                <button id="submitBtn" onclick="showSummary()" class="hidden h-12 px-8 text-white border border-[#6FB07C] rounded-xl font-semibold transition-all duration-300 
+          bg-[#6FB07C] hover:bg-[#5fa373] shadow-sm">
+                    Finish
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- RESULTS MODAL -->
+    <div id="summaryModal" class="modal-backdrop fixed inset-0 z-[60] hidden items-center justify-center p-4">
+        <div class="modal-content w-full max-w-6xl rounded-3xl shadow-2xl max-h-[120vh] overflow-hidden">
+
+            <!-- PAGE 1 -->
+            <section id="resPage1" class="px-6 pt-6 pb-4">
+                <h2 class="text-center text-2xl md:text-3xl font-extrabold tracking-wide text-gray-900 mb-6">Assessment
+                    Results
+                    Review</h2>
+                <div id="catTabs" class="flex items-center justify-center gap-3 mt-5 mb-5 flex-wrap"></div>
+                <div id="catPanel" class="max-h-[20vh] overflow-y-auto"></div>
+
+                <div class="mt-6 flex items-center justify-center">
+                    <button id="continueToP2"
+                        class="px-8 py-2 text-white rounded-xl font-semibold transition-all duration-300 bg-[#7FC58B] hover:bg-[#5fa373] shadow-sm"
+                        onclick="openUnlockModal()">
+                        View Overall Results
+                    </button>
+                </div>
+            </section>
+
+            <div class="px-8 pb-6"></div>
+        </div>
+    </div>
+
+    <!-- RESULTS LOADING OVERLAY -->
+    <div id="resultsLoadingOverlay"
+        class="fixed inset-0 z-[70] hidden items-center justify-center bg-white/95 backdrop-blur-xl">
+        <div class="flex flex-col items-center">
+            <div class="relative h-24 w-24">
+                <div class="absolute inset-3 rounded-full border-[6px] border-[color:var(--fb-green)] border-t-transparent"
+                    style="animation:spinSlow 1.2s linear infinite;"></div>
+            </div>
+            <div class="mt-6 text-lg font-semibold tracking-wide text-[color:var(--fb-green)]"
+                style="animation:pulseSoft 1.6s ease-in-out infinite;">Generating your personalized results…</div>
+        </div>
+    </div>
+
+    <!-- LEAVE CONFIRMATION -->
+    <div id="leaveConfirm" class="modal-backdrop fixed inset-0 z-[80] hidden items-center justify-center p-4">
+        <div class="modal-content border border-emerald-200 rounded-3xl max-w-md w-full p-8">
+            <h3 id="leaveTitle" class="text-xl font-bold text-gray-900 mb-4">Leave Assessment?</h3>
+            <p id="leaveText" class="text-sm text-gray-600 mb-6 leading-relaxed">
+                If you leave now, your current assessment progress will be cleared. Do you want to continue?
+            </p>
+            <div class="flex justify-center gap-4">
+                <button id="leaveCancel"
+                    class="flex-1 max-w-[140px] h-12 px-4 text-gray-700 bg-white border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300">
+                    Stay Here
+                </button>
+                <button id="leaveConfirmBtn"
+                    class="flex-1 max-w-[140px] h-12 px-4 text-white rounded-lg font-semibold transition-all duration-300 bg-[#7FC58B] to-[#6FB07C] hover:bg-[#5fa373]">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNLOCK / AUTH GATE MODAL -->
+    <div id="unlockModal"
+        class="fixed inset-0 z-[85] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div class="w-full max-w-md rounded-2xl bg-white shadow-xl relative overflow-hidden border border-[#EAF7EF]">
+            <button onclick="closeUnlockModal()"
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-600 transition bg-red-100 hover:bg-red-200 p-1 rounded-full"
+                aria-label="Close unlock modal">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div id="unlockLogo" class="w-full flex justify-center pt-6">
+                <div
+                    class="h-14 w-14 rounded-full bg-[#E6F9ED] flex items-center justify-center shadow-inner ring-1 ring-[#CFF2DA]">
+                    <img src="./img/fb-tabs-icn.png" alt="App Logo" class="h-8 w-8" />
+                </div>
+            </div>
+
+            <div class="px-6 pb-6 pt-4">
+                <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Sign in or Create account</h2>
+                <p class="text-center text-sm text-[#6FB07C] mb-6">To unlock full results of the assessment test</p>
+
+                <div id="unlockError" class="hidden text-sm bg-red-500 text-white p-2 rounded mb-4 text-center"></div>
+
+                <!-- Tabs for sign-in / register inside unlock modal -->
+                <div class="flex gap-2 mb-4 justify-center">
+                    <button id="gateTabLogin"
+                        class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-xl border border-green-200 bg-green-50 text-gray-500 hover:bg-green-100 hover:text-green-600 hover:border-green-300 transition font-semibold transition">Sign
+                        in</button>
+                    <button id="gateTabRegister"
+                        class="w-full flex items-center justify-center gap-2 px-2 py-2 rounded-xl border border-green-200 bg-green-50 text-gray-500 hover:bg-green-100 hover:text-green-600 hover:border-green-300 transition font-semibold transition">Create
+                        account</button>
+                </div>
+
+                <!-- Gate Login Form -->
+                <form id="gateLoginForm" class="w-full">
+                    <div class="relative mb-4">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#7FC58B]"></span>
+                        <input id="gateLoginEmail" name="email" type="email" placeholder="Email"
+                            class="peer w-full w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+                            required />
+                    </div>
+                    <div class="relative mb-4">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#7FC58B]"></span>
+                        <input id="gateLoginPassword" name="password" type="password" placeholder="Password"
+                            class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+                            required />
+                        <span
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] cursor-pointer transition"
+                            onclick="toggleGatePassword('gateLoginPassword','gateLoginToggleIcon')"><i
+                                id="gateLoginToggleIcon" class="far fa-eye"></i></span>
+                    </div>
+                    <button type="submit"
+                        class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">Continue</button>
+                </form>
+
+                <!-- Gate Register Form (hidden by default) -->
+                <form id="gateRegisterForm" class="w-full hidden">
+                    <div class="flex gap-4 mb-4">
+                        <div class="w-1/2 relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#7FC58B]"></span>
+                            <input id="gateFirstName" type="text" required placeholder="First name"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+                        <div class="w-1/2 relative">
+                            <input id="gateLastName" type="text" required placeholder="Last name"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <input id="gateMiddleName" type="text" placeholder="Middle name (optional)"
+                            class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                    </div>
+
+                    <div class="relative mb-4">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#7FC58B]"></span>
+                        <input id="gateEmail" name="email" type="email" placeholder="Email"
+                            class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+                            required />
+                    </div>
+
+                    <div class="relative mb-4">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#7FC58B]"></span>
+                       <input id="gatePassword" name="password" type="password" placeholder="Password"
+  oninput="validatePasswordStrength()"
+  class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+  required />
+                        <span
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] cursor-pointer transition"
+                            onclick="toggleGatePassword('gatePassword','gateToggleIcon')"><i id="gateToggleIcon"
+                                class="far fa-eye"></i></span>
+                    </div>
+
+                    <!-- Password requirements -->
+<div id="gatePasswordRequirements"
+  class="hidden rounded-md border-l-4 p-3 text-sm bg-red-50 border-red-400 text-red-700 mt-2 mb-4 space-y-1">
+  <div id="gateLengthReq" class="flex items-center"><span class="w-4">•</span> At least 8 characters</div>
+  <div id="gateLowerReq" class="flex items-center"><span class="w-4">•</span> One lowercase letter</div>
+  <div id="gateUpperReq" class="flex items-center"><span class="w-4">•</span> One uppercase letter</div>
+  <div id="gateNumberReq" class="flex items-center"><span class="w-4">•</span> One number</div>
+  <div id="gateSpecialReq" class="flex items-center"><span class="w-4">•</span> One special character (@$!%*?&)</div>
+</div>
+
+                    <div class="relative mb-4">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#7FC58B]"></span>
+                        <input id="gateConfirmPassword" type="password" required placeholder="Confirm password"
+  oninput="validatePasswordMatch()"
+  class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        <span
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] cursor-pointer transition"
+                            onclick="toggleGatePassword('gateConfirmPassword','gateConfirmToggle')"><i
+                                id="gateConfirmToggle" class="far fa-eye"></i></span>
+                    </div>
+
+                   <!-- Terms -->
+          <div class="text-center mt-4 mb-4">
+            <p class="text-sm text-gray-600">
+              By signing in, you agree to the
+              <a href="termscondition.html" class="text-[#7FC58B] hover:underline" target="_blank">Terms of
+                Service</a>
+              and
+              <a href="privacy.html" class="text-[#7FC58B] hover:underline" target="_blank">Privacy Policy</a>.
+            </p>
+          </div>
+          
+
+                    <button type="submit"
+                        class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">Create
+                        account & Continue</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- POST-REGISTER CONFIRMATION MODAL -->
+    <div id="postRegisterModal"
+        class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div class="relative max-w-md w-full bg-white rounded-2xl p-6 border border-[#EAF7EF] shadow-xl text-center">
+            <button onclick="closePostRegisterModal()"
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 bg-red-100 hover:bg-red-200 p-1 rounded-full">
+                <!-- X icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="flex justify-center mb-3">
+                <div class="h-14 w-14 rounded-full bg-[#E6F9ED] flex items-center justify-center ring-1 ring-[#CFF2DA]">
+                    <img src="img/fb-tabs-icn.png" alt="" class="h-8 w-8" />
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Confirm your email</h3>
+            <p id="postRegMsg" class="text-sm text-green-600 mb-6">
+                We've sent a confirmation link to your email. Please verify your account before logging in.
+            </p>
+
+            <div class="flex gap-3 justify-center">
+                <button id="postRegBackHomeBtn"
+                    class="px-4 py-2 rounded-xl bg-[#7FC58B] hover:bg-[#6FB07C] text-white font-semibold"
+                    onclick="goHomeAndOpenLogin()">
+                    Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden classes for dynamic styling -->
+    <div class="hidden">
+        ring-rose-500 ring-rose-400 ring-gray-400 ring-emerald-400 ring-emerald-600
+        bg-red-50 hover:bg-red-100 border-red-200
+        bg-rose-50 hover:bg-rose-100 border-rose-200
+        bg-gray-50 hover:bg-gray-100 border-gray-200
+        bg-emerald-50 hover:bg-emerald-100 border-emerald-200 border-emerald-300
+        ring-2 scale-110 w-12 h-12 w-14 h-14 w-16 h-16 w-20 h-20 w-24 h-24
+    </div>
+
+    <script>
+        /* ======================= DATA ======================= */
+        const questions = [
+            // Self-Awareness (10 questions)
+            { text: "I can easily identify my emotions as I experience them.", reverse: false },
+            { text: "I notice physical changes (e.g., heart rate, breathing) when my emotions shift.", reverse: false },
+            { text: "I can recognize when my mood influences my decisions.", reverse: false },
+            { text: "I am aware of my emotional triggers.", reverse: false },
+            { text: "I reflect on how my feelings affect my behavior.", reverse: false },
+            { text: "I can explain my emotions clearly to others.", reverse: false },
+            { text: "I recognize the link between my emotions and my values.", reverse: false },
+            { text: "I can predict how I will feel in different situations.", reverse: false },
+            { text: "I am able to evaluate my strengths accurately.", reverse: false },
+            { text: "I acknowledge my weaknesses without defensiveness.", reverse: false },
+
+            // Self-Regulation (10 questions)
+            { text: "I stay calm under pressure.", reverse: false },
+            { text: "I avoid saying things I might later regret when upset.", reverse: false },
+            { text: "I can delay immediate gratification for long-term goals.", reverse: false },
+            { text: "I manage my stress effectively.", reverse: false },
+            { text: "I adapt easily to unexpected changes.", reverse: false },
+            { text: "I take ownership of my actions, even when outcomes are unfavorable.", reverse: false },
+            { text: "I recover quickly after emotional setbacks.", reverse: false },
+            { text: "I avoid reacting impulsively when angry.", reverse: false },
+            { text: "I consider the consequences before making emotional decisions.", reverse: false },
+            { text: "I can manage my frustration in challenging situations.", reverse: false },
+
+            // Motivation (10 questions)
+            { text: "I set personal goals and work persistently toward them.", reverse: false },
+            { text: "I find ways to stay engaged even in tasks that feel repetitive or boring.", reverse: false },
+            { text: "I maintain focus even when facing obstacles.", reverse: false },
+            { text: "I seek opportunities for self-improvement.", reverse: false },
+            { text: "I bounce back quickly from failures.", reverse: false },
+            { text: "I remain optimistic about achieving my goals.", reverse: false },
+            { text: "I find purpose in what I do.", reverse: false },
+            { text: "I am passionate about achieving excellence.", reverse: false },
+            { text: "I take initiative without waiting for instructions.", reverse: false },
+            { text: "I see challenges as opportunities to grow.", reverse: false },
+
+            // Empathy (10 questions)
+            { text: "I can sense when others are upset even if they don't say it.", reverse: false },
+            { text: "I listen attentively when someone shares their feelings.", reverse: false },
+            { text: "I try to put myself in others' shoes.", reverse: false },
+            { text: "I recognize non-verbal cues such as body language and tone.", reverse: false },
+            { text: "I validate other people's emotions.", reverse: false },
+            { text: "I avoid judging others before understanding their perspective.", reverse: false },
+            { text: "I can adapt my response based on how others feel.", reverse: false },
+            { text: "I recognize when I'm emotionally overwhelmed by others' problems and take steps to protect my well-being.", reverse: false },
+            { text: "I respect cultural and emotional differences.", reverse: false },
+            { text: "I make people feel heard and understood.", reverse: false },
+
+            // Social Skills (10 questions)
+            { text: "I build rapport easily with new people.", reverse: false },
+            { text: "I communicate my ideas clearly and confidently.", reverse: false },
+            { text: "I actively listen in conversations.", reverse: false },
+            { text: "I manage conflict in a constructive way.", reverse: false },
+            { text: "I collaborate effectively in group settings.", reverse: false },
+            { text: "I maintain positive relationships even under stress.", reverse: false },
+            { text: "I can influence others without being forceful.", reverse: false },
+            { text: "I adapt my communication style to different audiences.", reverse: false },
+            { text: "I am skilled at giving constructive feedback.", reverse: false },
+            { text: "I resolve misunderstandings quickly.", reverse: false }
+        ];
+
+        const categories = [
+            { key: "Self-Awareness", start: 0, end: 9 },
+            { key: "Self-Regulation", start: 10, end: 19 },
+            { key: "Motivation", start: 20, end: 29 },
+            { key: "Empathy", start: 30, end: 39 },
+            { key: "Social Skills", start: 40, end: 49 }
+        ];
+
+        // Colors mapping for EQ categories
+        const EQ_COLOR_MAP = {
+            'Self-Awareness': '#64B5F6',
+            'Self-Regulation': '#81C784',
+            'Motivation': '#FFB74D',
+            'Empathy': '#9575CD',
+            'Social Skills': '#4DB6AC'
+        };
+
+        const totalSteps = categories.length;
+
+        /* ======================= STORAGE KEYS ======================= */
+        const STORAGE_PREFIX = 'ei_assessment_guest';
+        function qKey(i) { return `${STORAGE_PREFIX}:q:${i}`; }
+        function pageKey() { return `${STORAGE_PREFIX}:page`; }
+        function recordKey() { return `${STORAGE_PREFIX}:records`; }
+
+        function getAnswer(i) {
+            if (typeof (Storage) === "undefined") return null;
+            return localStorage.getItem(qKey(i));
+        }
+        function setAnswer(i, v) {
+            if (typeof (Storage) === "undefined") return;
+            localStorage.setItem(qKey(i), String(v));
+        }
+        function clearCurrentParticipant() {
+            if (typeof (Storage) === "undefined") return;
+            for (let i = 0; i < questions.length; i++) localStorage.removeItem(qKey(i));
+            localStorage.removeItem(pageKey());
+        }
+        function hasProgress() {
+            if (typeof (Storage) === "undefined") return false;
+            for (let i = 0; i < questions.length; i++) {
+                if (getAnswer(i)) return true;
+            }
+            return false;
+        }
+
+        /* ======================= UI HELPERS ======================= */
+        function smoothScrollToEl(el, duration = 800) {
+            if (!el) return;
+            const start = window.scrollY || window.pageYOffset;
+            const rect = el.getBoundingClientRect();
+            const target = start + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+            const startTime = performance.now();
+            const ease = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            function step(now) {
+                const p = Math.min((now - startTime) / duration, 1);
+                const y = start + (target - start) * ease(p);
+                window.scrollTo(0, y);
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function clearGuestTestData() {
+            if (typeof (Storage) === "undefined") return;
+
+            // Clear all question answers
+            for (let i = 0; i < questions.length; i++) {
+                localStorage.removeItem(qKey(i));
+            }
+
+            // Clear current page
+            localStorage.removeItem(pageKey());
+
+            // Clear any records
+            localStorage.removeItem(recordKey());
+
+            console.log("Guest test data cleared");
+        }
+
+
+        const choiceSize = (n) =>
+            n === 1 || n === 5 ? "w-28 h-28"
+                : n === 2 || n === 4 ? "w-24 h-24"
+                    : "w-20 h-20";
+
+        const choiceBase =
+            "ei-choice inline-flex items-center justify-center rounded-full border font-medium transition-all duration-200 select-none cursor-pointer";
+
+        const choicePalette = (n) =>
+            n === 1
+                ? "bg-[#FCE8E8] text-[#A33B3B] border-[#e0baba] hover:bg-[#f8d6d6]"
+                : n === 2
+                    ? "bg-[#FFF3E8] text-[#B85D30] border-[#e5c3a3] hover:bg-[#ffdfc2]"
+                    : n === 3
+                        ? "bg-[#F7F7F7] text-[#666666] border-[#d1d1d1] hover:bg-[#ececec]"
+                        : n === 4
+                            ? "bg-[#E8FBEE] text-[#2F9A63] border-[#a8d9b8] hover:bg-[#d0f6d9]"
+                            : "bg-[#E6F9E6] text-[#2B8F3B] border-[#9ed09e] hover:bg-[#c9f2c9]";
+
+        const ringClr = (n) =>
+            n === 1 ? "ring-red-400"
+                : n === 2 ? "ring-orange-400"
+                    : n === 3 ? "ring-gray-400"
+                        : n === 4 ? "ring-emerald-400"
+                            : "ring-green-400";
+
+        // Interactive states: SAME ring thickness for hover + selected
+        const choiceInteractive = (selected = false, n = 3) => {
+            const hover = `hover:scale-100 hover:ring hover:${ringClr(n)} hover:ring-offset`;
+            if (selected) {
+                // Selected = same thickness, same hue
+                return `ring ${ringClr(n)} ring-offset scale-105 shadow-sm`;
+            }
+            return hover;
+        };
+
+        // Labels (unchanged but cleaned up)
+        const answerLabel = (n) => ["Not at All", "Slightly", "Moderately", "Mostly", "Completely"][n - 1] || "—";
+        const answerDescription = answerLabel;
+
+        // Tiny, lighter answer-pill HTML (thin border, very light bg)
+        function answerPillHTML(val) {
+            const base = "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border";
+            if (!val) return `<span class="${base} bg-[#F5F5F5] text-[#717171] border-[#EDEDED]">No answer</span>`;
+            if (val === 1) return `<span class="${base} bg-[#FFF1F1] text-[#A33B3B] border-[#F4DCDC]">Not at All</span>`;
+            if (val === 2) return `<span class="${base} bg-[#FFF7EF] text-[#B85D30] border-[#FFE6D8]">Slightly</span>`;
+            if (val === 3) return `<span class="${base} bg-[#F7F7F7] text-[#666666] border-[#ECECEC]">Moderately</span>`;
+            if (val === 4) return `<span class="${base} bg-[#F1FFF4] text-[#2F9A63] border-[#DFF6E6]">Mostly</span>`;
+            return `<span class="${base} bg-[#F0FFF0] text-[#2B8F3B] border-[#DFF2DF]">Completely</span>`;
+        }
+
+        /* ======================= ASSESSMENT RENDER ======================= */
+        const questionnaire = document.getElementById("questionnaire");
+        const progressBar = document.getElementById("progressBar");
+        const progressPercent = document.getElementById("progressPercent");
+        const progressText = document.getElementById("progressText");
+        const chipEls = Array.from(document.querySelectorAll("[data-chip]"));
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const submitBtn = document.getElementById("submitBtn");
+
+        let currentPage = 0;
+
+        function renderQuestions(step) {
+            questionnaire.innerHTML = "";
+            const { start, end, key } = categories[step];
+            const color = EQ_COLOR_MAP[key] || '#64B5F6';
+
+            chipEls.forEach(el => {
+                const chipIdx = parseInt(el.dataset.chip);
+                const chipCat = categories[chipIdx];
+                const chipColor = EQ_COLOR_MAP[chipCat.key] || '#64B5F6';
+                const isActive = chipIdx === step;
+
+                if (isActive) {
+                    el.className = "category-chip active px-4 py-2 rounded-xl text-sm font-semibold";
+                    el.style.background = chipColor;
+                    el.style.borderColor = chipColor;
+                } else {
+                    el.className = "category-chip px-4 py-2 rounded-xl border text-sm font-semibold";
+                    el.style.background = '#FFFFFF';
+                    el.style.borderColor = '#D1D5DB';
+                    el.style.color = 'text-gray-700';
+                }
+            });
+
+            for (let i = start; i <= end; i++) {
+                const saved = getAnswer(i);
+                const card = document.createElement("div");
+                card.className = "question-card question rounded-3xl p-4 md:p-6 slide-in";
+                card.setAttribute("data-question-index", i);
+
+                const scale = [1, 2, 3, 4, 5].map(n => {
+                    const selected = saved == n;
+                    const ring = selected ? ` ring-2 ${ringClr(n)} hover:shadow-[0_4px_8px_rgba(187,247,208,0.8)]` : "";
+                    return `
+        <label class="${choiceBase} ${choicePalette(n)} ${choiceSize(n)} ${ring}">
+            <input type="radio" id="q${i}_${n}" name="q${i}" value="${n}" ${selected ? "checked" : ""}/>
+            <span class="choice-text pointer-events-none">${answerDescription(n)}</span>
+        </label>`;
+                }).join("");
+
+                // REMOVED QUESTION NUMBER FROM HERE
+                card.innerHTML = `
+      <p class="text-center text-base md:text-lg text-gray-700 mb-8">${questions[i].text}</p>
+      <div class="flex items-center justify-center gap-6 md:gap-8">${scale}</div>`;
+                questionnaire.appendChild(card);
+            }
+
+            addInteractions();
+            updateProgressUI();
+            toggleNavButtons();
+            progressText.textContent = `Step ${step + 1} of ${totalSteps} • ${key}`;
+
+            const firstUnanswered = Array.from(questionnaire.querySelectorAll(".question")).find(q => {
+                const idx = parseInt(q.dataset.questionIndex, 10);
+                return !getAnswer(idx);
+            }) || questionnaire.querySelector(".question");
+            if (firstUnanswered) smoothScrollToEl(firstUnanswered, 500);
+        }
+
+        function addInteractions() {
+            questionnaire.querySelectorAll('input[type="radio"]').forEach(r => {
+                r.addEventListener('change', function () {
+                    const idx = parseInt(this.name.replace("q", ""), 10);
+                    const val = parseInt(this.value, 10);
+                    setAnswer(idx, val);
+
+                    const card = this.closest(".question");
+
+                    // Reset all choices in this question
+                    card.querySelectorAll(".ei-choice").forEach(l =>
+                        l.classList.remove("ring-2", "scale-105", "shadow-md",
+                            "ring-red-400", "ring-orange-400", "ring-gray-400", "ring-emerald-400", "ring-green-400")
+                    );
+
+                    // Apply selection style
+                    const selectedLabel = this.closest(".ei-choice");
+                    selectedLabel.classList.add("ring-2", ringClr(val), "scale-105", "shadow-md");
+
+                    updateProgressUI();
+
+                    // Auto-scroll to next question
+                    const next = card.nextElementSibling;
+                    if (next) {
+                        setTimeout(() => smoothScrollToEl(next, 700), 300);
+                    }
+                });
+            });
+        }
+
+        function updateProgressUI() {
+            let answered = 0;
+            for (let i = 0; i < questions.length; i++) if (getAnswer(i)) answered++;
+            const percent = Math.round((answered / questions.length) * 100);
+            if (progressBar) progressBar.style.width = percent + "%";
+            if (progressBar) {
+                progressBar.style.width = percent + "%";
+
+                // Add this line to set category-specific color
+                const currentCategory = categories[currentPage].key;
+                progressBar.style.background = EQ_COLOR_MAP[currentCategory] || '#7FC58B';
+            }
+            if (progressPercent) progressPercent.textContent = `${percent}% Complete`;
+
+            if (answered === questions.length && currentPage === totalSteps - 1) {
+                submitBtn.classList.remove("hidden");
+                nextBtn.classList.add("hidden");
+            } else {
+                submitBtn.classList.add("hidden");
+                if (currentPage === totalSteps - 1) nextBtn.classList.add("hidden");
+                else nextBtn.classList.remove("hidden");
+            }
+        }
+
+        function toggleNavButtons() {
+            if (currentPage === 0) {
+                prevBtn.disabled = true;
+                prevBtn.classList.add("opacity-50", "cursor-not-allowed");
+            } else {
+                prevBtn.disabled = false;
+                prevBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+        }
+
+        function goToPreviousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                if (typeof (Storage) !== "undefined") localStorage.setItem(pageKey(), currentPage);
+                renderQuestions(currentPage);
+            }
+        }
+
+        function goToNextPage() {
+            const { start, end } = categories[currentPage];
+            for (let i = start; i <= end; i++) {
+                const answered = getAnswer(i);
+                const qBlock = document.querySelector(`.question[data-question-index="${i}"]`);
+                if (!answered) {
+                    if (qBlock) {
+                        qBlock.style.borderColor = "#ef4444";
+                        qBlock.style.boxShadow = "0 0 0 3px rgba(239, 68, 68, 0.3)";
+                        smoothScrollToEl(qBlock, 700);
+                        setTimeout(() => {
+                            qBlock.style.borderColor = "";
+                            qBlock.style.boxShadow = "";
+                        }, 2000);
+                    }
+                    return;
+                }
+            }
+            if (currentPage < totalSteps - 1) {
+                currentPage++;
+                if (typeof (Storage) !== "undefined") localStorage.setItem(pageKey(), currentPage);
+                renderQuestions(currentPage);
+            }
+        }
+
+        window.goToPreviousPage = goToPreviousPage;
+        window.goToNextPage = goToNextPage;
+
+        /* ======================= RESULTS ======================= */
+        const summaryModal = document.getElementById("summaryModal");
+        const resPage1 = document.getElementById("resPage1");
+        const resPage2 = document.getElementById("resPage2");
+        const resPage21 = document.getElementById("resPage21");
+
+        let mixInstance = null;
+        let lastOverallPct = 0;
+        let lastBreakdown = [];
+
+        function computeBreakdown() {
+            return categories.map(cat => {
+                let subtotal = 0, count = 0;
+                for (let i = cat.start; i <= cat.end; i++) {
+                    let v = parseInt(getAnswer(i) || "0", 10);
+                    if (v > 0) {
+                        subtotal += v;
+                        count++;
+                    }
+                }
+                const rawScore = subtotal;
+                const pct = Math.round((rawScore / 50) * 100);
+                return { key: cat.key, pct, rawScore, start: cat.start, end: cat.end };
+            });
+        }
+
+        function showResPage(n) {
+            resPage1.classList.toggle("hidden", n !== 1);
+            resPage2.classList.toggle("hidden", n !== 2);
+            resPage21.classList.toggle("hidden", n !== 21);
+
+            if (n === 21) { renderMixDonutEnhanced(lastBreakdown); }
+
+            if (n === 2) {
+                const svgWrap = document.getElementById("overallDonutSVG");
+                if (svgWrap) {
+                    // Only create SVG, don't animate yet
+                    svgWrap.innerHTML = donutSVG(0, 320, 24, '#10B981');
+                }
+            }
+        }
+        window.showResPage = showResPage;
+
+        function animateOverallDonut() {
+            const svgWrap = document.getElementById("overallDonutSVG");
+            if (svgWrap) {
+                updateDonutInContainer(svgWrap, 0);
+
+                setTimeout(() => {
+                    animateDonut(svgWrap, 0, lastOverallPct, 2000);
+                }, 300);
+            }
+        }
+
+        function showSummary() {
+            let score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                const stored = getAnswer(i);
+                if (!stored) {
+                    alert("Please answer all the questions before submitting.");
+                    return;
+                }
+                let val = parseInt(stored, 10);
+                score += val;
+            }
+
+            const overlay = document.getElementById("resultsLoadingOverlay");
+            overlay.classList.remove("hidden");
+            overlay.classList.add("flex");
+
+            setTimeout(() => {
+                overlay.classList.add("hidden");
+                overlay.classList.remove("flex");
+                displayResultsEnhanced(score);
+
+                // NEW CODE: Show the results modal
+                const summaryModal = document.getElementById("summaryModal");
+                summaryModal.classList.remove("hidden");
+                summaryModal.classList.add("flex");
+
+                // Ensure we're showing the first page of results
+                showResPage(1);
+            }, 3000);
+
+            document.querySelectorAll('#questionnaire input[type="radio"]').forEach(r => {
+                r.disabled = true;
+                r.removeAttribute('name');
+            });
+        }
+
+        window.showSummary = showSummary;
+
+        /* ---------- Responsive donut helper ---------- */
+        function donutSVG(pct, size = 280, stroke = 20, fg = '#10B981', bg = '#E5F4EB') {
+            const r = (size / 2) - stroke;
+            const c = 2 * Math.PI * r;
+            const dashArray = c.toFixed(2);
+            const dashOffset = (c * (1 - pct / 100)).toFixed(2);
+
+            return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="drop-shadow-lg">
+        <!-- Background circle -->
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" 
+                stroke="${bg}" 
+                stroke-width="${stroke}" 
+                fill="none">
+        </circle>
+        <!-- Progress circle -->
+        <circle class="donut-fg" 
+                cx="${size / 2}" cy="${size / 2}" r="${r}" 
+                stroke="${fg}" 
+                stroke-width="${stroke}" 
+                fill="none"
+                stroke-linecap="round" 
+                stroke-dasharray="${dashArray}" 
+                stroke-dashoffset="${dashArray}"
+                transform="rotate(-90 ${size / 2} ${size / 2})">
+        </circle>
+        <text class="donut-label-value" x="50%" y="50%" dy="8" text-anchor="middle" 
+              font-size="${size * 0.18}" font-weight="800" fill="#065F46">0%</text>
+        <text x="50%" y="50%" dy="42" text-anchor="middle" 
+              font-size="${size * 0.08}" font-weight="600" fill="#6B7280">EI Score</text>
+    </svg>`;
+        }
+
+        function updateDonutInContainer(containerEl, pct) {
+            const container = (typeof containerEl === 'string') ? document.querySelector(containerEl) : containerEl;
+            if (!container) return;
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+            const fg = svg.querySelector('.donut-fg');
+            if (!fg) return;
+
+            // compute circumference from r attribute (string)
+            const r = parseFloat(fg.getAttribute('r'));
+            const c = 2 * Math.PI * r;
+            const offset = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+
+            // ensure dasharray is set (in case)
+            fg.setAttribute('stroke-dasharray', `${c.toFixed(2)}`);
+            // animate by writing style in next frame
+            requestAnimationFrame(() => {
+                fg.style.strokeDashoffset = offset.toFixed(2);
+            });
+
+            // update center label if present
+            const label = svg.querySelector('.donut-label-value');
+            if (label) label.textContent = `${Math.round(pct)}%`;
+        }
+
+        function animateDonut(containerEl, fromPct, toPct, duration = 1000) {
+            const container = (typeof containerEl === 'string') ? document.querySelector(containerEl) : containerEl;
+            if (!container) return;
+
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+
+            const fg = svg.querySelector('.donut-fg');
+            const label = svg.querySelector('.donut-label-value');
+            if (!fg || !label) return;
+
+            const r = parseFloat(fg.getAttribute('r'));
+            const c = 2 * Math.PI * r;
+
+            const startTime = performance.now();
+            const startPct = Math.max(0, Math.min(100, fromPct));
+            const endPct = Math.max(0, Math.min(100, toPct));
+            const pctDiff = endPct - startPct;
+
+            // Easing function for smooth animation
+            const easeOutQuart = t => 1 - Math.pow(1 - t, 4);
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeOutQuart(progress);
+
+                const currentPct = startPct + (pctDiff * easedProgress);
+                const offset = c * (1 - currentPct / 100);
+
+                // Update circle
+                fg.style.strokeDashoffset = offset.toFixed(2);
+
+                // Update label
+                label.textContent = `${Math.round(currentPct)}%`;
+
+                // Continue animation
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function displayResultsEnhanced(score) {
+            const maxScore = questions.length * 5;
+            lastOverallPct = Math.round((score / maxScore) * 100);
+            lastBreakdown = computeBreakdown();
+
+            // Page 1 - Category Review
+            const catTabs = document.getElementById("catTabs");
+            const catPanel = document.getElementById("catPanel");
+            let activeCat = 0;
+
+            function renderTabs() {
+                catTabs.innerHTML = lastBreakdown.map((b, i) => {
+                    const color = EQ_COLOR_MAP[b.key] || '#64B5F6';
+                    const isActive = i === activeCat;
+                    return `<button data-tab="${i}" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive
+                        ? 'text-white shadow-lg transform scale-105'
+                        : 'text-gray-700 bg-white/80 hover:bg-white border border-gray-200 hover:shadow-md'
+                        }" style="${isActive ? `background: linear-gradient(135deg, ${color}, ${color}dd);` : ''}">${b.key}</button>`
+                }).join("");
+
+                catTabs.querySelectorAll("button").forEach(btn => {
+                    btn.onclick = () => {
+                        activeCat = +btn.dataset.tab;
+                        renderTabs();
+                        renderCatPanel();
+                    };
+                });
+            }
+
+            function renderCatPanel() {
+                const b = lastBreakdown[activeCat];
+                const color = EQ_COLOR_MAP[b.key] || '#64B5F6';
+                const cards = [];
+
+                for (let i = b.start; i <= b.end; i++) {
+                    const raw = getAnswer(i);
+                    const val = raw ? parseInt(raw, 10) : null;
+                    cards.push(`
+      <div class="question-card rounded-2xl bg-white p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+        <div class="text-xs font-semibold text-gray-500 mb-2">Question ${i + 1}</div>
+        <div class="text-sm text-gray-700 mb-3 leading-relaxed">${questions[i].text}</div>
+        <div>${answerPillHTML(val)}</div>
+      </div>
+    `);
+                }
+
+                // Ensure references to existing nodes
+                const catTabs = document.getElementById('catTabs');
+                const catPanel = document.getElementById('catPanel');
+
+                // Remove any previous donut inserted by this function
+                const prevDonut = document.getElementById('catDonutTop');
+                if (prevDonut) prevDonut.remove();
+
+                // Create donut container (centered) and insert it ABOVE catTabs (or above catPanel as fallback)
+                const donutContainer = document.createElement('div');
+                donutContainer.id = 'catDonutTop';
+                donutContainer.className = 'w-full flex justify-center items-center mb-3';
+                donutContainer.innerHTML = `
+  <div class="donut-wrapper w-32 sm:w-40 md:w-48 lg:w-56 flex justify-center items-center">
+    ${donutSVG(0, Math.min(180, window.innerWidth * 0.35), 14, color)}
+  </div>
+`;
+
+                if (catTabs && catTabs.parentNode) {
+                    catTabs.parentNode.insertBefore(donutContainer, catTabs);
+                } else if (catPanel && catPanel.parentNode) {
+                    catPanel.parentNode.insertBefore(donutContainer, catPanel);
+                }
+
+                // Put category title + question cards into existing #catPanel (no donut inside panel)
+                if (catPanel) {
+                    catPanel.innerHTML = `
+      <div class="w-full max-w-4xl mx-auto">
+        <div class="grid gap-3 lg:grid-cols-2">
+          ${cards.join('')}
+        </div>
+      </div>
+    `;
+                    // reset scroll position when switching tabs
+                    catPanel.scrollTop = 0;
+                }
+
+                // Animate the donut after inserting it
+                const wrapper = document.querySelector('#catDonutTop .donut-wrapper');
+                if (wrapper) {
+                    animateDonut(wrapper, 0, b.pct, 1000);
+                }
+            }
+
+            /* initialize */
+            renderTabs();
+            renderCatPanel();
+        }
+
+        /* ======================= CHART RENDERING ======================= */
+
+        /* ======================= Hover Effect ======================= */
+
+        function enhanceAnswerSelection() {
+            document.querySelectorAll('.ei-choice').forEach(choice => {
+                choice.addEventListener('mouseenter', function () {
+                    this.style.transform = 'scale(1.05)';
+                });
+
+                choice.addEventListener('mouseleave', function () {
+                    if (!this.querySelector('input').checked) {
+                        this.style.transform = 'scale(1)';
+                    }
+                });
+            });
+        }
+
+
+        /* ======================= LEAVE / SAVE CONFIRM ======================= */
+        let leaveConfirmAction = null;
+        function showLeaveConfirm({ title, text, confirmLabel, onConfirm }) {
+            const wrap = document.getElementById('leaveConfirm');
+            if (!wrap) return;
+            const leaveTitle = document.getElementById('leaveTitle');
+            const leaveText = document.getElementById('leaveText');
+            const btn = document.getElementById('leaveConfirmBtn');
+            if (leaveTitle) leaveTitle.textContent = title || 'Leave Assessment?';
+            if (leaveText) leaveText.textContent = text || 'If you leave now, your current assessment progress will be cleared. Do you want to continue?';
+            if (btn) btn.textContent = confirmLabel || 'Continue';
+            leaveConfirmAction = onConfirm || null;
+            wrap.classList.remove('hidden');
+            wrap.classList.add('flex');
+        }
+
+        function hideLeaveConfirm() {
+            const wrap = document.getElementById('leaveConfirm');
+            if (!wrap) return;
+            wrap.classList.add('hidden');
+            wrap.classList.remove('flex');
+            leaveConfirmAction = null;
+        }
+
+        document.getElementById('leaveCancel').onclick = hideLeaveConfirm;
+        document.getElementById('leaveConfirmBtn').onclick = () => {
+            if (typeof leaveConfirmAction === 'function') leaveConfirmAction();
+            hideLeaveConfirm();
+        };
+
+        function confirmSaveAndExit() {
+            showLeaveConfirm({
+                title: 'Save & Return to Home?',
+                text: 'We will record your result, reset the assessment, and take you back to Home.',
+                confirmLabel: 'Save & Exit',
+                onConfirm: () => {
+                    clearCurrentParticipant();
+                    window.location.href = 'index.html';
+                }
+            });
+        }
+        window.confirmSaveAndExit = confirmSaveAndExit;
+
+        /* ===== Enhanced Navigation Guards (links, back, reload) ===== */
+        /* ===== Robust Navigation Guards (links, back, reload) - REPLACEMENT ===== */
+        /* Replace the old setupNavigationGuards + beforeUnloadHandler with this block. */
+        (function () {
+            // Prevent double-init
+            if (window.__navGuardsInitialized) return;
+            window.__navGuardsInitialized = true;
+
+            // Safe wrapper for hasProgress() — uses your hasProgress if available
+            function safeHasProgress() {
+                try {
+                    if (typeof hasProgress === 'function') return Boolean(hasProgress());
+                    for (let i = 0; i < questions.length; i++) if (getAnswer(i)) return true;
+                } catch (e) { /* ignore */ }
+                return false;
+            }
+
+            // Safe confirmation: uses existing showLeaveConfirm modal if present, otherwise fallback to confirm()
+            function safeConfirm(opts = { title: 'Confirm', text: '', confirmLabel: 'OK' }) {
+                return new Promise(resolve => {
+                    if (typeof showLeaveConfirm === 'function') {
+                        try {
+                            showLeaveConfirm({
+                                title: opts.title,
+                                text: opts.text,
+                                confirmLabel: opts.confirmLabel,
+                                onConfirm: () => resolve(true),
+                                onCancel: () => resolve(false)
+                            });
+                            return;
+                        } catch (err) {
+                            console.warn('showLeaveConfirm failed, falling back to native confirm()', err);
+                        }
+                    }
+                    resolve(Boolean(window.confirm((opts.title ? opts.title + '\n\n' : '') + (opts.text || ''))));
+                });
+            }
+
+            // Global named beforeUnloadHandler (kept as global name since other places remove it)
+            function beforeUnloadHandler(e) {
+                if (!safeHasProgress()) return;
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+            // expose as named global so existing code that references it still works
+            window.beforeUnloadHandler = beforeUnloadHandler;
+
+            // Click guard for anchor clicks (capture phase to intercept early)
+            async function onDocumentClickGuard(e) {
+                const a = e.target.closest('a');
+                if (!a) return;
+                if (a.closest('nav')) return; // ignore nav links
+                const href = a.getAttribute('href') || '';
+                if (a.dataset.noconfirm === 'true') return;
+                if (!href || href === '#' || href.startsWith('javascript:')) return;
+                if (href.startsWith('#')) return;
+
+                if (!safeHasProgress()) return;
+                e.preventDefault();
+
+                const ok = await safeConfirm({
+                    title: 'Leave Assessment?',
+                    text: 'Leaving now will clear your current assessment progress. Continue?',
+                    confirmLabel: 'Leave'
+                });
+                if (!ok) return;
+
+                // remove unload guard and navigate
+                try { window.removeEventListener('beforeunload', beforeUnloadHandler); } catch (err) { }
+                window.onbeforeunload = null;
+                // navigate
+                window.location.href = href;
+            }
+
+            // Keydown guard for reload keys (F5, Ctrl/Cmd+R, Ctrl/Cmd+Shift+R)
+            async function onKeyDownGuard(e) {
+                const isF5 = e.key === 'F5';
+                const isReload = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r';
+                const isHardReload = (e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r';
+                if (!(isF5 || isReload || isHardReload)) return;
+                if (!safeHasProgress()) return;
+
+                e.preventDefault();
+                const ok = await safeConfirm({
+                    title: 'Reload Page?',
+                    text: 'Reloading will restart your assessment progress. Continue?',
+                    confirmLabel: 'Reload'
+                });
+                if (!ok) return;
+
+                try { window.removeEventListener('beforeunload', beforeUnloadHandler); } catch (err) { }
+                window.onbeforeunload = null;
+                try { location.reload(); } catch (err) { window.location.href = window.location.pathname; }
+            }
+
+            // Popstate/back guard
+            async function onPopStateGuard() {
+                if (!safeHasProgress()) {
+                    // If no progress, let native back behavior happen
+                    return;
+                }
+
+                // push a state to keep the user here unless they confirm
+                try { history.pushState({ fb_guard: true }, ''); } catch (e) { /* ignore */ }
+
+                const ok = await safeConfirm({
+                    title: 'Go Back?',
+                    text: 'Going back will reset your assessment progress. Continue?',
+                    confirmLabel: 'Go Back'
+                });
+                if (!ok) {
+                    // user cancelled -> push state to stay
+                    try { history.pushState({ fb_guard: true }, ''); } catch (e) { }
+                    return;
+                }
+
+                // user confirmed - remove guards and go back two steps (we pushed one state during init)
+                try {
+                    window.removeEventListener('beforeunload', beforeUnloadHandler);
+                    document.removeEventListener('click', onDocumentClickGuard, true);
+                    document.removeEventListener('keydown', onKeyDownGuard);
+                    window.removeEventListener('popstate', onPopStateGuard);
+                } catch (e) { }
+                window.onbeforeunload = null;
+
+                try { history.go(-2); } catch (err) {
+                    if (document.referrer) window.location.href = document.referrer;
+                    else history.back();
+                }
+            }
+
+            // Setup function (keeps name so existing DOMContentLoaded call works)
+            function setupNavigationGuards() {
+                if (window.__navGuardsSetup) return;
+                window.__navGuardsSetup = true;
+
+                // create a small history buffer so popstate can be intercepted
+                try { history.replaceState({ fb_guard: true }, ''); } catch (e) { }
+                try { history.pushState({ fb_guard: true }, ''); } catch (e) { }
+
+                // attach listeners
+                document.addEventListener('click', onDocumentClickGuard, true);
+                document.addEventListener('keydown', onKeyDownGuard);
+                window.addEventListener('popstate', onPopStateGuard);
+                window.addEventListener('beforeunload', beforeUnloadHandler);
+            }
+
+            // Expose teardown to remove handlers if needed
+            function teardownNavigationGuards() {
+                try {
+                    document.removeEventListener('click', onDocumentClickGuard, true);
+                    document.removeEventListener('keydown', onKeyDownGuard);
+                    window.removeEventListener('popstate', onPopStateGuard);
+                    window.removeEventListener('beforeunload', beforeUnloadHandler);
+                } catch (e) { }
+                try { window.__navGuardsInitialized = false; window.__navGuardsSetup = false; } catch (e) { }
+            }
+
+            // Expose globally (keeps compatibility with other parts)
+            window.setupNavigationGuards = setupNavigationGuards;
+            window.teardownNavigationGuards = teardownNavigationGuards;
+
+            // Do not auto-init here because your code calls setupNavigationGuards() in DOMContentLoaded;
+            // but if you want auto-init instead, uncomment the following lines:
+            // if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupNavigationGuards);
+            // else setupNavigationGuards();
+
+        })();
+
+
+        /* ======================= AUTH MODAL FUNCTIONS ======================= */
+        function openLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modal.style.display = 'none';
+            }
+        }
+
+        function openRegisterModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.style.display = 'flex';
+                showRegisterForm();
+            }
+        }
+
+        function showRegisterForm() {
+            const rw = document.getElementById('registerFormWrapper');
+            const lw = document.getElementById('loginFormWrapper');
+            const fw = document.getElementById('forgotFormWrapper');
+            if (rw) rw.classList.remove('hidden');
+            if (lw) lw.classList.add('hidden');
+            if (fw) fw.classList.add('hidden');
+        }
+
+        function showLoginForm() {
+            const rw = document.getElementById('registerFormWrapper');
+            const lw = document.getElementById('loginFormWrapper');
+            const fw = document.getElementById('forgotFormWrapper');
+            if (rw) rw.classList.add('hidden');
+            if (lw) lw.classList.remove('hidden');
+            if (fw) fw.classList.add('hidden');
+        }
+
+        function showForgotForm() {
+            const rw = document.getElementById('registerFormWrapper');
+            const lw = document.getElementById('loginFormWrapper');
+            const fw = document.getElementById('forgotFormWrapper');
+            if (rw) rw.classList.add('hidden');
+            if (lw) lw.classList.add('hidden');
+            if (fw) fw.classList.remove('hidden');
+        }
+
+        function togglePassword() {
+            const el = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+            if (!el || !icon) return;
+            if (el.type === 'password') {
+                el.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                el.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function togglePasswordField(id, iconId) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById(iconId);
+            if (!el || !icon) return;
+            if (el.type === 'password') {
+                el.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                el.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function openUnlockModal() {
+            const m = document.getElementById('unlockModal');
+            if (m) {
+                m.classList.remove('hidden');
+                m.classList.add('flex');
+            }
+            showGateLoginForm();
+        }
+
+        function closeUnlockModal() {
+            const m = document.getElementById('unlockModal');
+            if (m) {
+                m.classList.add('hidden');
+                m.classList.remove('flex');
+            }
+        }
+
+        function showGateLoginForm() {
+            const loginForm = document.getElementById('gateLoginForm');
+            const registerForm = document.getElementById('gateRegisterForm');
+            if (loginForm) loginForm.classList.remove('hidden');
+            if (registerForm) registerForm.classList.add('hidden');
+            const tLogin = document.getElementById('gateTabLogin');
+            const tReg = document.getElementById('gateTabRegister');
+            if (tLogin) tLogin.classList.add('bg-emerald-100', 'text-emerald-700');
+            if (tReg) tReg.classList.remove('bg-emerald-100', 'text-emerald-700');
+            const unlockErr = document.getElementById('unlockError');
+            if (unlockErr) unlockErr.classList.add('hidden');
+        }
+
+        function showGateRegisterForm() {
+            const loginForm = document.getElementById('gateLoginForm');
+            const registerForm = document.getElementById('gateRegisterForm');
+            if (loginForm) loginForm.classList.add('hidden');
+            if (registerForm) registerForm.classList.remove('hidden');
+            const tLogin = document.getElementById('gateTabLogin');
+            const tReg = document.getElementById('gateTabRegister');
+            if (tReg) tReg.classList.add('bg-emerald-100', 'text-emerald-700');
+            if (tLogin) tLogin.classList.remove('bg-emerald-100', 'text-emerald-700');
+            const unlockErr = document.getElementById('unlockError');
+            if (unlockErr) unlockErr.classList.add('hidden');
+        }
+
+        function toggleGatePassword(id, iconId) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById(iconId);
+            if (!el || !icon) return;
+            if (el.type === 'password') {
+                el.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                el.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function closePostRegisterModal() {
+            const modal = document.getElementById('postRegisterModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function goHomeAndOpenLogin() {
+            window.location.href = 'index.html?openLogin=1';
+        }
+
+        /* ======================= INITIALIZATION ======================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            clearGuestTestData();
+            setupNavigationGuards();
+
+            // Load saved progress (which will now be empty)
+            if (typeof (Storage) !== "undefined") {
+                const savedPage = parseInt(localStorage.getItem(pageKey()) || '0', 10);
+                currentPage = isNaN(savedPage) ? 0 : Math.min(Math.max(savedPage, 0), totalSteps - 1);
+            }
+
+            renderQuestions(currentPage);
+
+            const first = document.querySelector(".question");
+            if (first) smoothScrollToEl(first, 600);
+
+            // Profile menu interactions
+            const profileTrigger = document.getElementById('profile-trigger');
+            const profileMenu = document.getElementById('profile-menu');
+            const profileBridge = document.getElementById('profile-bridge');
+
+            if (profileTrigger && profileMenu) {
+                let menuTimeout;
+
+                const showMenu = () => {
+                    clearTimeout(menuTimeout);
+                    profileMenu.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+                    profileMenu.classList.add('opacity-100', 'translate-y-0');
+                    profileMenu.setAttribute('aria-hidden', 'false');
+                };
+
+                const hideMenu = () => {
+                    menuTimeout = setTimeout(() => {
+                        profileMenu.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+                        profileMenu.classList.remove('opacity-100', 'translate-y-0');
+                        profileMenu.setAttribute('aria-hidden', 'true');
+                    }, 150);
+                };
+
+                profileTrigger.addEventListener('mouseenter', showMenu);
+                profileTrigger.addEventListener('mouseleave', hideMenu);
+                profileBridge?.addEventListener('mouseenter', showMenu);
+                profileBridge?.addEventListener('mouseleave', hideMenu);
+                profileMenu.addEventListener('mouseenter', showMenu);
+                profileMenu.addEventListener('mouseleave', hideMenu);
+
+                profileTrigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const isVisible = profileMenu.classList.contains('opacity-100');
+                    if (isVisible) hideMenu();
+                    else showMenu();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!profileTrigger.contains(e.target) && !profileMenu.contains(e.target)) {
+                        hideMenu();
+                    }
+                });
+            }
+
+            // Gate modal tabs
+            const gateTabLogin = document.getElementById('gateTabLogin');
+            const gateTabRegister = document.getElementById('gateTabRegister');
+
+            if (gateTabLogin && gateTabRegister) {
+                gateTabLogin.addEventListener('click', showGateLoginForm);
+                gateTabRegister.addEventListener('click', showGateRegisterForm);
+            }
+        });
+
+        let lastScrollY = window.scrollY;
+
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const progressTrack = document.getElementById('progressTrack');
+
+            if (currentScrollY > 100) { // After scrolling 100px
+                progressTrack.style.height = '8px'; // Shrink to half
+            } else {
+                progressTrack.style.height = '18px'; // Original size
+            }
+
+            lastScrollY = currentScrollY;
+        });
+    </script>
+
+    <!-- LOGIN Modal Overlay -->
+    <div id="loginModal"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
+        style="padding: 3vh;">
+        <!-- Modal Content -->
+        <div class="bg-white rounded-2xl shadow-lg w-full max-w-md relative overflow-hidden border border-[#EAF7EF]">
+
+            <!-- Close Button -->
+            <button onclick="closeLoginModal()"
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-600 transition bg-red-100 hover:bg-red-200 p-1 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Centered Logo Slot -->
+            <div id="modalLogo" class="w-full flex justify-center pt-6">
+                <div
+                    class="h-14 w-14 rounded-full bg-[#E6F9ED] flex items-center justify-center shadow-inner ring-1 ring-[#CFF2DA]">
+                    <img id="systemLogo" src="./img/fb-tabs-icn.png" alt="App Logo" class="h-8 w-8" />
+                </div>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="loginFormWrapper" class="px-6 pb-6 pt-4">
+                <form onsubmit="handleLogin(event)" class="w-full">
+                    <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Welcome Back</h2>
+                    <p class="text-center text-sm text-[#6FB07C] mb-6">Sign in to your account to continue</p>
+                    <div id="msgBox" class="hidden mb-4 p-2 text-sm rounded text-white text-center"></div>
+
+                    <!-- Email -->
+                    <div class="relative mb-4">
+                        </span>
+                        <input id="email" type="email" name="email" placeholder="Enter your Email Address"
+                            class="inputField peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+                            required />
+                    </div>
+
+                    <!-- Password -->
+                    <div class="relative mb-6">
+                        </span>
+                        <input id="password" type="password" name="password" placeholder="Enter your Password"
+                            class="inputField peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20 "
+                            required />
+                        <span
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+                            onclick="togglePassword()">
+                            <i id="toggleIcon" class="fa-regular fa-eye"></i>
+                        </span>
+                    </div>
+
+                    <!-- Remember Me and Forgot -->
+                    <div class="flex justify-between items-center mb-6 text-sm">
+                        <label class="flex items-center text-gray-600 cursor-pointer">
+                            <input type="checkbox" id="remember" class="checkbox-input mr-2">
+                            Remember me
+                        </label>
+                        <a href="javascript:void(0)" onclick="showForgotForm()" class="text-[#7FC58B] hover:underline">
+                            Forgot password?
+                        </a>
+                    </div>
+
+
+
+                    <!-- Submit -->
+                    <button type="submit"
+                        class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">
+                        Sign In
+                    </button>
+
+                    <!-- Register Link -->
+                    <p class="text-sm text-center mt-4 text-gray-700">
+                        Don't have an account?
+                        <a href="javascript:void(0)" onclick="showRegisterForm()"
+                            class="text-[#6FB07C] hover:underline">Create
+                            one</a>
+                    </p>
+                </form>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div id="registerFormWrapper" class="hidden px-6 pb-6 pt-4">
+                <form onsubmit="handleRegister(event)" class="w-full">
+                    <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Create Account</h2>
+                    <p class="text-center text-sm text-[#6FB07C] mb-6">Create a new account to get started</p>
+
+                    <div id="msgBox" class="hidden mb-4 p-2 text-sm rounded text-white text-center"></div>
+
+                    <!-- First + Last Name -->
+                    <div class="flex gap-4 mb-4">
+                        <div class="w-1/2 relative">
+                            </span>
+                            <input id="firstName" type="text" required placeholder="First name"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+                        <div class="w-1/2 relative">
+                            <input id="lastName" type="text" required placeholder="Last name"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white pr-auto px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+                    </div>
+
+                    <!-- Middle Name -->
+                    <div class="relative mb-4">
+                        <input id="middleName" type="text" placeholder="Middle name (optional)"
+                            class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="relative mb-4">
+                        </span>
+                        <input id="email" type="email" required placeholder="Enter your email"
+                            class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                    </div>
+
+                    <!-- Password -->
+                    <div class="relative mb-4">
+                        </span>
+                        <input id="password" type="password" required placeholder="Create a password"
+                            class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        <span
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+                            onclick="togglePasswordField('password', 'togglePassIcon')">
+                            <i id="togglePassIcon" class="far fa-eye"></i>
+                        </span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="relative mb-4">
+                        </span>
+                        <input id="confirmPassword" type="password" required placeholder="Confirm your password"
+                            class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        <span
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+                            onclick="togglePasswordField('confirmPassword', 'toggleConfirmIcon')">
+                            <i id="toggleConfirmIcon" class="far fa-eye"></i>
+                        </span>
+                    </div>
+
+                   <!-- Terms -->
+          <div class="text-center mt-4 mb-4">
+            <p class="text-sm text-gray-600">
+              By signing in, you agree to the
+              <a href="termscondition.html" class="text-[#7FC58B] hover:underline" target="_blank">Terms of
+                Service</a>
+              and
+              <a href="privacy.html" class="text-[#7FC58B] hover:underline" target="_blank">Privacy Policy</a>.
+            </p>
+          </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl
+                font-semibold transition">
+                        Create Account
+                    </button>
+
+                    <!-- Login Link -->
+                    <p class="text-sm text-center mt-4 text-gray-700">
+                        Already have an account?
+                        <a href="javascript:void(0)" onclick="showLoginForm()"
+                            class="text-[#6FB07C] hover:underline">Sign
+                            in</a>
+                    </p>
+                </form>
+            </div>
+
+            <!-- FORGOT PASSWORD FORM -->
+            <div id="forgotFormWrapper" class="hidden px-6 pb-6 pt-4">
+                <form onsubmit="sendReset(event)" class="w-full">
+                    <h2 class="text-2xl font-bold mb-2 text-center text-gray-800">Forgot Something?</h2>
+                    <p class="text-sm text-[#6FB07C] text-center mb-6">
+                        Enter your registered email and we'll send you a link to reset your password.
+                    </p>
+
+                    <div class="mb-4">
+                        <input type="email" id="email" placeholder="you@example.com" required
+                            class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                    </div>
+
+                    <button type="submit" class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl
+                font-semibold transition">
+                        Send Reset Link
+                    </button>
+
+                    <p id="msg" class="mt-4 text-sm text-center text-gray-600"></p>
+
+                    <div class="w-full flex justify-center">
+                        <a href="javascript:void(0)" onclick="showLoginForm()" class="block w-full rounded-xl border border-green-200 bg-green-50 text-gray-500 
+           hover:bg-green-100 hover:text-green-600 hover:border-green-300 
+           font-semibold transition duration-200 text-center py-2">
+                            Back to Login
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <!--END OF POP UP FORMS-->
+
+    <script src="./script/auth-guess.js"></script>
+    <script src="./script/login-mods-guess.js"></script>
+    <script src="./script/navigation.js"></script>
+    <script src="./script/reloadtest.js"></script>
+</body>
+
+</html>

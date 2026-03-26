@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EQ Progress Tracker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8fbfb 0%, #f0faf0 50%, #f8fbfb 100%);
+    }
+
+    .progress-animate {
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .notification {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(400px);
+      opacity: 0;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .notification.fade-out {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+
+    .blur-milestone {
+      filter: blur(1px) grayscale(0.8);
+      opacity: 0.3;
+    }
+
+    .loading {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Custom scrollbar for assessment history */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    /* Custom dropdown styles */
+    .custom-dropdown {
+      position: relative;
+      user-select: none;
+    }
+
+    .custom-dropdown-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .custom-dropdown-button:hover {
+      border-color: #7FC58B;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.1);
+    }
+
+    .custom-dropdown-button.open {
+      border-color: #7FC58B;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.1);
+    }
+
+    .custom-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      z-index: 50;
+      opacity: 0;
+      transform: translateY(-10px);
+      visibility: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .custom-dropdown-menu.show {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    .custom-dropdown-item {
+      padding: 0.625rem 1rem;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      font-size: 0.875rem;
+      color: #374151;
+    }
+
+    .custom-dropdown-item:hover {
+      background-color: #f9fafb;
+    }
+
+    .custom-dropdown-item.selected {
+      background-color: #f0fdf4;
+      color: #15803d;
+      font-weight: 500;
+    }
+
+    /* ===== Nav avatar / initials deterministic rules ===== */
+
+    /* Target only nav avatar images (desktop/menu/mobile). Keep default inline-block so JS can remove hidden. */
+    img.nav-avatar,
+    img#desktop-avatar,
+    img#menuAvatarLarge,
+    img#mobile-avatar,
+    img#mMenuAvatarLarge {
+      display: inline-block;
+      object-fit: cover;
+      border-radius: 9999px;
+    }
+
+    /* Force-hidden state for nav avatars & nav initials (used when toggled) */
+    img.nav-avatar.hidden,
+    img#desktop-avatar.hidden,
+    img#menuAvatarLarge.hidden,
+    img#mobile-avatar.hidden,
+    img#mMenuAvatarLarge.hidden,
+    .initials-fallback.nav.hidden,
+    .initials-fallback[data-nav-initials].hidden {
+      display: none !important;
+    }
+
+    /* Default nav initials look (keeps consistent across nav slots) */
+    .initials-fallback.nav,
+    .initials-fallback[data-nav-initials] {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      box-sizing: border-box;
+      background-color: #DCFCE7;
+      /* green */
+      color: #14532D;
+      font-weight: 700;
+      user-select: none;
+      line-height: 1;
+    }
+
+    /* sensible default sizes — override if you style elsewhere */
+    #desktop-avatar,
+    .initials-fallback[data-initials-for="desktop-avatar"] {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      font-size: 14px;
+    }
+
+    #menuAvatarLarge,
+    .initials-fallback[data-initials-for="menuAvatarLarge"] {
+      width: 64px;
+      height: 64px;
+      min-width: 64px;
+      min-height: 64px;
+      font-size: 18px;
+    }
+
+    #mobile-avatar,
+    .initials-fallback[data-initials-for="mobile-avatar"] {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      min-height: 32px;
+      font-size: 12px;
+    }
+
+    #menuAvatarLarge,
+    .initials-fallback[data-initials-for="menuAvatarLarge"] {
+      width: 80px;
+      height: 80px;
+      min-width: 80px;
+      min-height: 80px;
+      border-radius: 9999px;
+      object-fit: cover;
+      font-size: 29px;
+      /* good size for initials */
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* New radar legend container styles */
+    .radar-legend-item {
+      transition: all 0.3s ease;
+      border-radius: 0.75rem;
+    }
+
+    .radar-legend-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background-color: #f8fafc;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-gray-800">
+
+  <!-- NAVIGATION BAR -->
+  <nav class="bg-white p-5 shadow-sm transition-all duration-300" x-data="{ open: false }">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+      <!-- LOGO -->
+      <div class="relative shrink-0">
+        <a href="../index.html">
+          <img src="../img/fb-banners.png" class="max-h-[6vh] sm:max-h-[6vh] md:max-h-[7vh]" alt="Logo" />
+        </a>
+      </div>
+
+      <!-- DESKTOP NAV LINKS -->
+      <div class="hidden xl:flex items-center gap-8 ml-8">
+        <a href="../index.html" class="font-bold text-[#7FC58B] transition-colors duration-300">Home</a>
+        <a href="../features.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+        <a href="../resources.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+        <a href="../about.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+        <a href="#" class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+      </div>
+
+      <!-- RIGHT SIDE (desktop auth OR user) + hamburger -->
+      <div class="flex items-center gap-4">
+
+        <!-- DESKTOP AUTH BUTTONS (default state: hidden below xl) -->
+        <div id="auth-buttons-desktop" class="hidden xl:flex items-center gap-4">
+          <a href="javascript:void(0);" onclick="openLoginModal()"
+            class="font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+            Log in
+          </a>
+          <a href="javascript:void(0)" onclick="openRegisterModal()"
+            class="font-bold text-white bg-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+            Sign up
+          </a>
+        </div>
+
+        <!-- DESKTOP PROFILE (avatar left, name/email right) -->
+        <div id="user-profile-desktop" class="hidden xl:flex relative items-center gap-3">
+          <span id="desktop-username" class="text-[#1C1C1C] font-bold">Hi, User</span>
+
+          <!-- trigger -->
+          <button id="profile-trigger" class="relative focus:outline-none rounded-full shrink-0"
+            aria-label="Open profile menu">
+            <img id="desktop-avatar" alt="User" class="w-9 h-9 rounded-full border border-[#7FC58B] cursor-pointer
+         transition-all duration-300 ease-out
+         hover:scale-110 hover:-translate-y-0.5
+         hover:ring-4 hover:ring-[#7FC58B]/40 hover:ring-offset-2 hover:ring-offset-white
+         hover:shadow-lg hover:shadow-[#7FC58B]/40
+         focus-visible:ring-4 focus-visible:ring-[#7FC58B]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+         motion-reduce:transform-none">
+          </button>
+
+          <!-- wider hover bridge (for easier travel to the panel) -->
+          <div id="profile-bridge" class="absolute right-0 top-10 h-10 w-28"></div>
+
+          <!-- dropdown -->
+          <div id="profile-menu" role="menu" aria-hidden="true" class="absolute top-12 right-0 w-[22rem] bg-white border rounded-lg shadow-lg ring-1 ring-black/5 p-4 z-50
+                  opacity-0 translate-y-2 pointer-events-none transition-all duration-200">
+            <div class="flex items-center gap-4">
+              <!-- avatar LEFT -->
+              <img id="menuAvatarLarge" src="/img/default-avatar.png" alt="Avatar preview"
+                class="w-16 h-16 rounded-full border border-[#7FC58B] shrink-0">
+              <!-- name/email RIGHT -->
+              <div class="min-w-0">
+                <div id="menuName" class="font-semibold text-gray-900 truncate">User Name</div>
+                <div id="menuEmail" class="text-xs text-gray-500 truncate">user@example.com</div>
+              </div>
+            </div>
+
+            <hr class="my-3 border-gray-200">
+
+            <!-- DESKTOP DROPDOWN MENU - ADDED TRACK PROGRESS HERE -->
+            <div class="grid gap-1">
+              <a href="/user/viewprofile.html#profile" @click.prevent="open=false; goToSettingsSection('profile')"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Profile Settings
+              </a>
+
+              <a href="./user/progress.html"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Track Progress
+              </a>
+
+              <hr class="my-3 border-gray-200">
+
+              <a href="/logout"
+                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">
+                Logout
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- HAMBURGER (mobile) -->
+        <button @click="open = !open" class="xl:hidden flex flex-col gap-1 focus:outline-none ml-2"
+          aria-label="Toggle Menu">
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'rotate-45 translate-y-1.5': open}"></span>
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'opacity-0': open}"></span>
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'-rotate-45 -translate-y-1.5': open}"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE MENU -->
+    <div x-show="open" x-transition class="xl:hidden w-full mt-4" @click.outside="open = false">
+      <div class="flex flex-col items-center space-y-4 px-4 py-6">
+        <a href="../index.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Home</a>
+        <a href="../features.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+        <a href="../resources.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+        <a href="../about.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+        <a href="#" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+
+        <!-- MOBILE AUTH BUTTONS (visible when logged OUT) -->
+        <div id="auth-buttons-mobile" class="flex flex-col gap-3 w-full pt-4 border-t border-gray-200 mt-4">
+          <a href="javascript:void(0);" onclick="openLoginModal()"
+            class="text-center font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+            Log in
+          </a>
+          <a href="javascript:void(0)" onclick="openRegisterModal()"
+            class="text-center font-bold text-white bg-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+            Sign up
+          </a>
+        </div>
+
+        <!-- MOBILE PROFILE (desktop-like dropdown) -->
+        <div id="user-profile-mobile" class="hidden w-full pt-4 border-t border-gray-200 mt-4"
+          x-data="{ openProfile:false }">
+
+          <!-- Trigger row -->
+          <button @click="openProfile = !openProfile" :aria-expanded="openProfile"
+            class="w-full flex items-center justify-between px-1 py-2">
+            <div class="flex items-center gap-3">
+              <img id="mobile-avatar" src="/img/default-avatar.png"
+                class="w-8 h-8 rounded-full border border-[#7FC58B] shrink-0" alt="User">
+              <span id="mobile-username" class="font-bold text-[#1C1C1C]">Hi, User</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transition-transform duration-200"
+              :class="openProfile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <!-- Dropdown card -->
+          <div x-show="openProfile" x-transition @click.outside="openProfile=false"
+            class="mt-3 max-w-full bg-white rounded-lg  p-4">
+            <!-- vertical profile: avatar on top, name below -->
+            <div class="flex flex-col items-center text-center gap-3">
+              <img id="mMenuAvatarLarge"
+                src="/uploads/profiles/1756213865748-Screenshot 2023-09-08 233746.png?v=1756230921086"
+                class="w-20 h-20 rounded-full border border-[#7FC58B]" alt="Avatar preview" />
+              <div id="mMenuName" class="font-semibold text-gray-900">
+                User Name
+              </div>
+              <!-- optional subtitle; delete if you don't want it -->
+              <div id="mMenuEmail" class="text-xs text-gray-500">
+                UserExample@Example.com
+              </div>
+            </div>
+
+            <hr class="my-3 border-gray-200">
+
+            <!-- MOBILE DROPDOWN MENU - TRACK PROGRESS ALREADY ADDED HERE -->
+            <div class="grid gap-1">
+              <a href="javascript:void(0)" onclick="goToSettingsSection('profile'); open=false;"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Profile Setings
+              </a>
+              <a href="progress.html"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Track Progress
+              </a>
+
+              <hr class="my-3 border-gray-200">
+
+              <a href="/logout"
+                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">
+                Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Notification System -->
+  <div id="notifications"
+    class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center space-y-3"></div>
+
+
+  <div class="container mx-auto p-6 max-w-7xl">
+
+    <!-- Simplified Header with Green Gradient -->
+    <div class="bg-gradient-to-t from-[#7FC58B] to-[#6AAF76] rounded-2xl pt-14 pb-14 px-8 mb-6 shadow-sm text-center">
+      <h1 class="text-3xl font-bold text-white">EQ Progress Dashboard</h1>
+      <p class="text-white/90 text-base mt-1">
+        Track your emotional intelligence development journey
+      </p>
+    </div>
+
+
+
+
+    <!-- Assessment Score Section -->
+    <div class="bg-white rounded-xl border border-gray-100 p-8 mb-8 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-800 mb-6">Assessment Score</h2>
+
+      <!-- Overall Score and Date -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <p class="text-sm text-gray-600 mb-2">Overall Score</p>
+            <div class="flex items-center gap-4">
+              <span id="overallScore" class="text-4xl font-bold text-emerald-600">--%</span>
+              <span id="eqLevel" class="px-4 py-2 rounded-full text-md font-semibold bg-gray-100 text-gray-600">
+                Loading...
+              </span>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-600 mb-2">Latest Assessment</p>
+            <p class="text-md font-semibold text-gray-900" id="latestDate">Loading...</p>
+          </div>
+        </div>
+
+        <!-- Progress bar at bottom -->
+        <div class="w-full bg-gray-100 rounded-full h-4">
+          <div id="overallProgressBar"
+            class="h-4 rounded-full progress-animate bg-gradient-to-r from-emerald-500 to-emerald-600"
+            style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Categories with Progress Bars -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" id="categoriesGrid">
+        <!-- Categories populated by JS -->
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+
+      <!-- Progress Chart -->
+      <div class="xl:col-span-8 bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-lg font-semibold text-gray-800">EQ Development Timeline</h2>
+
+          <!-- Custom Dropdown -->
+          <div class="custom-dropdown" style="width: 200px;">
+            <div class="custom-dropdown-button" id="categoryDropdownButton">
+              <span id="selectedCategory">All Skills</span>
+              <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform" id="dropdownIcon"></i>
+            </div>
+            <div class="custom-dropdown-menu" id="categoryDropdownMenu">
+              <div class="custom-dropdown-item selected" data-value="all">All Skills</div>
+              <div class="custom-dropdown-item" data-value="Self-Awareness">Self Awareness</div>
+              <div class="custom-dropdown-item" data-value="Self-Regulation">Self Regulation</div>
+              <div class="custom-dropdown-item" data-value="Motivation">Motivation</div>
+              <div class="custom-dropdown-item" data-value="Empathy">Empathy</div>
+              <div class="custom-dropdown-item" data-value="Social Skills">Social Skills</div>
+            </div>
+          </div>
+        </div>
+        <div class="h-[400px] mb-6">
+          <canvas id="progressChart"></canvas>
+        </div>
+        <!-- Chart Legend removed as requested -->
+      </div>
+
+      <!-- Current Profile with Comparison -->
+      <div class="xl:col-span-4 bg-white rounded-xl border border-gray-100 p-8 shadow-sm">
+        <h2 class="text-lg font-semibold text-gray-800 mb-8">EI Profile Comparison</h2>
+        <div class="h-80 mb-6">
+          <canvas id="radarChart"></canvas>
+        </div>
+        <div class="flex justify-center gap-8 mb-6 pb-6 border-b border-gray-100">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-emerald-500"></div>
+            <span class="text-sm font-medium text-gray-700">Latest Assessment</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-blue-400"></div>
+            <span class="text-sm font-medium text-gray-700">Previous Assessment</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assessment History - Full Height -->
+      <div class="xl:col-span-8 bg-white rounded-xl border border-gray-100 p-8 shadow-sm h-[600px] flex flex-col">
+        <h2 class="text-lg font-semibold text-gray-800 mb-8">Assessment History</h2>
+        <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-6" id="assessmentHistory">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Milestones - No scrolling -->
+      <div class="xl:col-span-4 bg-white rounded-xl border border-gray-100 p-7 shadow-sm">
+        <h2 class="text-lg font-semibold text-gray-800 mb-9 flex items-center gap-3">Milestones
+        </h2>
+        <div class="space-y-4" id="milestones">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--Back to top-->
+  <button id="backToTop" onclick="scrollToTop()">↑</button>
+
+  <!--FOOTER SECTION-->
+  <footer id="site-footer"
+    class="bg-white pt-12 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.01)] transition-all duration-300">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-8 mb-8 text-center md:text-left md:grid-cols-2 lg:grid-cols-4">
+        <!-- Logo and Social Media -->
+        <div class="md:col-span-1 flex flex-col items-center md:items-start">
+          <a href="#" class="flex items-center mb-4 justify-center md:justify-start">
+            <img src="../img/fb-banners.png" alt="Logo"
+              class="h-10 mr-3 transition-transform duration-300 hover:scale-105">
+          </a>
+          <p class="text-[#333333] mb-5 font-bold text-base md:text-lg">Emotional Intelligence Assessment</p>
+          <div class="flex space-x-4 justify-center md:justify-start">
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Quick Links</h3>
+          <ul class="space-y-2">
+            <li><a href="#"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Home</a>
+            </li>
+            <li><a href="../features.html"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Features</a>
+            </li>
+            <li><a href="../resources.html"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Resources</a>
+            </li>
+            <li><a href="../about.html"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">About
+                Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Resources</h3>
+          <ul class="space-y-2">
+            <li><a href="../resources.html"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Articles</a>
+            </li>
+            <li><a href="../features.html"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Meditations</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fas fa-envelope mr-3 text-[#333333]"></i>
+              <a href="https://mail.google.com/mail/u/0/#inbox?compose=DmwnWrRttNpPhFPlStprmfpgBbhWdqlSlqbblWggTlgnLfGzxNNdhSHxcPHMbWrnRcXVvgcXcmtv"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300" target="_blank">contact.feelbright@gmail.com</a>
+            </li>
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fab fa-facebook-f mr-3 text-[#333333]"></i>
+<a href="https://www.facebook.com/aujaspsysoc" target="_blank" class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300">
+  Psychology Society - AUJAS 
+</a>
+
+            </li>
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fas fa-map-marker-alt mr-3 text-[#333333]"></i>
+              <span class="text-[#333333] text-center md:text-left">Arellano - JAS<br>3058 Taft Ave,<br> Pasay City, Metro Manila</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+
+      <!-- Bottom Footer Section -->
+      <div
+        class="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300">
+        <p class="text-gray-500 text-sm mb-4 md:mb-0 text-center md:text-left transition-all duration-300">
+          &copy; <span id="copyright-year"></span> FeelBright. All rights reserved.
+        </p>
+        <div class="flex flex-wrap justify-center space-x-3 md:space-x-6 transition-all duration-300">
+          <a href="../privacy.html"
+            class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Privacy
+            Policy</a>
+          <a href="../termscondition.html"
+            class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Terms
+            of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    const sampleData = [
+      { id: 1, date: "2024-08-15", scores: { "Self-Awareness": 65, "Self-Regulation": 58, "Motivation": 72, "Empathy": 68, "Social Skills": 62 }, overallScore: 65, notes: "Initial assessment" },
+      { id: 2, date: "2024-09-10", scores: { "Self-Awareness": 72, "Self-Regulation": 64, "Motivation": 75, "Empathy": 71, "Social Skills": 68 }, overallScore: 70, notes: "Showing improvement" },
+      { id: 3, date: "2024-09-26", scores: { "Self-Awareness": 78, "Self-Regulation": 71, "Motivation": 79, "Empathy": 75, "Social Skills": 73 }, overallScore: 75.2, notes: "Continued growth" }
+    ];
+
+    const defaultZeroEntry = {
+      id: 0,
+      date: new Date().toISOString(),
+      scores: { "Self-Awareness": 0, "Self-Regulation": 0, "Motivation": 0, "Empathy": 0, "Social Skills": 0 },
+      overallScore: 0,
+      notes: "No assessments yet. Take your first assessment to start tracking your progress."
+    };
+
+    let assessmentData = [];
+    let previousDataLength = 0;
+    const categoryConfig = {
+      'Self-Awareness': { icon: 'fa-eye', color: '#64B5F6', name: 'Self Awareness' },
+      'Self-Regulation': { icon: 'fa-cog', color: '#81C784', name: 'Self Regulation' },
+      'Motivation': { icon: 'fa-bolt', color: '#FFB74D', name: 'Motivation' },
+      'Empathy': { icon: 'fa-heart', color: '#9575CD', name: 'Empathy' },
+      'Social Skills': { icon: 'fa-users', color: '#4DB6AC', name: 'Social Skills' }
+    };
+
+    let progressChart, radarChart;
+    let currentFilter = 'all';
+
+    // Custom dropdown functionality
+    function initCustomDropdown() {
+      const button = document.getElementById('categoryDropdownButton');
+      const menu = document.getElementById('categoryDropdownMenu');
+      const icon = document.getElementById('dropdownIcon');
+      const selectedText = document.getElementById('selectedCategory');
+
+      button.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = menu.classList.contains('show');
+
+        if (isOpen) {
+          menu.classList.remove('show');
+          button.classList.remove('open');
+          icon.style.transform = 'rotate(0deg)';
+        } else {
+          menu.classList.add('show');
+          button.classList.add('open');
+          icon.style.transform = 'rotate(180deg)';
+        }
+      });
+
+      // Handle item selection
+      const items = menu.querySelectorAll('.custom-dropdown-item');
+      items.forEach(item => {
+        item.addEventListener('click', function (e) {
+          e.stopPropagation();
+
+          // Update selected state
+          items.forEach(i => i.classList.remove('selected'));
+          this.classList.add('selected');
+
+          // Update button text
+          selectedText.textContent = this.textContent;
+
+          // Close dropdown
+          menu.classList.remove('show');
+          button.classList.remove('open');
+          icon.style.transform = 'rotate(0deg)';
+
+          // Trigger filter change
+          const value = this.dataset.value;
+          filterChart(value);
+        });
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function () {
+        menu.classList.remove('show');
+        button.classList.remove('open');
+        icon.style.transform = 'rotate(0deg)';
+      });
+    }
+
+    function getSafeScore(value) {
+      return (typeof value === 'number' && !isNaN(value)) ? value : 0;
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      const bgColor = type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+
+      notification.className = `notification px-6 py-4 rounded-xl shadow-lg text-white font-medium ${bgColor} max-w-lg`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+          <span>${message}</span>
+        </div>
+      `;
+
+      document.getElementById('notifications').appendChild(notification);
+
+      // Show notification
+      setTimeout(() => notification.classList.add('show'), 100);
+
+      // Hide and remove after 5 seconds
+      setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 400);
+      }, 5000);
+    }
+
+    function getScoreColor(score) {
+      if (score >= 75) return '#10B981'; // Green
+      if (score >= 50) return '#F59E0B'; // Orange  
+      return '#EF4444'; // Red
+    }
+
+    function getScoreLevel(score) {
+      if (score >= 85) return 'Exceptional Emotional Intelligence';
+      if (score >= 75) return 'Strong Emotional Intelligence';
+      if (score >= 65) return 'Moderate – Development needed';
+      if (score >= 50) return 'Low – Consider focused improvement';
+      return 'Very Low – Immediate attention recommended';
+    }
+
+    function transformServerData(serverData) {
+      return serverData.map(row => {
+        let scores = {};
+        try {
+          if (typeof row.breakdown === 'object' && row.breakdown !== null) {
+            scores = { ...row.breakdown };
+          } else if (typeof row.breakdown === 'string') {
+            scores = JSON.parse(row.breakdown);
+          }
+        } catch (e) { console.error("Error parsing breakdown:", e); }
+        const categories = ['Self-Awareness', 'Self-Regulation', 'Motivation', 'Empathy', 'Social Skills'];
+        categories.forEach(cat => { if (scores[cat] == null || isNaN(scores[cat])) scores[cat] = 0; });
+        let overallScore = parseFloat(row.overall_pct);
+        if (isNaN(overallScore)) {
+          const vals = Object.values(scores);
+          overallScore = vals.reduce((a, b) => a + b, 0) / vals.length;
+        }
+        return { id: row.id, date: row.created_at, scores, overallScore };
+      });
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch("/api/results", { credentials: "include" });
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        const serverData = await response.json();
+
+        // If server returns empty array -> new user: show default zero entry
+        if (!serverData || serverData.length === 0) {
+          assessmentData = [defaultZeroEntry];
+          previousDataLength = assessmentData.length;
+          showNotification("Welcome! You have no assessments yet — progress is shown as 0%. Take the assessment to get started.", "info");
+          initDashboard();
+          return;
+        }
+
+        // Normal flow for real server data
+        assessmentData = transformServerData(serverData);
+
+        // Show notification only if there's new data and it's not the first load
+        if (assessmentData.length > previousDataLength && previousDataLength > 0) {
+          showNotification("Assessment updated successfully!", "success");
+        }
+        previousDataLength = assessmentData.length;
+
+        initDashboard();
+      } catch (error) {
+        console.error("Error:", error);
+        const errorMsg = error.message.includes("Server error") ?
+          "Server unavailable. Try again later." :
+          "Please log in to see your progress.";
+        showNotification(errorMsg, "error");
+
+        // Use sample data as fallback (keeps demo usable when not logged in)
+        assessmentData = sampleData;
+        initDashboard();
+      }
+    }
+
+    function initDashboard() {
+      updateCategoriesGrid();
+      updateAssessmentHistory();
+      updateMilestones();
+      createProgressChart();
+      createRadarChart();
+      updateOverallStats();
+      initCustomDropdown();
+      updateNewRadarLegend(); // Add this to update the new radar legend
+    }
+
+    function updateCategoriesGrid() {
+      // If there's at least a default entry, render it normally
+      if (assessmentData.length === 0) return;
+      const latest = assessmentData[assessmentData.length - 1];
+      const first = assessmentData[0];
+      const grid = document.getElementById('categoriesGrid');
+      grid.innerHTML = '';
+
+      Object.entries(categoryConfig).forEach(([cat, config]) => {
+        const score = getSafeScore(latest.scores[cat]);
+        let improvement = 0;
+        if (assessmentData.length > 1) {
+          const firstScore = first.scores[cat] || 0;
+          improvement = firstScore > 0 ? ((score - firstScore) / firstScore * 100).toFixed(1) : 0;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl border border-gray-100 p-6 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] transition duration-200';
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background-color: ${config.color}15; border: 2px solid ${config.color}30">
+              <i class="fas ${config.icon} text-xl" style="color: ${config.color}"></i>
+            </div>
+            ${improvement != 0 ? `<span class="text-xs font-bold px-3 py-1 rounded-full ${improvement >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}">
+              ${improvement > 0 ? '+' : ''}${improvement}%
+            </span>` : ''}
+          </div>
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">${config.name}</h3>
+          <div class="text-3xl font-bold mb-4" style="color: ${config.color}">${score}%</div>
+          <div class="w-full bg-gray-100 rounded-full h-3 mb-2">
+            <div class="h-3 rounded-full progress-animate" style="width: ${score}%; background: linear-gradient(90deg, ${config.color} 0%, ${config.color}CC 100%)"></div>
+          </div>
+          <p class="text-xs text-gray-500 font-medium">${getScoreLevel(score)}</p>`;
+        grid.appendChild(card);
+      });
+    }
+    function createProgressChart() {
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      const labels = assessmentData.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      const datasets = [];
+
+      Object.entries(categoryConfig).forEach(([cat, config]) => {
+        datasets.push({
+          label: config.name,
+          data: assessmentData.map(d => getSafeScore(d.scores[cat])),
+          borderColor: config.color,
+          backgroundColor: config.color + '20',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: false,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          pointBackgroundColor: config.color,
+          pointBorderWidth: 2,
+          pointBorderColor: '#ffffff'
+        });
+      });
+
+      if (progressChart) progressChart.destroy();
+      progressChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1f2937',
+              bodyColor: '#1f2937',
+              borderColor: '#e5e7eb',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: {
+                callback: v => v + '%',
+                color: '#6b7280',
+                font: { size: 12 }
+              },
+              grid: { color: '#f3f4f6' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#6b7280', font: { size: 12 } }
+            }
+          },
+          interaction: { intersect: false, mode: 'index' }
+        }
+      });
+    }
+    function createRadarChart() {
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      const latest = assessmentData[assessmentData.length - 1];
+      const previous = assessmentData.length > 1 ? assessmentData[assessmentData.length - 2] : null;
+
+      const datasets = [{
+        label: 'Latest Assessment',
+        data: Object.values(latest.scores).map(getSafeScore),
+        fill: true,
+        backgroundColor: 'rgba(16,185,129,0.1)',
+        borderColor: '#10B981',
+        borderWidth: 3,
+        pointBackgroundColor: '#10B981',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 3,
+        pointRadius: 8,
+        pointHoverRadius: 10
+      }];
+
+      if (previous && previous.id !== 0) {
+        datasets.push({
+          label: 'Previous Assessment',
+          data: Object.values(previous.scores).map(getSafeScore),
+          fill: true,
+          backgroundColor: 'rgba(96,165,250,0.1)',
+          borderColor: '#60A5FA',
+          borderWidth: 2,
+          pointBackgroundColor: '#60A5FA',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          borderDash: [5, 5]
+        });
+      }
+
+      if (radarChart) radarChart.destroy();
+      radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: Object.keys(latest.scores).map(key => categoryConfig[key]?.name || key),
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                display: false, // Hide percentage numbers
+                stepSize: 20
+              },
+              grid: {
+                color: '#E5E7EB',
+                circular: true
+              },
+              pointLabels: {
+                display: true,
+                font: { size: 12, weight: '500' },
+                color: '#374151'
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1f2937',
+              bodyColor: '#1f2937',
+              borderColor: '#e5e7eb',
+              borderWidth: 1,
+              cornerRadius: 8,
+              callbacks: {
+                label: function (context) {
+                  return context.dataset.label + ': ' + context.parsed.r + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    function updateNewRadarLegend() {
+      if (assessmentData.length === 0) return;
+      const latest = assessmentData[assessmentData.length - 1];
+      const previous = assessmentData.length > 1 ? assessmentData[assessmentData.length - 2] : null;
+      const container = document.getElementById('newRadarLegend');
+
+      if (!container) return;
+
+      container.innerHTML = Object.entries(latest.scores).map(([cat, score]) => {
+        const config = categoryConfig[cat];
+        const safeScore = getSafeScore(score);
+        const prevScore = previous ? getSafeScore(previous.scores[cat]) : 0;
+        const diff = previous ? safeScore - prevScore : 0;
+        const level = getScoreLevel(safeScore);
+
+        return `
+          <div class="radar-legend-item bg-white rounded-xl border border-gray-100 p-6 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] transition duration-200">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background-color: ${config.color}15; border: 2px solid ${config.color}30">
+                <i class="fas ${config.icon} text-xl" style="color: ${config.color}"></i>
+              </div>
+              ${diff !== 0 ? `
+                <span class="text-xs font-bold px-3 py-1 rounded-full ${diff >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}">
+                  ${diff > 0 ? '+' : ''}${diff.toFixed(1)}%
+                </span>
+              ` : ''}
+            </div>
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">${config.name}</h3>
+            <div class="text-3xl font-bold mb-4" style="color: ${config.color}">${safeScore}%</div>
+            <div class="w-full bg-gray-100 rounded-full h-3 mb-2">
+              <div class="h-3 rounded-full progress-animate" style="width: ${safeScore}%; background: linear-gradient(90deg, ${config.color} 0%, ${config.color}CC 100%)"></div>
+            </div>
+            <p class="text-xs text-gray-500 font-medium">${level}</p>
+          </div>
+        `;
+      }).join('');
+    }
+    function updateAssessmentHistory() {
+      const container = document.getElementById('assessmentHistory');
+      container.innerHTML = '';
+
+      // If user has only the default zero entry, show friendly CTA instead of a bland zero-card
+      if (assessmentData.length === 1 && assessmentData[0].id === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-gray-600">
+            <div class="mb-4 text-2xl font-semibold">You haven't taken any assessments yet</div>
+            <p class="mb-6 text-sm text-gray-500">We show your progress as 0% until you complete your first assessment. Start now to see your EQ profile and personalized tips.</p>
+            <div class="flex justify-center gap-3">
+              <a href="/usertest.html" class="px-6 py-2 rounded-full bg-[#7FC58B] text-white font-semibold hover:bg-[#6FB07C] transition">Take Assessment</a>
+              <a href="/resources.html" class="px-6 py-2 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition">Learn more</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (assessmentData.length === 0) {
+        container.innerHTML = '<div class="text-center py-12 text-gray-500 text-lg">No assessment data available</div>';
+        return;
+      }
+
+      [...assessmentData].reverse().forEach((ass, index) => {
+        const div = document.createElement('div');
+        div.className = 'rounded-2xl transition-all duration-200 border border-gray-100 p-6 hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] transition duration-200';
+
+        const overallColor = getScoreColor(ass.overallScore);
+
+        div.innerHTML = `
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+              <div class="w-4 h-4 rounded-full" style="background-color: ${overallColor}"></div>
+              <span class="font-bold text-xl text-gray-900">${ass.overallScore.toFixed(1)}%</span>
+              <span class="px-3 py-1 text-xs font-semibold rounded-full" style="background-color: ${overallColor}20; color: ${overallColor}">
+                ${getScoreLevel(ass.overallScore)}
+              </span>
+            </div>
+            <span class="text-sm text-gray-500 font-medium">${new Date(ass.date).toLocaleDateString()}</span>
+          </div>
+          
+          <div class="space-y-4">
+            ${Object.entries(ass.scores).map(([cat, score]) => {
+          const config = categoryConfig[cat];
+          const safeScore = getSafeScore(score);
+          const scoreColor = getScoreColor(safeScore);
+          return `
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3 flex-1">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: ${config.color}20">
+                      <i class="fas ${config.icon} text-sm" style="color: ${config.color}"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 min-w-0 flex-1">${config.name}</span>
+                  </div>
+                  <div class="flex items-center gap-4 ml-4">
+                    <div class="w-32 bg-gray-200 rounded-full h-3">
+                      <div class="h-3 rounded-full transition-all duration-700" 
+                           style="width: ${safeScore}%; background: linear-gradient(90deg, ${scoreColor} 0%, ${scoreColor}CC 100%)"></div>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900 w-12 text-right">${safeScore}%</span>
+                  </div>
+                </div>
+              `;
+        }).join('')}
+          </div>
+          
+          ${ass.notes ? `<div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+            <p class="text-sm text-gray-600 italic">${ass.notes}</p>
+          </div>` : ''}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function hexToRgba(hex, alpha = 1) {
+      if (!hex) return `rgba(0,0,0,${alpha})`;
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(h => h + h).join('');
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+
+    function updateMilestones() {
+      if (assessmentData.length === 0) return;
+      const latest = assessmentData[assessmentData.length - 1];
+
+      const milestones = [
+        // mark 'Assessment Complete' as achieved only if there is a real assessment (id !== 0)
+        { title: 'Assessment Complete', achieved: assessmentData.length > 0 && latest.id !== 0, icon: 'fa-play' },
+        { title: 'Self-Awareness Expert', achieved: getSafeScore(latest.scores['Self-Awareness']) >= 80 && latest.id !== 0, icon: 'fa-eye' },
+        { title: 'Consistent Progress', achieved: assessmentData.length >= 3 && !(assessmentData.length === 1 && assessmentData[0].id === 0), icon: 'fa-chart-line' },
+        { title: 'Well-Rounded Skills', achieved: latest.id !== 0 && Object.values(latest.scores).every(s => (s || 0) >= 65), icon: 'fa-balance-scale' },
+        { title: 'High Performer', achieved: latest.id !== 0 && latest.overallScore >= 75, icon: 'fa-star' },
+        { title: 'EQ Master', achieved: latest.id !== 0 && latest.overallScore >= 85, icon: 'fa-crown' }
+      ];
+
+      const container = document.getElementById('milestones');
+      container.innerHTML = '';
+
+      milestones.forEach(m => {
+        const div = document.createElement('div');
+        div.className = `relative p-5 rounded-2xl border transition-all duration-200 ${m.achieved ?
+          'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 hover:shadow-md' :
+          'bg-gray-50 border-gray-200 blur-milestone'
+          }`;
+
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 rounded-xl flex items-center justify-center ${m.achieved ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-300 text-gray-500'
+          }">
+              <i class="fas ${m.achieved ? 'fa-check' : m.icon} text-sm"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold ${m.achieved ? 'text-emerald-900' : 'text-gray-500'}">${m.title}</h4>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    // Replace the existing updateOverallStats() with this
+    function updateOverallStats() {
+      if (assessmentData.length === 0) return;
+      const latest = assessmentData[assessmentData.length - 1];
+      const overallScore = getSafeScore(latest.overallScore);
+
+      const overallScoreEl = document.getElementById('overallScore');
+      const latestDateEl = document.getElementById('latestDate');
+      const progressBar = document.getElementById('overallProgressBar');
+      const eqLevelElement = document.getElementById('eqLevel');
+
+      // default/fallback for the "no-assessment" zero entry
+      if (latest.id === 0) {
+        if (overallScoreEl) overallScoreEl.textContent = '0.0%';
+        if (latestDateEl) latestDateEl.textContent = 'No assessments yet';
+        if (progressBar) {
+          progressBar.style.width = '0%';
+          progressBar.style.background = '';
+        }
+        if (eqLevelElement) {
+          eqLevelElement.textContent = 'No assessment yet';
+          eqLevelElement.className = 'px-4 py-2 rounded-full text-sm font-semibold';
+          eqLevelElement.style.background = hexToRgba('#9CA3AF', 0.12); // subtle gray
+          eqLevelElement.style.color = '#4B5563';
+          eqLevelElement.style.border = `1px solid ${hexToRgba('#9CA3AF', 0.18)}`;
+        }
+        return;
+      }
+
+      // Normal flow: show values
+      if (overallScoreEl) overallScoreEl.textContent = overallScore.toFixed(1) + '%';
+      if (latestDateEl) latestDateEl.textContent = new Date(latest.date).toLocaleDateString();
+
+      const overallColor = getScoreColor(overallScore); // same mapping as history
+      const bgAlpha = 0.12;   // background transparency for pill
+      const borderAlpha = 0.18;
+
+      // Update overall progress bar (animated by your CSS)
+      if (progressBar) {
+        setTimeout(() => {
+          progressBar.style.width = overallScore + '%';
+          progressBar.style.background = `linear-gradient(90deg, ${overallColor} 0%, ${hexToRgba(overallColor, 0.8)} 100%)`;
+        }, 100);
+      }
+
+      // Update eq level pill: use same color family as history
+      const level = getScoreLevel(overallScore);
+      if (eqLevelElement) {
+        eqLevelElement.textContent = level;
+        // keep the base classes and apply inline color styles so you don't break other layouts
+        eqLevelElement.className = 'px-4 py-2 rounded-full text-sm font-semibold';
+        eqLevelElement.style.background = hexToRgba(overallColor, bgAlpha);   // faint bg
+        eqLevelElement.style.color = overallColor;                            // strong text color
+        eqLevelElement.style.border = `1px solid ${hexToRgba(overallColor, borderAlpha)}`; // subtle border
+      }
+    }
+
+    function filterChart(filter) {
+      currentFilter = filter;
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      const labels = assessmentData.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      let datasets = [];
+
+      if (filter === 'all') {
+        Object.entries(categoryConfig).forEach(([cat, config]) => {
+          datasets.push({
+            label: config.name,
+            data: assessmentData.map(d => d.scores[cat] || 0),
+            borderColor: config.color,
+            backgroundColor: config.color + '20',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: false,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBackgroundColor: config.color,
+            pointBorderWidth: 2,
+            pointBorderColor: '#ffffff'
+          });
+        });
+      } else {
+        const config = categoryConfig[filter];
+        datasets.push({
+          label: config.name,
+          data: assessmentData.map(d => d.scores[filter] || 0),
+          borderColor: config.color,
+          backgroundColor: config.color + '20',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: false,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          pointBackgroundColor: config.color,
+          pointBorderWidth: 2,
+          pointBorderColor: '#ffffff'
+        });
+      }
+
+      if (progressChart) progressChart.destroy();
+      progressChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1f2937',
+              bodyColor: '#1f2937',
+              borderColor: '#e5e7eb',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: {
+                callback: v => v + '%',
+                color: '#6b7280',
+                font: { size: 12 }
+              },
+              grid: { color: '#f3f4f6' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#6b7280', font: { size: 12 } }
+            }
+          },
+          interaction: { intersect: false, mode: 'index' }
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadData);
+  </script>
+  <script src="../script/auth-user.js"></script>
+  <script src="../script/login-mods.js"></script>
+  <script src="../script/navigation.js"></script>
+  <script src="../script/nav-avatar.js"></script>
+  <script src="../script/assessmentglobal.js"></script>
+  <script src="../script/script.js"></script>
+  <script src="../script/footer.js"></script>
+</body>
+</body>
+
+</html>

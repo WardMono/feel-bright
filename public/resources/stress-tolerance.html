@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+  <link rel="stylesheet" href="../css/articles.css">
+  <link rel="stylesheet" href="../css/style.css">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+  <title>FeelBright - Stillness and Reflection</title>
+</head>
+<style>
+  /*LOAD OVERLAY */
+  #loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .loading-box {
+    text-align: center;
+    font-family: "League-Spartan", sans-serif;
+    padding: 12vh;
+    border-radius: 2vh;
+
+  }
+
+  #loadingMessage {
+    font-size: 2.4vh;
+    margin-bottom: 1.5vh;
+    font-weight: bold;
+    color: #444;
+  }
+
+  .list-bar strong,
+  em {
+    color: #528614;
+    font-weight: bold;
+  }
+
+  .loading-bar {
+    width: 300px;
+    height: 16px;
+    background-color: #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1vh auto;
+  }
+
+  #loadingProgress {
+    height: 100%;
+    width: 0%;
+    background-color: #528614;
+    transition: width 0.1s linear;
+  }
+
+  #loadingPercent {
+    font-size: 2vh;
+    margin-top: 1vh;
+    color: #333;
+  }
+
+  :root {
+    --fb-green: #7FC58B;
+  }
+
+  @keyframes spinSlow {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulseSoft {
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    50% {
+      opacity: 0.6;
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Target only nav avatar images (desktop/menu/mobile). Keep default inline-block so JS can remove hidden. */
+  img.nav-avatar,
+  img#desktop-avatar,
+  img#menuAvatarLarge,
+  img#mobile-avatar,
+  img#mMenuAvatarLarge {
+    display: inline-block;
+    object-fit: cover;
+    border-radius: 9999px;
+  }
+
+  /* Force-hidden state for nav avatars & nav initials (used when toggled) */
+  img.nav-avatar.hidden,
+  img#desktop-avatar.hidden,
+  img#menuAvatarLarge.hidden,
+  img#mobile-avatar.hidden,
+  img#mMenuAvatarLarge.hidden,
+  .initials-fallback.nav.hidden,
+  .initials-fallback[data-nav-initials].hidden {
+    display: none !important;
+  }
+
+  /* Default nav initials look (keeps consistent across nav slots) */
+  .initials-fallback.nav,
+  .initials-fallback[data-nav-initials] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    box-sizing: border-box;
+    background-color: #DCFCE7;
+    /* green */
+    color: #14532D;
+    font-weight: 700;
+    user-select: none;
+    line-height: 1;
+  }
+
+  /* sensible default sizes — override if you style elsewhere */
+  #desktop-avatar,
+  .initials-fallback[data-initials-for="desktop-avatar"] {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  #menuAvatarLarge,
+  .initials-fallback[data-initials-for="menuAvatarLarge"] {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    font-size: 18px;
+  }
+
+  #mobile-avatar,
+  .initials-fallback[data-initials-for="mobile-avatar"] {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 12px;
+  }
+
+  #menuAvatarLarge,
+  .initials-fallback[data-initials-for="menuAvatarLarge"] {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    min-height: 80px;
+    border-radius: 9999px;
+    object-fit: cover;
+    font-size: 29px;
+    /* good size for initials */
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+<body>
+
+  <!--NAVBAR SECTION-->
+  <nav class="bg-white p-5 shadow-md transition-all duration-300" x-data="{ open: false }">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+      <!-- LOGO -->
+      <div class="relative shrink-0">
+        <a href="../index.html">
+          <img src="../img/fb-banners.png" class="max-h-[6vh] sm:max-h-[6vh] md:max-h-[7vh]" alt="Logo" />
+        </a>
+      </div>
+
+      <!-- DESKTOP NAV LINKS -->
+      <div class="hidden xl:flex items-center gap-8 ml-8">
+        <a href="../index.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Home</a>
+        <a href="../features.html" class="font-bold text-[#7FC58B] transition-colors duration-300">Features</a>
+        <a href="../resources.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+        <a href="../about.html"
+          class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+        <a href="#" class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+      </div>
+
+      <!-- RIGHT SIDE (desktop auth OR user) + hamburger -->
+      <div class="flex items-center gap-4">
+
+        <!-- DESKTOP AUTH BUTTONS (default state: hidden below xl) -->
+        <div id="auth-buttons-desktop" class="hidden xl:flex items-center gap-4">
+          <a href="javascript:void(0);" onclick="openLoginModal()"
+            class="font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+            Log in
+          </a>
+          <a href="javascript:void(0)" onclick="openRegisterModal()"
+            class="font-bold text-white bg-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+            Sign up
+          </a>
+        </div>
+
+        <!-- DESKTOP PROFILE (avatar left, name/email right) -->
+        <div id="user-profile-desktop" class="hidden xl:flex relative items-center gap-3">
+          <span id="desktop-username" class="text-[#1C1C1C] font-bold">Hi, User</span>
+
+          <!-- trigger -->
+          <button id="profile-trigger" class="relative focus:outline-none rounded-full shrink-0"
+            aria-label="Open profile menu">
+            <!-- desktop-avatar has object-fit:cover from CSS above -->
+            <img id="desktop-avatar" src="" alt="User"
+              class="w-9 h-9 nav-avatar rounded-full border border-[#7FC58B] cursor-pointer
+               transition-all duration-300 ease-out hover:scale-110 hover:-translate-y-0.5
+               hover:ring-4 hover:ring-[#7FC58B]/40 hover:ring-offset-2 hover:ring-offset-white
+               hover:shadow-lg hover:shadow-[#7FC58B]/40 focus-visible:ring-4 focus-visible:ring-[#7FC58B]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:transform-none">
+          </button>
+
+          <!-- wider hover bridge (for easier travel to the panel) -->
+          <div id="profile-bridge" class="absolute right-0 top-10 h-10 w-28"></div>
+
+          <!-- dropdown -->
+          <div id="profile-menu" role="menu" aria-hidden="true" class="absolute top-12 right-0 w-[22rem] bg-white border rounded-lg shadow-lg ring-1 ring-black/5 p-4 z-50
+                opacity-0 translate-y-2 pointer-events-none transition-all duration-200">
+            <div class="flex items-center gap-4">
+              <!-- avatar LEFT -->
+              <img id="menuAvatarLarge" src="" alt="Avatar preview"
+                class="w-16 h-16 nav-avatar rounded-full border border-[#7FC58B] shrink-0">
+              <!-- name/email RIGHT -->
+              <div class="min-w-0">
+                <div id="menuName" class="font-semibold text-gray-900 truncate">User Name</div>
+                <div id="menuEmail" class="text-xs text-gray-500 truncate">user@example.com</div>
+              </div>
+            </div>
+
+            <hr class="my-3 border-gray-200">
+
+            <!-- DESKTOP DROPDOWN MENU -->
+            <div class="grid gap-1">
+              <a href="/user/viewprofile.html#profile" @click.prevent="open=false; goToSettingsSection('profile')"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Profile Settings
+              </a>
+
+              <a href="./user/progress.html"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">
+                Track Progress
+              </a>
+
+              <hr class="my-3 border-gray-200">
+
+              <a href="/logout"
+                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">
+                Logout
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- HAMBURGER (mobile) -->
+        <button @click="open = !open" class="xl:hidden flex flex-col gap-1 focus:outline-none ml-2"
+          aria-label="Toggle Menu">
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'rotate-45 translate-y-1.5': open}"></span>
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'opacity-0': open}"></span>
+          <span class="block w-6 h-0.5 bg-[#1C1C1C]" :class="{'-rotate-45 -translate-y-1.5': open}"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE MENU -->
+    <div x-show="open" x-transition class="xl:hidden w-full mt-4" @click.outside="open = false">
+      <div class="flex flex-col items-center space-y-4 px-4 py-6">
+        <a href="../index.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Home</a>
+        <a href="../features.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Features</a>
+        <a href="../resources.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Resources</a>
+        <a href="../about.html" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">About</a>
+        <a href="#" @click="open=false"
+          class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors duration-300">Contacts</a>
+
+        <!-- MOBILE AUTH BUTTONS -->
+        <div id="auth-buttons-mobile" class="flex flex-col gap-3 w-full pt-4 border-t border-gray-200 mt-4">
+          <a href="javascript:void(0);" onclick="openLoginModal()"
+            class="text-center font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#7FC58B] hover:text-white transition-colors duration-300">
+            Log in
+          </a>
+          <a href="javascript:void(0)" onclick="openRegisterModal()"
+            class="text-center font-bold text-white bg-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#6FB07C] transition-colors duration-300">
+            Sign up
+          </a>
+        </div>
+
+        <!-- MOBILE PROFILE -->
+        <div id="user-profile-mobile" class="hidden w-full pt-4 border-t border-gray-200 mt-4"
+          x-data="{ openProfile:false }">
+
+          <!-- Trigger row -->
+          <button @click="openProfile = !openProfile" :aria-expanded="openProfile"
+            class="w-full flex items-center justify-between px-1 py-2">
+            <div class="flex items-center gap-3">
+              <img id="mobile-avatar" src="" class="w-8 h-8 nav-avatar rounded-full border border-[#7FC58B] shrink-0"
+                alt="User">
+              <span id="mobile-username" class="font-bold text-[#1C1C1C]">Hi, User</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transition-transform duration-200"
+              :class="openProfile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <!-- Dropdown card -->
+          <div x-show="openProfile" x-transition @click.outside="openProfile=false"
+            class="mt-3 max-w-full bg-white rounded-lg p-4">
+            <div class="flex flex-col items-center text-center gap-3">
+              <img id="mMenuAvatarLarge"
+                src="/uploads/profiles/1756213865748-Screenshot 2023-09-08 233746.png?v=1756230921086"
+                class="w-20 h-20 nav-avatar rounded-full border border-[#7FC58B]" alt="Avatar preview" />
+              <div id="mMenuName" class="font-semibold text-gray-900">User Name</div>
+              <div id="mMenuEmail" class="text-xs text-gray-500">UserExample@Example.com</div>
+            </div>
+
+            <hr class="my-3 border-gray-200">
+
+            <div class="grid gap-1">
+              <a href="javascript:void(0)" onclick="goToSettingsSection('profile'); open=false;"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">Profile
+                Setings</a>
+              <a href="progress.html"
+                class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors duration-300">Track
+                Progress</a>
+
+              <hr class="my-3 border-gray-200">
+
+              <a href="/logout"
+                class="block px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-300">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO CONTENT -->
+  <section class="relative isolate overflow-hidden h-full bg-white ">
+    <div class="container px-6 py-8 mx-auto text-center mb-10">
+      <!-- Top Blur Shape -->
+      <div aria-hidden="true" class="absolute inset-x-0 -top-0 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
+        <div
+          style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"
+          class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#CDEED7] to-[#A4DAB6] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]">
+        </div>
+      </div>
+      <div class="max-w-xl mx-auto pt-5">
+        <div
+          class="inline-flex items-center px-4 py-1 border border-[#7FC58B] border-opacity-30 rounded-full bg-[#E6F9ED] text-[#22693F] font-medium text-sm mb-6">
+          Resilience Skills
+        </div>
+        <h1 class="text-3xl font-semibold text-[#1C1C1C] lg:text-4xl">Stress Tolerance and Resilience</h1>
+      </div>
+      <div class="flex justify-center mt-12">
+        <img class="object-cover w-full h-50 rounded-xl lg:w-5/5 shadow-[0_10px_20px_rgba(77,161,103,0.3)]"
+          src="../img/34.png" />
+      </div>
+    </div>
+
+    <!-- LEFT SIDE BLUR SHAPE -->
+    <div aria-hidden="true"
+      class="absolute top-1/2 left-[-10rem] -translate-y-1/2 rotate-[30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-r from-[#CDEED7] to-[#A4DAB6] opacity-15 blur-3xl -z-10">
+    </div>
+
+    <!-- RIGHT SIDE BLUR SHAPE -->
+    <div aria-hidden="true"
+      class="absolute top-1/2 right-[-10rem] -translate-y-1/2 rotate-[-30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-l from-[#CDEED7] to-[#A4DAB6] opacity-15 blur-3xl -z-10">
+    </div>
+
+    <!-- BOTTOM BLUR SHAPE -->
+    <div aria-hidden="true"
+      class="absolute bottom-[-10rem] sm:bottom-[-20rem] left-1/2 -translate-x-1/2 w-[60rem] h-[30rem] rounded-full bg-gradient-to-t from-[#CDEED7] to-[#A4DAB6] opacity-15 blur-3xl -z-10">
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto border border-gray-200 rounded-xl shadow-sm bg-white mb-10">
+      <div class="p-6 sm:p-8">
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4 mt-2">Understanding Stress Tolerance</h2>
+        <p class="text-gray-700 leading-relaxed">
+          Stress tolerance is about staying steady when life or work gets tough. Leaders with high stress tolerance can
+          handle pressure without falling apart. They see challenges as chances to learn—not threats to wince from. This
+          mindset helps keep teams calm during busy or messy times. Stress-tolerant leaders show others it’s possible to
+          stay centered in chaos.
+        </p>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          They often feel more confident even when under pressure. That calm confidence helps others feel supported too.
+          Stress tolerance also improves decision-making during tight deadlines. It’s a skill you can grow by practicing
+          small stress challenges. Over time, you become stronger and more adaptable.
+        </p>
+      </div>
+
+
+      <!-- First Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4">Resilience Skills: What They Are</h2>
+          <p class="text-gray-700 leading-relaxed">
+            Resilience skills are tools that help you bounce back from setbacks. Things like thinking positively,
+            staying flexible, solving problems, and having supportive relationships all build resilience. These skills
+            aren’t fixed—they can be learned and strengthened over time. Resilient people don’t just recover; they often
+            come out stronger. That strength shows in calm leadership and thoughtful responses.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            Resilience also includes knowing when to ask for help and when to take a break. It means understanding your
+            emotional patterns and how to respond thoughtfully. Leaders who grow resilience guide their teams with
+            confidence and warmth. They stay calm under pressure and encourage others to do the same. Resilience becomes
+            the steady foundation beneath stressful situations.
+          </p>
+        </div>
+      </div>
+
+
+      <!-- Quote -->
+      <div class="mt-8 p-10 bg-gray-50 border-l-4 border-green-600 rounded-r">
+        <blockquote class="text-gray-700 italic">
+          “Resilience refers to the ability to recover from challenges and setbacks … These skills can be learned and
+          strengthened over time, benefiting both adults and children.”
+        </blockquote>
+        <p class="text-gray-600 mt-2 text-right">
+          — Kendra Cherry, (2025)
+        </p>
+      </div>
+
+
+      <!-- Second Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Reframing Stress as Opportunity</h2>
+          <p class="text-gray-700 leading-relaxed">
+            Resilient leaders often see stress differently—they view it as fuel, not as a threat. Instead of thinking,
+            “This is too much,” they ask, “What can I learn or gain from this moment?” This shift transforms stress from
+            a stumbling block into a stepping stone. Reframing offers energy and purpose even during hard times. It’s an
+            attitude that empowers rather than drains.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            This mindset helps leaders stay proactive instead of overwhelmed. It also inspires teams to shift their
+            perspective when work feels intense. Teams guided by positivity tend to find creative solutions. When
+            leaders reframe stress, they model resilience in action. Such a mindset helps everyone view pressure as a
+            path to growth.
+          </p>
+        </div>
+      </div>
+
+
+      <!-- Third Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Developing Flexibility and Adaptability</h2>
+          <p class="text-gray-700 leading-relaxed">
+            Adaptability means adjusting your approach when the situation changes. Resilient leaders pivot with
+            grace—they don’t cling to old plans. Instead, they respond smartly and quickly. This flexibility keeps teams
+            aligned even when surprises arise. Adaptable leaders build confidence by showing others how to move forward
+            calmly.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            Flexibility also means letting go of what no longer works and embracing new ideas. It encourages
+            experimentation and learning from mistakes. Leaders who adapt well inspire trust in uncertain times. Their
+            calm presence brings clarity instead of chaos. Adaptability is resilience in motion.
+          </p>
+        </div>
+      </div>
+
+
+      <!-- Fourth Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Cultivating Problem-Solving Skills
+          </h2>
+          <p class="text-gray-700 leading-relaxed">
+            Resilience grows when leaders can find solutions instead of freezing. Even a simple list of possible next
+            steps helps. Resilient leaders break down problems and take manageable action steps. This proactive style
+            builds momentum and confidence. They lead by showing others how to face challenges thoughtfully.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            Problem-solving also includes staying calm when obstacles arise. Rather than panicking, resilient leaders
+            gather information and form a plan. It’s about seeing options instead of seeing walls. Teams trust leaders
+            who act with purpose. Solving problems builds resilience across the whole group.
+          </p>
+        </div>
+      </div>
+
+      <!-- Fifth Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Leveraging Social Support</h2>
+          <p class="text-gray-700 leading-relaxed">
+            Resilience is strengthened by connection. Leaders who seek advice, share struggles, and support others build
+            stronger bonds. Healthy relationships act like shock absorbers during tough times. Teams led by connective,
+            empathetic leaders feel supported. Social support teaches collective resilience—not just individual
+            toughness.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            Sharing burdens also models vulnerability and trust. It encourages others to seek help when needed.
+            Resilient leadership isn’t isolation—it’s collaboration. When people connect, stress feels more manageable.
+            Social resilience becomes a team strength.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sixth Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Practicing Self-Compassion and Wellbeing
+          </h2>
+          <p class="text-gray-700 leading-relaxed">
+            Self-compassion means treating yourself kindly during tough moments. Resilient leaders pause, breathe, and
+            acknowledge their stress without shame. This self-kindness helps them bounce back more quickly. When leaders
+            prioritize sleep, breaks, and boundaries, they sustain energy over time. It also teaches teams to respect
+            personal care as part of leadership.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            Self-care isn’t selfish—it’s sustaining. By modeling compassion, leaders build healthier team cultures. They
+            signal that well-being matters as much as results. Over time, small acts of self-kindness build emotional
+            stamina. Resilience grows when leaders honor their own needs too.
+          </p>
+        </div>
+      </div>
+
+      <!-- Seventh Section -->
+      <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+        <div class="w-full ">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Choosing Growth Through Reflection</h2>
+          <p class="text-gray-700 leading-relaxed">
+            Reflecting on challenges helps leaders turn stress into wisdom. It means asking questions like: “What did I
+            learn?”, “How did I respond, and what could I try next?” These reflections build resilience by transforming
+            experience into insight. Leaders who reflect often grow faster and lead more thoughtfully. It’s a habit that
+            deepens self-understanding and emotional strength.
+          </p>
+          <p class="text-gray-700 leading-relaxed mt-4">
+            This growth mindset also shows teams that challenges aren’t failures—they’re lessons. It creates an
+            environment where setbacks become springboards. Teams trust leaders who learn, adapt, and invite
+            improvement. Over time, reflection builds a resilient mindset—for leaders and teams alike. Growth becomes
+            the story behind every struggle.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="max-w-6xl mx-auto pb-10">
+      <div class="flex justify-center space-x-2">
+        <a href="../features/meditation.html" class="inline-flex h-10 px-6 items-center justify-center rounded-xl font-md text-white
+                bg-[#7FC58B] hover:bg-[#6FB07C] transition-colors
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7FC58B]">
+          Back to Features
+        </a>
+      </div>
+    </div>
+
+    <!-- BOTTOM BLUR SHAPE -->
+    <div aria-hidden="true"
+      class="absolute bottom-[-10rem] sm:bottom-[-20rem] left-1/2 -translate-x-1/2 w-[60rem] h-[30rem] rounded-full bg-gradient-to-t from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+    </div>
+  </section>
+
+  <!-- LOGIN Modal Overlay -->
+  <div id="loginModal"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
+    style="padding: 3vh;">
+    <!-- Modal Content -->
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-md relative overflow-hidden border border-[#EAF7EF]">
+
+      <!-- Close Button -->
+      <button onclick="closeLoginModal()"
+        class="absolute top-3 right-3 text-gray-500 hover:text-gray-600 transition bg-red-100 hover:bg-red-200 p-1 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Centered Logo Slot -->
+      <div id="modalLogo" class="w-full flex justify-center pt-6">
+        <div
+          class="h-14 w-14 rounded-full bg-[#E6F9ED] flex items-center justify-center shadow-inner ring-1 ring-[#CFF2DA]">
+          <img id="systemLogo" src="../img/fb-tabs-icn.png" alt="App Logo" class="h-8 w-8" />
+        </div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginFormWrapper" class="px-6 pb-6 pt-4">
+        <form id="loginForm" onsubmit="handleLogin(event)" class="w-full">
+          <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Welcome Back</h2>
+          <p class="text-center text-sm text-[#6FB07C] mb-6">Sign in to your account to continue</p>
+
+          <!-- Error message (your design) -->
+          <div id="error-message"
+            class="hidden mb-4 rounded-lg p-3 bg-[#FFF1F1] text-[#D32F2F] text-sm border border-[#FFE5E5] flex items-start gap-2"
+            role="alert" aria-live="assertive" aria-atomic="true">
+            <i class="fas fa-exclamation-circle mt-0.5" aria-hidden="true"></i>
+            <span id="error-text">Invalid credentials. Please try again.</span>
+          </div>
+
+          <!-- Legacy / inline msg box kept for backward compat -->
+          <div id="msgBox" class="hidden mb-4 p-2 text-sm rounded text-white text-center"></div>
+
+          <!-- Email -->
+          <div class="relative mb-4">
+            </span>
+            <input id="email" type="email" name="email" placeholder="Enter your Email Address"
+              class="inputField peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+              required />
+          </div>
+
+          <!-- Password -->
+          <div class="relative mb-6">
+            </span>
+            <input id="password" type="password" name="password" placeholder="Enter your Password"
+              class="inputField peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20 "
+              required />
+            <span
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+              onclick="togglePassword()">
+              <i id="toggleIcon" class="fa-regular fa-eye"></i>
+            </span>
+          </div>
+
+          <!-- Remember Me and Forgot -->
+          <div class="flex justify-between items-center mb-6 text-sm">
+            <label class="flex items-center text-gray-600 cursor-pointer">
+              <input type="checkbox" id="remember" class="checkbox-input mr-2">
+              Remember me
+            </label>
+            <a href="javascript:void(0)" onclick="showForgotForm()" class="text-[#7FC58B] hover:underline">
+              Forgot password?
+            </a>
+          </div>
+
+
+
+          <!-- Submit -->
+          <button type="submit"
+            class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">
+            Sign In
+          </button>
+
+          <!-- Register Link -->
+          <p class="text-sm text-center mt-4 text-gray-700">
+            Don't have an account?
+            <a href="javascript:void(0)" onclick="showRegisterForm()" class="text-[#6FB07C] hover:underline">Create
+              one</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="registerFormWrapper" class="hidden px-6 pb-6 pt-4">
+        <form onsubmit="handleRegister(event)" class="w-full">
+          <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Create Account</h2>
+          <p class="text-center text-sm text-[#6FB07C] mb-6">Create a new account to get started</p>
+
+          <div id="msgBox" class="hidden mb-4 p-2 text-sm rounded text-white text-center"></div>
+
+          <!-- First + Last Name -->
+          <div class="flex gap-4 mb-4">
+            <div class="w-1/2 relative">
+              </span>
+              <input id="firstName" type="text" required placeholder="First name"
+                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+            </div>
+            <div class="w-1/2 relative">
+              <input id="lastName" type="text" required placeholder="Last name"
+                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white pr-auto px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+            </div>
+          </div>
+
+          <!-- Middle Name -->
+          <div class="relative mb-4">
+            <input id="middleName" type="text" placeholder="Middle name (optional)"
+              class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+          </div>
+
+          <!-- Email -->
+          <div class="relative mb-4">
+            </span>
+            <input id="email" type="email" required placeholder="Enter your email"
+              class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+          </div>
+
+          <!-- Password -->
+          <div class="relative mb-4">
+            </span>
+            <input id="password" type="password" required placeholder="Create a password"
+              class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+            <span
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+              onclick="togglePasswordField('password', 'togglePassIcon')">
+              <i id="togglePassIcon" class="far fa-eye"></i>
+            </span>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="relative mb-4">
+            </span>
+            <input id="confirmPassword" type="password" required placeholder="Confirm your password"
+              class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+            <span
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+              onclick="togglePasswordField('confirmPassword', 'toggleConfirmIcon')">
+              <i id="toggleConfirmIcon" class="far fa-eye"></i>
+            </span>
+          </div>
+
+     <!-- Terms -->
+                    <div class="text-center mt-4 mb-4">
+                        <p class="text-sm text-gray-600">
+                            By signing in, you agree to the
+                            <a href="../termscondition.html" class="text-[#7FC58B] hover:underline" target="_blank">Terms of Service</a>
+                            and
+                            <a href="../privacy.html" class="text-[#7FC58B] hover:underline" target="_blank">Privacy Policy</a>.
+                        </p>
+                    </div>
+
+          <!-- Submit -->
+          <button type="submit" class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl
+                font-semibold transition">
+            Create Account
+          </button>
+
+          <!-- Login Link -->
+          <p class="text-sm text-center mt-4 text-gray-700">
+            Already have an account?
+            <a href="javascript:void(0)" onclick="showLoginForm()" class="text-[#6FB07C] hover:underline">Sign
+              in</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <div id="forgotFormWrapper" class="hidden px-6 pb-6 pt-4">
+        <form onsubmit="sendReset(event)" class="w-full">
+          <h2 class="text-2xl font-bold mb-2 text-center text-gray-800">Forgot Something?</h2>
+          <p class="text-sm text-[#6FB07C] text-center mb-6">
+            Enter your registered email and we'll send you a link to reset your password.
+          </p>
+
+          <div class="mb-4">
+            <input type="email" id="email" placeholder="you@example.com" required
+              class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+          </div>
+
+          <button type="submit" class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl
+                font-semibold transition">
+            Send Reset Link
+          </button>
+
+          <p id="msg" class="mt-4 text-sm text-center text-gray-600"></p>
+
+          <div class="w-full flex justify-center">
+            <a href="javascript:void(0)" onclick="showLoginForm()" class="block w-full rounded-xl border border-green-200 bg-green-50 text-gray-500 
+           hover:bg-green-100 hover:text-green-600 hover:border-green-300 
+           font-semibold transition duration-200 text-center py-2">
+              Back to Login
+            </a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+  <!--END OF POP UP FORMS-->
+
+  <div id="resultsLoadingOverlay"
+    class="fixed inset-0 z-[70] hidden items-center justify-center bg-white/90 backdrop-blur-xl">
+    <div class="flex flex-col items-center">
+      <div class="relative h-20 w-20">
+        <div class="absolute inset-2 rounded-full border-[6px] border-[color:var(--fb-green)] border-t-transparent"
+          style="animation:spinSlow 1.2s linear infinite;"></div>
+      </div>
+      <div id="resultsLoadingText" class="mt-4 text-sm font-semibold tracking-wide text-[color:var(--fb-green)]"
+        style="animation:pulseSoft 1.6s ease-in-out infinite;">
+        Logging you in...
+      </div>
+    </div>
+  </div>
+
+  <!-- POST-REGISTER CONFIRMATION MODAL -->
+  <div id="postRegisterModal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="relative max-w-md w-full bg-white rounded-2xl p-6 border border-[#EAF7EF] shadow-xl text-center">
+      <button onclick="closePostRegisterModal()"
+        class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 bg-red-100 hover:bg-red-200 p-1 rounded-full">
+        <!-- X icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex justify-center mb-3">
+        <div class="h-14 w-14 rounded-full bg-[#E6F9ED] flex items-center justify-center ring-1 ring-[#CFF2DA]">
+          <img src="../img/fb-tabs-icn.png" alt="">
+        </div>
+      </div>
+
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Confirm your email</h3>
+      <p id="postRegMsg" class="text-sm text-gray-600 mb-6">
+        We've sent a confirmation link to your email. Please verify your account before logging in.
+      </p>
+
+      <div class="flex gap-3 justify-center">
+        <button id="postRegBackHomeBtn"
+          class="px-4 py-2 rounded-xl bg-[#7FC58B] hover:bg-[#6FB07C] text-white font-semibold"
+          onclick="goHomeAndOpenLogin()">
+          Back to Home
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!--Back to top-->
+  <button id="backToTop" onclick="scrollToTop()">↑</button>
+
+  <!--FOOTER SECTION-->
+  <footer id="site-footer"
+    class="relative z-20 bg-white pt-12 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.01)] transition-all duration-300">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-8 mb-8 text-center md:text-left md:grid-cols-2 lg:grid-cols-4">
+        <div class="md:col-span-1 flex flex-col items-center md:items-start">
+          <a href="#" class="flex items-center mb-4 justify-center md:justify-start">
+            <img src="../img/fb-banners.png" alt="Logo"
+              class="h-10 mr-3 transition-transform duration-300 hover:scale-105">
+          </a>
+          <p class="text-[#333333] mb-5 font-bold text-base md:text-lg">Emotional Intelligence Assessment</p>
+          <div class="flex space-x-4 justify-center md:justify-start">
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#"
+              class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Quick Links</h3>
+          <ul class="space-y-2">
+            <li><a href="#"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Home</a>
+            </li>
+            <li><a href="#features"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Features</a>
+            </li>
+            <li><a href="#resources"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Resources</a>
+            </li>
+            <li><a href="#about"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">About
+                Us</a></li>
+            <li><a href="#contact"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Contact</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Resources</h3>
+          <ul class="space-y-2">
+            <li><a href="#"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Articles</a>
+            </li>
+            <li><a href="#"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Meditations</a>
+            </li>
+            <li><a href="#"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Exercise
+                Tools</a></li>
+            <li><a href="#"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Musics</a>
+            </li>
+          </ul>
+        </div>
+
+                 <!-- Contact Info -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fas fa-envelope mr-3 text-[#333333]"></i>
+              <a href="https://mail.google.com/mail/u/0/#inbox?compose=DmwnWrRttNpPhFPlStprmfpgBbhWdqlSlqbblWggTlgnLfGzxNNdhSHxcPHMbWrnRcXVvgcXcmtv"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300" target="_blank">contact.feelbright@gmail.com</a>
+            </li>
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fab fa-facebook-f mr-3 text-[#333333]"></i>
+<a href="https://www.facebook.com/aujaspsysoc" target="_blank" class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300">
+  Psychology Society - AUJAS 
+</a>
+
+            </li>
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fas fa-map-marker-alt mr-3 text-[#333333]"></i>
+              <span class="text-[#333333] text-center md:text-left">Arellano - JAS<br>3058 Taft Ave,<br> Pasay City, Metro Manila</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Footer Section -->
+      <div
+        class="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300">
+        <p class="text-gray-500 text-sm mb-4 md:mb-0 text-center md:text-left transition-all duration-300">
+          &copy; <span id="copyright-year"></span> FeelBright. All rights reserved.
+        </p>
+        <div class="flex flex-wrap justify-center space-x-3 md:space-x-6 transition-all duration-300">
+          <a href="#"
+            class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Privacy
+            Policy</a>
+          <a href="#"
+            class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Terms
+            of Service</a>
+          <a href="#"
+            class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Cookie
+            Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!--SCRIPT-->
+  <script src="../script/script.js"></script>
+  <script src="../script/auth-user.js"></script>
+  <script src="../script/navigation.js"></script>
+  <script src="../script/nav-avatar.js"></script>
+  <script src="../script/loading-link.js"></script>
+  <script src="../script/login-mods.js"></script>
+  <script src="../script/footer.js"></script>
+</body>
+
+</html>

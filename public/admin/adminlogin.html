@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Login - FeelBright</title>
+
+  <!-- Tailwind + Fonts + Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'League Spartan', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* small shake animation used by JS */
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-5px);
+      }
+
+      75% {
+        transform: translateX(5px);
+      }
+    }
+
+    /* loading overlay animations */
+    @keyframes spinSlow {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulseSoft {
+      0% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .7
+      }
+
+      100% {
+        opacity: 1
+      }
+    }
+
+    :root {
+      --fb-green: #7FC58B;
+      --fb-emerald: #10B981;
+    }
+  </style>
+</head>
+
+<body class="relative isolate overflow-hidden bg-white min-h-screen flex items-center justify-center p-4">
+
+  <!-- LEFT SIDE BLUR SHAPE -->
+  <div aria-hidden="true"
+    class="absolute top-1/2 left-[-10rem] -translate-y-1/2 rotate-[30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-r from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+  </div>
+
+  <!-- RIGHT SIDE BLUR SHAPE -->
+  <div aria-hidden="true"
+    class="absolute top-1/2 right-[-10rem] -translate-y-1/2 rotate-[-30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-l from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+  </div>
+
+  <!-- Loading overlay (kept; toggled by your other code if needed) -->
+  <div id="LoadingOverlay" class="fixed inset-0 z-[70] hidden items-center justify-center bg-white/90 backdrop-blur-xl">
+    <div class="flex flex-col items-center">
+      <div class="relative h-20 w-20">
+        <div class="absolute inset-2 rounded-full border-[6px] border-[color:var(--fb-green)] border-t-transparent"
+          style="animation:spinSlow 1.2s linear infinite;"></div>
+      </div>
+      <div class="mt-4 text-sm font-semibold tracking-wide text-[color:var(--fb-green)]"
+        style="animation:pulseSoft 1.6s ease-in-out infinite;">Loading please be patient…
+      </div>
+    </div>
+  </div>
+
+  <!-- Card (Gate-style design) -->
+  <main class="max-w-md w-full bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-200">
+    <!-- Header / Logo -->
+    <div class="py-8 px-6 bg-white border-b border-gray-200 text-center">
+      <!-- same src as you requested -->
+      <img id="systemLogo" src="../img/fb-banners.png" alt="FeelBright Logo" class="h-50 w-80 mx-auto"
+        onerror="this.style.display='none'">
+    </div>
+
+    <div class="p-6">
+      <!-- Removed visible status area per request. -->
+
+      <div class="text-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-1">Admin Portal</h2>
+        <p class="text-lg text-[color:var(--fb-green)]">Sign in to access the dashboard</p>
+      </div>
+
+      <!-- Error / Notice (keeps id & structure) -->
+      <div id="error-message"
+        class="hidden mb-4 rounded-lg p-3 bg-[#FFF1F1] text-[#D32F2F] text-sm border border-[#FFE5E5] flex items-start gap-2">
+        <i class="fas fa-exclamation-circle mt-0.5"></i>
+        <span id="error-text">Invalid credentials. Please try again.</span>
+      </div>
+
+      <!-- Form (IDs preserved; inputs use requested classes) -->
+      <form id="login-form" class="space-y-5" novalidate>
+        <div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
+            <input type="email" id="email" name="email" placeholder="Enter your admin email" required
+              class="w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+          </div>
+        </div>
+
+        <div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required
+              class="w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-6 focus:ring-[#7FC58B]/20" />
+            <button type="button" id="toggle-password"
+              class="absolute right-3 top-1/2 bottom-1 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] transition">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" id="login-btn"
+            class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">
+            Sign In to Dashboard
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-8 pt-6 border-t border-gray-200 text-center text-xs text-gray-500">
+        <p>© FeelBright • Admin Access</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ORIGINAL JS: IDs preserved; JS now guards statusIndicator so removal won't throw errors -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const loginForm = document.getElementById('login-form');
+      const errorMessage = document.getElementById('error-message');
+      const errorText = document.getElementById('error-text');
+      const togglePassword = document.getElementById('toggle-password');
+      const passwordInput = document.getElementById('password');
+      const loginBtn = document.getElementById('login-btn');
+
+      // status-indicator element removed intentionally; safely grab (may be null)
+      const statusIndicator = document.getElementById('status-indicator');
+
+      // Check server status
+      checkServerStatus();
+
+      // Toggle password visibility
+      if (togglePassword) {
+        togglePassword.addEventListener('click', function () {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          this.innerHTML = type === 'password'
+            ? '<i class="fa-regular fa-eye"></i>'
+            : '<i class="fa-regular fa-eye-slash"></i>';
+        });
+      }
+
+
+      // Handle form submission
+      if (loginForm) {
+        loginForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+
+          // Basic validation
+          if (!email || !password) {
+            showError('Please fill in all fields');
+            return;
+          }
+
+          // Email validation
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            showError('Please enter a valid email address');
+            return;
+          }
+
+          // Show loading state
+          loginBtn.classList.add('btn-loading');
+          loginBtn.disabled = true;
+
+          try {
+            const baseUrl = window.location.origin;
+            const loginUrl = `${baseUrl}/admin/login`;
+
+            console.log('Attempting login to:', loginUrl);
+
+            const response = await fetch(loginUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password }),
+              credentials: 'include'
+            });
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (data.success) {
+              showSuccess('Login successful! Redirecting...');
+              setTimeout(() => { window.location.href = '/admin/dashboard'; }, 1500);
+            } else {
+              showError(data.error || 'Invalid admin credentials. Please try again.');
+            }
+          } catch (error) {
+            console.error('Login error:', error);
+
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+              showError('Cannot connect to server. Please make sure the server is running on the correct port.');
+              updateServerStatus(false);
+            } else if (error.message.includes('HTTP error')) {
+              showError('Server error. Please try again or contact support.');
+            } else {
+              showError('Network error. Please check your connection and try again.');
+            }
+          } finally {
+            loginBtn.classList.remove('btn-loading');
+            loginBtn.disabled = false;
+          }
+        });
+      }
+
+      async function checkServerStatus() {
+        try {
+          const baseUrl = window.location.origin;
+          const response = await fetch(`${baseUrl}/api/test`);
+          if (response.ok) updateServerStatus(true);
+          else updateServerStatus(false);
+        } catch (err) {
+          updateServerStatus(false);
+        }
+      }
+
+      function updateServerStatus(isOnline) {
+        // statusIndicator element was removed — guard before using it
+        if (!statusIndicator) return;
+        if (isOnline) {
+          statusIndicator.textContent = 'Server Online';
+          statusIndicator.className = 'status-indicator status-online';
+          statusIndicator.style.display = 'block';
+          setTimeout(() => { statusIndicator.style.display = 'none'; }, 3000);
+        } else {
+          statusIndicator.textContent = 'Server Offline - Check Console';
+          statusIndicator.className = 'status-indicator status-offline';
+          statusIndicator.style.display = 'block';
+        }
+      }
+
+      function showError(message) {
+        errorText.textContent = message;
+        errorMessage.classList.remove('hidden');
+        errorMessage.classList.add('flex');
+        errorMessage.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => { errorMessage.style.animation = ''; }, 600);
+        setTimeout(() => { errorMessage.classList.remove('flex'); errorMessage.classList.add('hidden'); }, 5000);
+      }
+
+      function showSuccess(message) {
+        errorText.textContent = message;
+        errorMessage.classList.remove('hidden');
+        errorMessage.classList.add('flex');
+        errorMessage.style.background = '#E8F5E9';
+        errorMessage.style.color = '#166A2B';
+      }
+
+      // Clear error when user starts typing
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+          errorMessage.classList.add('hidden');
+          errorMessage.classList.remove('flex');
+        });
+      });
+
+      // Enter key submits
+      document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit'));
+      });
+    });
+  </script>
+</body>
+
+</html>

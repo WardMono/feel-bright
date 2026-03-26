@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en" class="font-[League_Spartan]">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Archived Users - FeelBright (Updated)</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="./css/userlist.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .archived-user {
+      opacity: 0.8;
+    }
+
+    .archived-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* custom checkbox */
+    .checkbox-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 4px;
+      background: #fff;
+      display: inline-block;
+      vertical-align: middle;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+
+    /* checked: green background with a white check SVG centered */
+    .checkbox-input:checked {
+      background-color: #7FC58B;
+      border-color: #7FC58B;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath fill='white' d='M4.5 7.5L1 4l1.2-1.2L4.5 5.1 9.8.8 11 2z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 70% 70%;
+    }
+
+    /* focus ring */
+    .checkbox-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.12);
+    }
+
+    /* --- Bulk actions + search layout --- */
+    .top-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    /* on medium+ screens: bulk actions left, search+filters right */
+    @media (min-width: 768px) {
+      .top-controls {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .bulk-actions {
+        width: auto;
+        flex: 0 0 auto;
+        margin-right: 1rem;
+      }
+
+      .search-filters {
+        flex: 1 1 0;
+      }
+    }
+
+    /* Make the bulk action buttons match modal button sizing */
+    .bulk-actions .btn {
+      width: 8rem;
+      /* same as w-32 */
+      height: 2.75rem;
+      /* same as h-11 */
+      font-weight: 600;
+      border-radius: 0.5rem;
+      /* rounded-lg */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Restore green button (within bulk actions) */
+    .bulk-actions .btn-restore {
+      background: #7FC58B;
+      color: #fff;
+      border: 0;
+    }
+
+    .bulk-actions .btn-restore:hover {
+      background: #6FB07C;
+    }
+
+    /* Delete red button */
+    .bulk-actions .btn-delete {
+      background: #ef4444;
+      /* red-500 */
+      color: #fff;
+      border: 0;
+    }
+
+    .bulk-actions .btn-delete:hover {
+      background: #dc2626;
+    }
+
+    /* Misc: make the bulk actions card visually match search box */
+    .bulk-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: #ffffff;
+      border: 1px solid #e6f3ea;
+      /* subtle green-ish border */
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 4px rgba(16, 24, 40, 0.03);
+    }
+
+    .bulk-actions .count {
+      min-width: 3.25rem;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    /* Ensure search + filters align nicely */
+    .search-filters {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .search-filters>.left {
+      display: flex;
+      gap: 0.75rem;
+      flex: 1 1 0;
+      align-items: center;
+    }
+
+    .search-filters>.right {
+      flex: 0 0 18rem;
+    }
+
+    /* On very small screens, make buttons full width stacked inside bulk card */
+    @media (max-width: 430px) {
+      .bulk-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+
+      .bulk-actions .btn {
+        width: 100%;
+        height: 2.75rem;
+      }
+    }
+
+    /* centered bulk actions (no header checkbox) */
+    .bulk-actions-centered {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* center horizontally */
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #ffffff;
+      border: 1px solid rgba(127, 197, 139, 0.08);
+      border-radius: 0.75rem;
+      box-shadow: 0 3px 10px rgba(2, 6, 23, 0.03);
+      margin-bottom: 1rem;
+      transition: transform .18s ease, opacity .18s ease, height .18s ease, padding .18s ease;
+      transform-origin: center top;
+      opacity: 1;
+    }
+
+    /* hidden state (keeps layout collapse) */
+    .bulk-actions-centered.hidden {
+      opacity: 0;
+      transform: translateY(-6px) scale(.995);
+      pointer-events: none;
+      height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+
+    /* small screens: stack paragraph above buttons */
+    @media (max-width: 520px) {
+      .bulk-actions-centered {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.6rem;
+      }
+
+      .bulk-actions-centered p {
+        margin: 0;
+      }
+    }
+
+    /* utility classes used by JS (disabled look) */
+    .opacity-50 {
+      opacity: 0.5 !important;
+    }
+
+    .cursor-not-allowed {
+      cursor: not-allowed !important;
+    }
+
+    /* ---------- NEW: bulk top row styles (in table header) ---------- */
+    thead .bulk-top-row {
+      background: #f8fafc;
+    }
+
+    thead .bulk-top-row td {
+      padding: .6rem 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #e6edf0;
+    }
+
+    #selectedTextTop {
+      font-weight: 600;
+      color: #374151;
+      text-align: center;
+    }
+
+    #bulkButtonsTop {
+      display: flex;
+      gap: .5rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .bulk-btn {
+      width: 7rem;
+      height: 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: background-color .18s ease, border-color .18s ease, transform .12s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .bulk-btn.restore {
+      background: #ecfdf5;
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    .bulk-btn.delete {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+
+    .bulk-btn[disabled] {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Notification */
+    #notificationContainer {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      pointer-events: none;
+      width: auto;
+      max-width: calc(100% - 2rem);
+    }
+
+    .notification {
+      pointer-events: auto;
+      padding: .6rem 1rem;
+      border-radius: .5rem;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.12);
+      color: white;
+      font-weight: 600;
+      transform-origin: center top;
+      transition: transform .28s cubic-bezier(.2, .9, .2, 1), opacity .2s ease;
+    }
+
+    .notification.hide {
+      opacity: 0;
+      transform: translateY(-8px) scale(.98);
+    }
+
+
+    #sidebar .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #sidebar.collapsed .logo-container {
+      justify-content: center;
+    }
+
+    /* Sidebar styles */
+    #sidebar {
+      transition: all 0.3s ease;
+      width: 260px;
+    }
+
+    #sidebar.collapsed {
+      width: 80px;
+    }
+
+    #sidebar.collapsed .menu-text,
+    #sidebar.collapsed #users-arrow,
+    #sidebar.collapsed #logo-text {
+      display: none;
+    }
+
+    #users-submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    #users-submenu.open {
+      max-height: 250px;
+    }
+  </style>
+</head>
+
+<body class="flex min-h-screen bg-[#f4fdf7] text-gray-800">
+
+  <!-- Notification container (top center) -->
+  <div id="notificationContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Sidebar -->
+  <nav id="sidebar"
+    class="bg-white border-r border-gray-200 h-screen sticky top-0 flex flex-col justify-between z-50 shadow-sm">
+    <div>
+      <!--AdminLogo-->
+      <div class="p-5 pb-7 pt-7 border-b border-gray-200 flex items-center gap-2">
+        <img src="../img/fb-tabs-icn.png" alt="Tabs Icon" class="h-7 w-7 ml-1 sidebar-icon" />
+        <h1 id="logo-text" class="text-xl ml-1 font-bold text-[#62c273]"><span style="color: #3d1200;">Feel</span>Bright
+        </h1>
+      </div>
+
+      <!-- Menu -->
+      <ul class="p-4 space-y-2">
+        <!-- Dashboard -->
+        <li>
+          <a href="adminreports.html"
+            class="sidebar-item rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition">
+            <i class="fas fa-home text-[#7FC58B] text-lg sidebar-icon"></i>
+            <span class="menu-text text-sm">Dashboard</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="./userlist.html">
+            <button id="users-btn"
+              class="sidebar-item w-full rounded-lg hover:bg-green-100 bg-green-100 text-green-700 transition flex justify-between items-center"
+              aria-expanded="false">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-users text-[#7FC58B] sidebar-icon"></i>
+                <span class="menu-text text-sm ">Users</span>
+              </div>
+              <i id="users-arrow"
+                class="fas fa-chevron-down text-sm text-[#6FB07C] transition-transform duration-300"></i>
+            </button>
+          </a>
+          <ul id="users-submenu" aria-hidden="true" class="hidden">
+            <li><a href="archivedusers.html" class="sidebar-item rounded-lg hover:bg-green-100 transition pl-12"><i
+                  class="fas fa-archive text-[#7FC58B] sidebar-icon"></i><span
+                  class="menu-text text-sm">Archive</span></a>
+            </li>
+
+          </ul>
+        </li>
+        <!-- Content -->
+        <li>
+          <a href="content.html"
+            class="sidebar-item rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition">
+            <i class="fas fa-file-alt text-[#7FC58B] text-lg sidebar-icon"></i>
+            <span class="menu-text text-sm">Content Management</span>
+          </a>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- Logout -->
+    <div class="p-4 border-t border-gray-200">
+      <button onclick="window.location.href='/logout'"
+        class="sidebar-item w-full rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition">
+        <i class="fas fa-sign-out-alt sidebar-icon"></i>
+        <span class="menu-text">Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="flex-1 p-7">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="text-[#7FC58B] hover:text-green-600 transition-colors"
+          aria-label="Toggle sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-panel-left">
+            <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+            <path d="M9 3v18"></path>
+          </svg>
+        </button>
+        <div>
+          <h2 class="text-2xl font-semibold">Archived Users</h2>
+        </div>
+      </div>
+
+      <!-- Stats Display -->
+      <div class="flex gap-4">
+        <!-- Online  -->
+        <div class="bg-green-50 px-4 py-2 rounded-lg shadow-sm border border-green-300">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-sm font-semibold text-green-700">
+              Online: <span id="onlineCount">0</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Active -->
+        <div class="bg-blue-50 px-4 py-2 rounded-lg shadow-sm border border-blue-300">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-users text-blue-500 text-sm"></i>
+            <span class="text-sm font-semibold text-blue-600">
+              Active: <span id="totalCount">0</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Archived  -->
+        <div class="bg-yellow-50 px-4 py-2 rounded-lg shadow-sm border border-yellow-400">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-archive text-yellow-600 text-sm"></i>
+            <span class="text-sm font-semibold text-yellow-600">
+              Archived: <span id="archivedCount">0</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top controls: Search & Filters (unchanged) -->
+    <div class="top-controls mb-3">
+      <!-- (removed the centered bulk actions from here — bulk bar is attached above the table) -->
+
+      <!-- Search + Filters (unchanged) -->
+      <div class="search-filters">
+        <div class="left">
+          <!-- Search -->
+          <div class="relative w-full md:w-80">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="userSearch" placeholder="Search archived users..."
+              class="w-full pl-10 pr-4 py-2 rounded-xl border bg-white shadow-sm
+              outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.06)] focus:border-[#7FC58B] focus:shadow-[0_0_0_6px_rgba(127,197,139,0.08)] focus:outline-none focus:ring-0" />
+          </div>
+        </div>
+
+        <div class="right">
+          <!-- Sort By Dropdown -->
+          <div class="relative w-full">
+            <button id="sort-btn"
+              class="w-full bg-white text-gray-700 rounded-lg shadow-sm px-4 py-2 text-left inline-flex justify-between items-center outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.06)] focus:border-[#7FC58B] focus:shadow-[0_0_0_6px_rgba(127,197,139,0.08)] focus:outline-none focus:ring-0">
+              <span id="sort-text">Archive Date (Newest)</span>
+              <i class="fas fa-chevron-down w-4 h-4 ml-2"></i>
+            </button>
+            <ul id="sort-menu"
+              class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-sm mt-1 w-full text-sm text-gray-700">
+              <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Archive Date (Newest)')">
+                Archive Date (Newest)</li>
+              <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Archive Date (Oldest)')">
+                Archive Date (Oldest)</li>
+              <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Name (A-Z)')">Name (A-Z)</li>
+              <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Name (Z-A)')">Name (Z-A)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- BULK ACTIONS ROW MOVED TO TABLE HEADER (hidden by default) ---------- -->
+    <!-- User Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse min-w-full">
+          <thead class="bg-gray-50">
+            <!-- Bulk top row: aligned with columns (selected text at Archived Date, buttons above Actions)
+                 HIDDEN by default and only shown when at least one checkbox is selected -->
+            <tr id="bulkTopRow" class="bulk-top-row hidden" aria-hidden="true">
+              <td colspan="6"></td>
+              <td class="text-center">
+                <div id="selectedTextTop">0 users selected</div>
+              </td>
+              <td class="text-center">
+                <div id="bulkButtonsTop">
+                  <button id="bulkRestoreBtnTop" class="bulk-btn restore" onclick="openBulkRestoreModal()" disabled>
+                    <i class="fas fa-undo"></i> Restore All
+                  </button>
+                  <button id="bulkDeleteBtnTop" class="bulk-btn delete" onclick="openBulkDeleteModal()" disabled>
+                    <i class="fas fa-trash"></i> Delete All
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-gray-200">
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[60px]">
+                <input type="checkbox" id="headerCheckbox" class="checkbox-input" onchange="toggleSelectAll()">
+              </th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[80px]">Profile</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">First Name</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">Middle Name</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">Last Name</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[200px]">Email</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[120px]">Archived Date</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[150px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <ul id="paginationControls" class="flex justify-end gap-2 mt-6"></ul>
+  </div>
+
+  <!-- Restore Confirmation Modal -->
+  <div id="restoreModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="text-center">
+        <div
+          class="w-16 h-16 mx-auto mb-4 bg-green-100 border border-green-300 rounded-full flex items-center justify-center">
+          <i class="fas fa-undo text-green-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Restore User</h3>
+        <p class="text-gray-600 mb-6">“Restore this user? They will regain access and appear in Active Users.”</p>
+
+        <div class="flex gap-3 justify-center">
+          <!-- Cancel -->
+          <button onclick="closeRestoreModal()"
+            class="w-32 h-11 shadow-sm text-gray-700 bg-red-50 border border-red-200 rounded-lg font-semibold hover:bg-red-100 transition">
+            Cancel
+          </button>
+
+          <!-- Restore -->
+          <button onclick="confirmRestoreUser()" class="w-32 h-11 shadow-sm text-white rounded-lg font-semibold 
+           bg-[#7FC58B] hover:bg-[#6FB07C] transition-colors duration-300">
+            Restore User
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Delete User Permanently</h3>
+        <p class="text-gray-600 mb-6">“This will permanently delete the user and their data.”</p>
+
+        <div class="flex gap-3 justify-center">
+          <!-- Cancel -->
+          <button onclick="closeDeleteModal()"
+            class="w-32 h-11 shadow-sm text-gray-700 bg-red-50 border border-red-200 rounded-lg font-semibold hover:bg-red-100 transition">
+            Cancel
+          </button>
+
+          <!-- Delete -->
+          <button onclick="confirmDeleteUser()"
+            class="w-32 h-11 shadow-sm text-white rounded-lg font-semibold bg-red-600 hover:bg-red-700 transition-colors duration-300">
+            Delete
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Restore Modal -->
+  <div id="bulkRestoreModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="text-center">
+        <div
+          class="w-16 h-16 mx-auto mb-4 bg-green-100 border border-green-300 rounded-full flex items-center justify-center">
+          <i class="fas fa-undo text-green-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Restore Selected Users</h3>
+        <p id="bulkRestoreMsg" class="text-gray-600 mb-6">Restore these users? They will regain access and appear in
+          Active Users.</p>
+
+        <div class="flex gap-3 justify-center">
+          <button onclick="closeBulkRestoreModal()"
+            class="w-32 h-11 shadow-sm text-gray-700 bg-red-50 border border-red-200 rounded-lg font-semibold hover:bg-red-100 transition">Cancel</button>
+
+          <button onclick="confirmBulkRestore()"
+            class="w-32 h-11 shadow-sm text-white rounded-lg font-semibold bg-[#7FC58B] hover:bg-[#6FB07C] transition-colors duration-300">Restore
+            All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Delete Modal -->
+  <div id="bulkDeleteModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Delete Selected Users Permanently</h3>
+        <p id="bulkDeleteMsg" class="text-gray-600 mb-6">WARNING: This will permanently delete the selected users and
+          their data.</p>
+
+        <div class="flex gap-3 justify-center">
+          <button onclick="closeBulkDeleteModal()"
+            class="w-32 h-11 shadow-sm text-gray-700 bg-red-50 border border-red-200 rounded-lg font-semibold hover:bg-red-100 transition">Cancel</button>
+
+          <button onclick="confirmBulkDelete()"
+            class="w-32 h-11 shadow-sm text-white rounded-lg font-semibold bg-red-600 hover:bg-red-700 transition-colors duration-300">Delete</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ======== Sidebar ======== */
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentPage = window.location.pathname.split("/").pop();
+
+      document.querySelectorAll(".sidebar-item[href]").forEach(item => {
+        const link = item.getAttribute("href");
+        if (link && link.includes(currentPage)) {
+          item.classList.add("active");
+
+          const submenu = item.closest("#users-submenu");
+          if (submenu) {
+            submenu.classList.add("open");
+            submenu.setAttribute("aria-hidden", "false");
+
+            const usersBtn = document.getElementById("users-btn");
+            const arrow = document.getElementById("users-arrow");
+            usersBtn.classList.add("active");
+            usersBtn.setAttribute("aria-expanded", "true");
+
+            // Show arrow only if sidebar is expanded
+            const sidebar = document.getElementById("sidebar");
+            arrow.style.display = sidebar.classList.contains("collapsed") ? "none" : "inline-block";
+            if (sidebar.classList.contains("collapsed")) {
+              arrow.classList.remove("rotate-180");
+            } else {
+              arrow.classList.add("rotate-180"); // rotate if submenu open
+            }
+          }
+        }
+      });
+    });
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const arrow = document.getElementById('users-arrow');
+
+      sidebar.classList.toggle('collapsed');
+
+      // Arrow visible only if sidebar expanded
+      if (sidebar.classList.contains('collapsed')) {
+        arrow.style.display = 'none';
+      } else {
+        arrow.style.display = 'inline-block';
+      }
+    }
+
+    // Users submenu toggle
+    document.getElementById('users-btn').addEventListener('click', function () {
+      const submenu = document.getElementById('users-submenu');
+      const arrow = document.getElementById('users-arrow');
+
+      const isOpen = submenu.classList.toggle('open'); // toggle submenu
+      submenu.setAttribute('aria-hidden', String(!isOpen));
+      this.setAttribute('aria-expanded', isOpen);
+
+      // Rotate arrow only if sidebar is expanded
+      if (!document.getElementById('sidebar').classList.contains('collapsed')) {
+        arrow.classList.toggle('rotate-180', isOpen);
+      }
+    });
+
+    // Optional: toggleSubmenu function if needed elsewhere
+    function toggleSubmenu(event) {
+      const sidebar = document.getElementById("sidebar");
+      const submenu = document.getElementById("users-submenu");
+      const usersBtn = document.getElementById("users-btn");
+      const arrow = document.getElementById("users-arrow");
+
+      if (sidebar.classList.contains("collapsed")) {
+        event.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      const opening = !submenu.classList.contains("open");
+      submenu.classList.toggle("open", opening);
+      submenu.setAttribute("aria-hidden", String(!opening));
+      usersBtn.setAttribute("aria-expanded", String(opening));
+
+      // Rotate arrow if sidebar expanded
+      if (!sidebar.classList.contains("collapsed")) {
+        arrow.classList.toggle("rotate-180", opening);
+      }
+    }
+
+    /* ========== State ========== */
+    let userToRestore = null;
+    let userToDelete = null;
+    let selectedUsers = new Set();
+
+    const USERS_PER_PAGE = 10;
+    let currentPage = 1;
+    let totalUsers = 0;
+    let allUsers = [];
+
+    /* ========== Small helpers ========== */
+    const $ = id => document.getElementById(id);
+    const qsa = sel => Array.from(document.querySelectorAll(sel));
+
+    async function safeParse(response) {
+      if (!response) return {};
+      try { return await response.json(); }
+      catch (e1) {
+        try { const text = await response.text(); return JSON.parse(text || '{}'); }
+        catch (e2) { return {}; }
+      }
+    }
+
+    function debounce(fn, wait = 300) {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+    }
+
+    function escapeForInline(str = '') {
+      return String(str).replace(/'/g, "\\'").replace(/\n/g, ' ');
+    }
+
+    // Helper function to generate initials from name
+    function getInitials(firstName = '', lastName = '') {
+      const first = firstName.charAt(0) || '';
+      const last = lastName.charAt(0) || '';
+      return (first + last).toUpperCase() || 'U'; // 'U' as fallback for users with no name
+    }
+
+    function showNotification(message, type = 'info') {
+      const container = $('notificationContainer');
+      if (!container) {
+        // fallback: quick alert
+        console.warn('notificationContainer missing, fallback to alert');
+        alert(message);
+        return;
+      }
+      const el = document.createElement('div');
+      el.className = 'notification';
+      el.textContent = message;
+      if (type === 'success') el.style.background = '#16a34a';
+      else if (type === 'error') el.style.background = '#dc2626';
+      else el.style.background = '#2563eb';
+      container.appendChild(el);
+      requestAnimationFrame(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0) scale(1)';
+      });
+      setTimeout(() => {
+        el.classList.add('hide');
+        setTimeout(() => el.remove(), 320);
+      }, 3800);
+    }
+
+    /* ========== Selection & Bulk UI ========== */
+    function updateSelectAllCheckbox() {
+      const header = $('headerCheckbox');
+      const boxes = qsa('.user-checkbox');
+      if (!header) return;
+      const checked = qsa('.user-checkbox:checked');
+      if (checked.length === 0) { header.indeterminate = false; header.checked = false; }
+      else if (checked.length === boxes.length) { header.indeterminate = false; header.checked = true; }
+      else { header.indeterminate = true; header.checked = false; }
+    }
+
+    function updateBulkActionsTop() {
+      const count = selectedUsers.size || 0;
+      const selectedTextTop = $('selectedTextTop');
+      const restoreTop = $('bulkRestoreBtnTop');
+      const deleteTop = $('bulkDeleteBtnTop');
+      const bulkTopRow = $('bulkTopRow');
+
+      if (selectedTextTop) selectedTextTop.textContent = `${count} user${count !== 1 ? 's' : ''} selected`;
+
+      if (count > 0) {
+        if (bulkTopRow) { bulkTopRow.classList.remove('hidden'); bulkTopRow.setAttribute('aria-hidden', 'false'); }
+        if (restoreTop) { restoreTop.disabled = false; restoreTop.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        if (deleteTop) { deleteTop.disabled = false; deleteTop.classList.remove('opacity-50', 'cursor-not-allowed'); }
+      } else {
+        if (bulkTopRow) { bulkTopRow.classList.add('hidden'); bulkTopRow.setAttribute('aria-hidden', 'true'); }
+        if (restoreTop) { restoreTop.disabled = true; restoreTop.classList.add('opacity-50', 'cursor-not-allowed'); }
+        if (deleteTop) { deleteTop.disabled = true; deleteTop.classList.add('opacity-50', 'cursor-not-allowed'); }
+      }
+
+      updateSelectAllCheckbox();
+
+      // Also update compact bulk bar (if present in page)
+      const compactBar = $('bulkActionsBar');
+      const selectedCount = $('selectedCount');
+      if (compactBar && selectedCount) {
+        if (count > 0) { compactBar.classList.remove('hidden'); selectedCount.textContent = String(count); }
+        else compactBar.classList.add('hidden');
+      }
+    }
+
+    function toggleUserSelection(userId, checkbox) {
+      const id = String(userId);
+      if (checkbox.checked) selectedUsers.add(id);
+      else selectedUsers.delete(id);
+      updateBulkActionsTop();
+    }
+
+    function toggleSelectAll(sourceCheckbox) {
+      const header = $('headerCheckbox') || sourceCheckbox || $('selectAllCheckbox');
+      if (!header) return;
+      const shouldCheck = !!header.checked;
+      qsa('.user-checkbox').forEach(cb => {
+        cb.checked = shouldCheck;
+        const uid = String(cb.dataset.userId || '');
+        if (shouldCheck && uid) selectedUsers.add(uid);
+        else if (!shouldCheck && uid) selectedUsers.delete(uid);
+      });
+      if (header) { header.indeterminate = false; header.checked = shouldCheck; }
+      updateBulkActionsTop();
+    }
+
+    /* ========== Modal & single actions ========== */
+    function openRestoreModal(userId, userName) {
+      userToRestore = { id: String(userId), name: String(userName || '') };
+      const m = $('restoreModal'); if (m) m.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeRestoreModal() { const m = $('restoreModal'); if (m) m.classList.add('hidden'); document.body.style.overflow = 'auto'; userToRestore = null; }
+
+    function openDeleteModal(userId, userName) {
+      userToDelete = { id: String(userId), name: String(userName || '') };
+      const m = $('deleteModal'); if (m) m.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDeleteModal() { const m = $('deleteModal'); if (m) m.classList.add('hidden'); document.body.style.overflow = 'auto'; userToDelete = null; }
+
+    async function confirmRestoreUser() {
+      if (!userToRestore) return;
+      try {
+        const resp = await fetch(`/admin/users/${userToRestore.id}/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const data = await safeParse(resp);
+        if (resp.ok && (data.success === true || data.user)) {
+          closeRestoreModal();
+          // Always clear selection and reload
+          selectedUsers.clear();
+          await fetchArchivedUsers();
+          await fetchStats();
+          updateBulkActionsTop();
+          showNotification(data.message || `User "${userToRestore.name}" restored.`, 'success');
+        } else {
+          throw new Error(data.error || 'Restore failed');
+        }
+      } catch (err) {
+        console.error('confirmRestoreUser', err);
+        showNotification('Failed to restore user. Please try again.', 'error');
+      } finally { userToRestore = null; }
+    }
+
+    async function confirmDeleteUser() {
+      if (!userToDelete) return;
+      try {
+        const resp = await fetch(`/admin/users/${userToDelete.id}/delete`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+        const data = await safeParse(resp);
+        if (resp.ok && (data.success === true || data.deletedCount || data.user)) {
+          closeDeleteModal();
+          // Always clear selection and reload
+          selectedUsers.clear();
+          await fetchArchivedUsers();
+          await fetchStats();
+          updateBulkActionsTop();
+          showNotification(data.message || `User "${userToDelete.name}" deleted.`, 'success');
+        } else {
+          throw new Error(data.error || 'Delete failed');
+        }
+      } catch (err) {
+        console.error('confirmDeleteUser', err);
+        showNotification('Failed to delete user. Please try again.', 'error');
+      } finally { userToDelete = null; }
+    }
+
+    /* ========== Bulk top modals & confirm ========= */
+    function openBulkRestoreModal() {
+      const count = selectedUsers.size || 0;
+      if (count === 0) return;
+      const msgEl = $('bulkRestoreMsg'); if (msgEl) msgEl.textContent = `Restore ${count} user${count !== 1 ? 's' : ''}? They will regain access and appear in Active Users.`;
+      const m = $('bulkRestoreModal'); if (m) m.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeBulkRestoreModal() { const m = $('bulkRestoreModal'); if (m) m.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+
+    function openBulkDeleteModal() {
+      const count = selectedUsers.size || 0;
+      if (count === 0) return;
+      const msgEl = $('bulkDeleteMsg'); if (msgEl) msgEl.textContent = `WARNING: Permanently delete ${count} user${count !== 1 ? 's' : ''}? This cannot be undone.`;
+      const m = $('bulkDeleteModal'); if (m) m.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeBulkDeleteModal() { const m = $('bulkDeleteModal'); if (m) m.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+
+    async function confirmBulkRestore() {
+      if (selectedUsers.size === 0) return;
+      try {
+        // Only send valid numbers
+        const userIds = Array.from(selectedUsers)
+          .map(id => Number(id))
+          .filter(id => Number.isFinite(id) && id > 0);
+
+        if (userIds.length === 0) {
+          showNotification('No valid users selected.', 'error');
+          return;
+        }
+
+        const resp = await fetch('/admin/users/bulk/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds })
+        });
+        const data = await safeParse(resp);
+        if (resp.ok && (data.success === true || data.restoredUsers)) {
+          selectedUsers.clear();
+          closeBulkRestoreModal();
+          await fetchArchivedUsers();
+          await fetchStats();
+          updateBulkActionsTop();
+          showNotification(data.message || 'Selected users restored.', 'success');
+        } else throw new Error(data.error || 'Bulk restore failed');
+      } catch (err) {
+        console.error('confirmBulkRestore', err);
+        showNotification('Failed to restore selected users. Please try again.', 'error');
+      }
+    }
+
+    async function confirmBulkDelete() {
+      if (selectedUsers.size === 0) return;
+      try {
+        const resp = await fetch('/admin/users/bulk/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds: Array.from(selectedUsers).map(id => Number(id)) })
+        });
+        const data = await safeParse(resp);
+        if (resp.ok && (data.success === true || data.deletedCount)) {
+          // Always clear selection and reload
+          selectedUsers.clear();
+          closeBulkDeleteModal();
+          await fetchArchivedUsers();
+          await fetchStats();
+          updateBulkActionsTop();
+          showNotification(data.message || 'Selected users permanently deleted.', 'success');
+        } else throw new Error(data.error || 'Bulk delete failed');
+      } catch (err) {
+        console.error('confirmBulkDelete', err);
+        showNotification('Failed to delete selected users. Please try again.', 'error');
+      }
+    }
+
+    /* ========== Fetch + render + pagination ========== */
+    async function fetchArchivedUsers() {
+      try {
+        const sortValue = ($('sort-text') && $('sort-text').textContent) || '';
+        const searchValue = ($('userSearch') && $('userSearch').value) || '';
+
+        // Map UI sort values to server sort parameters
+        let serverSortValue = 'newest';
+        switch (sortValue) {
+          case 'Archive Date (Oldest)': serverSortValue = 'oldest'; break;
+          case 'Name (A-Z)': serverSortValue = 'name_asc'; break;
+          case 'Name (Z-A)': serverSortValue = 'name_desc'; break;
+          default: serverSortValue = 'newest';
+        }
+
+        const resp = await fetch(`/list/users?page=${currentPage}&limit=${USERS_PER_PAGE}&search=${encodeURIComponent(searchValue)}&sort=${encodeURIComponent(serverSortValue)}&archived=true`);
+
+        if (!resp.ok) throw new Error('Failed to fetch users');
+        const data = await safeParse(resp);
+
+        allUsers = Array.isArray(data.users) ? data.users : [];
+        totalUsers = Number(data.total || 0);
+
+        renderUsers();
+        renderPagination();
+
+        // Update stats from the response if available
+        if (data.stats) {
+          updateStats(data.stats);
+        } else {
+          // Otherwise fetch stats separately
+          fetchStats();
+        }
+      } catch (err) {
+        console.error('fetchArchivedUsers', err);
+        const tbody = $('userTableBody');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500">Failed to load users.</td></tr>`;
+      }
+    }
+
+    function renderUsers() {
+      const tbody = $('userTableBody');
+      if (!tbody) return;
+      if (!allUsers || allUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-500">No archived users found.</td></tr>`;
+        updateSelectAllCheckbox(); updateBulkActionsTop(); return;
+      }
+
+      tbody.innerHTML = allUsers.map(u => {
+        const id = String(u.id ?? u._id ?? '');
+        const first = u.first_name ?? u.firstName ?? '';
+        const middle = u.middle_name ?? u.middleName ?? '';
+        const last = u.last_name ?? u.lastName ?? '';
+        const email = u.email ?? '';
+        const pic = u.profile_picture ?? u.profilePic ?? '';
+        const archivedStr = u.archived_at ? new Date(u.archived_at).toLocaleDateString() : '';
+        const safeName = escapeForInline((first + ' ' + last).trim());
+
+        // Generate initials for avatar
+        const initials = getInitials(first, last);
+
+        // Create avatar HTML - use image if available, otherwise show initials with green background
+        const avatarHtml = pic
+          ? `<img src="${pic}" class="w-10 h-10 rounded-full object-cover mx-auto" alt="profile">`
+          : `<div class="w-10 h-10 rounded-full mx-auto flex items-center justify-center bg-green-100 text-green-800 font-bold">${initials}</div>`;
+
+        return `
+      <tr class="archived-user text-center">
+        <td class="px-4 py-3 align-middle">
+          <input type="checkbox" class="user-checkbox checkbox-input" data-user-id="${id}" onchange="toggleUserSelection('${id}', this)">
+        </td>
+        <td class="px-4 py-3 align-middle">
+          ${avatarHtml}
+        </td>
+        <td class="px-4 py-3 align-middle">${first}</td>
+        <td class="px-4 py-3 align-middle">${middle}</td>
+        <td class="px-4 py-3 align-middle">${last}</td>
+        <td class="px-4 py-3 align-middle">${email}</td>
+        <td class="px-4 py-3 align-middle">${archivedStr}</td>
+        <td class="px-4 py-3 align-middle">
+          <div class="flex justify-center gap-2">
+            <button class="action-button w-28 h-10 inline-flex items-center justify-center gap-2 bg-green-50 text-green-700 border border-green-300 rounded-lg text-sm font-medium shadow-sm hover:bg-green-100 hover:border-green-400 transition-colors duration-300"
+              onclick="openRestoreModal('${id}', '${safeName}')">
+              <i class="fas fa-undo"></i> Restore
+            </button>
+            <button class="action-button w-28 h-10 inline-flex items-center justify-center gap-2 bg-red-50 text-red-700 border border-red-300 rounded-lg text-sm font-medium shadow-sm hover:bg-red-100 hover:border-red-400 transition-colors duration-300"
+              onclick="openDeleteModal('${id}', '${safeName}')">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+      }).join('');
+
+      // reapply checked state
+      qsa('.user-checkbox').forEach(cb => {
+        const id = String(cb.dataset.userId || '');
+        cb.checked = selectedUsers.has(id);
+      });
+
+      updateSelectAllCheckbox();
+      updateBulkActionsTop();
+    }
+
+    function renderPagination() {
+      const container = $('paginationControls');
+      if (!container) return;
+      container.innerHTML = '';
+      const totalPages = Math.ceil((totalUsers || 0) / USERS_PER_PAGE);
+      if (totalPages <= 1) return;
+      for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.innerHTML = `<button class="px-3 py-1 rounded-lg ${i === currentPage ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" onclick="goToPage(${i})">${i}</button>`;
+        container.appendChild(li);
+      }
+    }
+
+    function goToPage(page) {
+      if (page < 1) return;
+      currentPage = page;
+      fetchArchivedUsers();
+    }
+
+    /* ========== Stats ======== */
+    function updateStats(stats) {
+      // Map server response to expected client fields
+      const online = stats.online ?? 0;
+      const active = stats.users ?? 0; // This is the count of active users
+      const archived = stats.archived ?? 0;
+
+      // Update the UI elements
+      if ($('onlineCount')) $('onlineCount').textContent = String(online);
+      if ($('totalCount')) $('totalCount').textContent = String(active);
+      if ($('archivedCount')) $('archivedCount').textContent = String(archived);
+    }
+
+    async function fetchStats() {
+      try {
+        // Use the same endpoint but with a minimal request to get stats
+        const resp = await fetch('/list/users?page=1&limit=1&archived=true');
+        if (!resp.ok) {
+          console.warn('stats fetch failed', resp.status);
+          return;
+        }
+        const data = await resp.json();
+        if (data.stats) {
+          updateStats(data.stats);
+        }
+      } catch (e) {
+        console.error('fetchStats error', e);
+      }
+    }
+
+    /* ========== Sort and initial wiring ========== */
+    function selectSort(value) {
+      const el = $('sort-text'); if (el) el.textContent = value;
+      const menu = $('sort-menu'); if (menu) menu.classList.add('hidden');
+      currentPage = 1;
+      fetchArchivedUsers();
+    }
+
+    /* ========== DOM ready ========== */
+    document.addEventListener('DOMContentLoaded', () => {
+      // highlight sidebar links defensively
+      qsa('.sidebar-item[href]').forEach(item => {
+        try {
+          const link = item.getAttribute('href');
+          if (link && link.includes(window.location.pathname.split('/').pop())) item.classList.add('active');
+        } catch (e) { }
+      });
+
+      // users submenu toggle
+      const usersBtn = $('users-btn');
+      if (usersBtn) usersBtn.addEventListener('click', function () {
+        const submenu = $('users-submenu'), arrow = $('users-arrow');
+        const isOpen = submenu ? submenu.classList.toggle('open') : false;
+        if (submenu) submenu.setAttribute('aria-hidden', String(!isOpen));
+        try { this.setAttribute('aria-expanded', isOpen); } catch (e) { }
+        if (!($('sidebar')?.classList.contains('collapsed'))) arrow && arrow.classList.toggle('rotate-180', isOpen);
+      });
+
+      // sort button toggle
+      const sortBtn = $('sort-btn');
+      if (sortBtn) sortBtn.addEventListener('click', () => { const m = $('sort-menu'); if (m) m.classList.toggle('hidden'); });
+
+      // click outside to close sort menu
+      window.addEventListener('click', (e) => {
+        const sortBtnEl = $('sort-btn'), sortMenu = $('sort-menu');
+        if (!sortBtnEl || !sortMenu) return;
+        if (!sortBtnEl.contains(e.target) && !sortMenu.contains(e.target)) sortMenu.classList.add('hidden');
+      });
+
+      // header checkbox wiring
+      const header = $('headerCheckbox');
+      if (header) header.addEventListener('change', () => toggleSelectAll(header));
+
+      // search wiring
+      const search = $('userSearch');
+      if (search) search.addEventListener('input', debounce(() => { currentPage = 1; fetchArchivedUsers(); }, 400));
+
+      // expose functions for inline onclick handlers
+      window.toggleUserSelection = toggleUserSelection;
+      window.toggleSelectAll = toggleSelectAll;
+      window.openRestoreModal = openRestoreModal;
+      window.closeRestoreModal = closeRestoreModal;
+      window.openDeleteModal = openDeleteModal;
+      window.closeDeleteModal = closeDeleteModal;
+      window.confirmRestoreUser = confirmRestoreUser;
+      window.confirmDeleteUser = confirmDeleteUser;
+      window.openBulkRestoreModal = openBulkRestoreModal;
+      window.closeBulkRestoreModal = closeBulkRestoreModal;
+      window.openBulkDeleteModal = openBulkDeleteModal;
+      window.closeBulkDeleteModal = closeBulkDeleteModal;
+      window.confirmBulkRestore = confirmBulkRestore;
+      window.confirmBulkDelete = confirmBulkDelete;
+      window.selectSort = selectSort;
+      window.goToPage = goToPage;
+
+      // initial load
+      fetchArchivedUsers();
+      fetchStats();
+      setInterval(() => fetchStats(), 15000);
+    });
+  </script>
+
+
+</body>
+
+</html>

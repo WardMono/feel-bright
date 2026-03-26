@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Quote — Step 1 & Final</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../../img/fb-tab.png" type="image/x-icon">
+
+  <style>
+    body {
+      font-family: "League Spartan", sans-serif;
+      background: #f4fdf7;
+      margin: 0;
+    }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 0.5rem;
+      background: #fafafa;
+      cursor: pointer;
+      transition: background-color .2s, border-color .2s;
+    }
+
+    .dropzone.hover {
+      background: #ecfdf5;
+      border-color: #34d399;
+    }
+
+    #preview-title,
+    #preview-text {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* stepper tokens (match Article) */
+    .step-on {
+      background: #7FC58B;
+      color: #fff;
+    }
+
+    .label-on {
+      color: #7FC58B;
+      font-weight: 600;
+    }
+
+    .step-off {
+      border: 1px solid #D0D5DD;
+      color: #98A2B3;
+    }
+  </style>
+</head>
+
+<body class="p-8">
+
+  <!-- HEADER -->
+  <div id="page-header" class="max-w-[1140px] mx-auto mb-6">
+    <div class="mt-2 text-center">
+      <h1 class="text-3xl font-bold text-gray-900">Create Quote</h1>
+      <p id="step-sub" class="text-gray-500 mt-1">Step 1 of 2: Set up your quote card</p>
+    </div>
+
+    <div class="flex items-center gap-10 justify-between mt-6">
+      <div class="flex items-center gap-2">
+        <span id="step1-icon" class="inline-flex h-8 w-8 items-center justify-center rounded-full step-on">✓</span>
+        <span id="step1-label" class="label-on">Setup</span>
+      </div>
+      <div id="step-connector" class="flex-1 h-px bg-gray-200"></div>
+      <div class="flex items-center gap-2">
+        <span id="step2-icon" class="inline-flex h-8 w-8 items-center justify-center rounded-full step-off">O</span>
+        <span id="step2-label" class="text-gray-500">Final Preview</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO-COLUMN -->
+  <div id="two-column-layout" class="max-w-[1140px] mx-auto grid lg:grid-cols-2 gap-5 items-stretch">
+    <!-- FORM -->
+    <form id="quote-form" class="h-full space-y-5 bg-white p-8 rounded-xl shadow"
+      onsubmit="event.preventDefault(); addQuote();">
+      <div class="flex items-center space-x-2 text-gray-600">
+        <h2 class="text-2xl font-bold text-gray-900">Quote Details</h2>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Author Name</label>
+        <input id="quote-author" type="text" required
+          class="w-full px-4 py-2 rounded-lg shadow-sm
+                outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="e.g. Thich Nhat Hanh" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Country</label>
+        <input id="quote-country" type="text"
+          class="w-full px-4 py-2 rounded-lg shadow-sm
+                outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="e.g. Pakistan" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Quote Title</label>
+        <input id="quote-title" type="text" required
+          class="w-full px-4 py-2 rounded-lg shadow-sm
+                outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="e.g. Mindful Breathing" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Quote Text</label>
+        <textarea id="quote-text" rows="3" required
+          class="w-full px-4 py-2 rounded-lg shadow-sm
+                outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="&quot;Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.&quot;"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Famous For</label>
+        <input id="quote-famous" type="text" required
+          class="w-full px-4 py-2 rounded-lg shadow-sm
+                outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="e.g. Zen master, peace activist" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Cover Image</label>
+        <div id="dropzone" class="dropzone flex flex-col items-center justify-center p-7 mt-1 text-gray-500 rounded-lg
+           border border-dashed border-[#cbd5e1] bg-[#fafafa]
+           hover:bg-[#f0faf5] hover:border-[#7FC58B] transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="#6B7280">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+          </svg>
+          <span class="font-medium text-gray-600">Drag &amp; Drop to Upload</span>
+          <span class="text-sm text-gray-400 mt-1">or click to browse</span>
+        </div>
+        <input id="fileInput" type="file" accept="image/*" class="hidden" />
+      </div>
+    </form>
+
+    <!-- LIVE PREVIEW -->
+    <div class="space-y-4" id="preview-right-panel">
+      <div id="preview-tip" role="note"
+        class="text-sm text-yellow-900 bg-yellow-50 border border-yellow-200 rounded-lg p-6 shadow-sm flex items-start gap-3 mt-12">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Warning" class="shrink-0 mt-0.5">
+          <path d="M12 2L2 22h20L12 2z" fill="#F59E0B" stroke="#D97706" stroke-width="1" />
+          <rect x="11" y="9.5" width="2" height="6" rx="1" fill="#1F2937" />
+          <circle cx="12" cy="17.5" r="1.25" fill="#1F2937" />
+        </svg>
+
+        <div>
+          <strong>
+            <h2 class="font-semibold">Live Preview</h2>
+          </strong>
+          This is how your content card will appear
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-md overflow-hidden my-6">
+        <div id="preview-media" class="h-56 bg-gray-200 overflow-hidden hidden">
+          <img id="preview-image" src="" alt="Quote cover" class="object-cover w-full h-full" />
+        </div>
+        <div class="flex flex-col justify-between p-4">
+          <div class="space-y-2">
+            <h3 id="preview-author" class="text-lg font-semibold text-gray-900 break-words">Author Name</h3>
+            <p id="preview-country" class="text-sm text-gray-500 break-words">Country</p>
+            <h4 id="preview-title" class="font-medium text-gray-800 break-words">Topic / Title</h4>
+            <blockquote id="preview-text"
+              class="italic text-sm text-gray-600 mt-2 border-l-4 border-gray-300 pl-4 break-words">
+              "Your quote will appear here…"
+            </blockquote>
+          </div>
+          <div class="pt-4">
+            <p class="text-xs text-gray-500 font-medium">Famous for:</p>
+            <p id="preview-famous" class="text-sm text-gray-700 break-words"></p>
+          </div>
+        </div>
+      </div>
+      <div id="preview-tip" role="note"
+        class="mt-7 text-sm text-blue-900 bg-blue-50 border border-blue-100 rounded-lg p-6 shadow-sm flex items-start gap-3">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Info" class="shrink-0 mt-0.5">
+          <circle cx="12" cy="12" r="11" fill="#2563EB" />
+          <rect x="11" y="10" width="2" height="7" rx="1" fill="#FFFFFF" />
+          <circle cx="12" cy="7.5" r="1.25" fill="#FFFFFF" />
+        </svg>
+
+        <p class="leading-6">
+          <strong class="font-semibold">Tip:</strong>
+          This card will be the entry point to your content. Make sure your title and description are engaging!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="actions" class="max-w-[1140px] mx-auto mt-6">
+    <hr class="border-t border-gray-200">
+    <div class="mx-auto max-w-md grid grid-cols-2 gap-4 py-6">
+      <button type="button" onclick="cancelQuote()"
+        class="w-full h-11 rounded-lg bg-red-50 text-gray-700 border border-red-200 font-semibold hover:bg-red-100 transition">
+        Cancel
+      </button>
+
+      <button id="next-btn" type="submit" form="quote-form" disabled
+        class="w-full h-11 rounded-lg font-semibold text-sm text-white bg-[#7FC58B] hover:bg-[#6FB07C] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition">
+        Create &amp; Continue
+      </button>
+    </div>
+  </div>
+
+
+  <!-- FINAL PREVIEW -->
+  <div id="final-preview" class="hidden max-w-xl mx-auto mt-12">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden my-6">
+      <div id="confirm-media" class="h-56 bg-gray-200 overflow-hidden hidden">
+        <img id="confirm-image" src="" alt="Quote cover" class="object-cover w-full h-full" />
+      </div>
+      <div class="flex flex-col justify-between p-4">
+        <div class="space-y-2">
+          <h3 id="confirm-author" class="text-lg font-semibold text-gray-900 break-words">Author Name</h3>
+          <p id="confirm-country" class="text-sm text-gray-500 break-words">Country</p>
+          <h4 id="confirm-title" class="font-medium text-gray-800 break-words">Topic / Title</h4>
+          <blockquote id="confirm-text"
+            class="italic text-sm text-gray-600 mt-2 border-l-4 border-gray-300 pl-4 break-words">
+            "Quote text here…"
+          </blockquote>
+        </div>
+        <div class="pt-4">
+          <p class="text-xs text-gray-500 font-medium">Famous for:</p>
+          <p id="confirm-famous" class="text-sm text-gray-700 break-words"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="preview-tip" role="note"
+      class="mt-7 text-sm text-blue-900 bg-blue-50 border border-blue-100 rounded-lg p-6 shadow-sm flex items-start gap-3">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Info" class="shrink-0 mt-0.5">
+        <circle cx="12" cy="12" r="11" fill="#2563EB" />
+        <rect x="11" y="10" width="2" height="7" rx="1" fill="#FFFFFF" />
+        <circle cx="12" cy="7.5" r="1.25" fill="#FFFFFF" />
+      </svg>
+
+      <p class="leading-6">
+        <strong class="font-semibold">Tip:</strong>
+        This card will be the entry point to your content. Make sure your title and description are engaging!
+      </p>
+    </div>
+
+    <div class="flex justify-center gap-4 mb-12 pt-6">
+      <button id="edit-btn"
+        class="flex-1 max-w-[180px] inline-flex items-center justify-center h-10 px-6 rounded-lg font-semibold border border-blue-300 text-gray-700 hover:bg-blue-100 bg-blue-50 transition">
+        Edit
+      </button>
+
+      <button id="save-draft-btn"
+        class="flex-1 max-w-[180px] inline-flex items-center justify-center h-10 px-6 text-yellow-700 bg-yellow-50 border rounded-lg border-yellow-400 font-semibold hover:bg-yellow-100 transition">
+        Save as Draft
+      </button>
+
+      <button id="publish-btn"
+        class="flex-1 max-w-[180px] inline-flex items-center justify-center h-10 px-6 text-white border border-[#6FB07C] rounded-lg font-semibold transition bg-[#7FC58B] hover:bg-[#6FB07C]">
+        Publish
+      </button>
+    </div>
+  </div>
+
+  <script>
+
+    // hide buttons for final preview cards
+    // put this near the other consts in your IIFE
+    const actionsBar = document.getElementById('actions');
+
+
+
+
+
+    (() => {
+      // === IndexedDB cache for images (matches article/reading flows) ===
+      const IDB_DB_NAME = "ContentDraftDB";
+      const IDB_DB_VER = 1;
+      const IDB_IMG_STORE = "images";
+
+      function idbOpen() {
+        return new Promise((resolve, reject) => {
+          const r = indexedDB.open(IDB_DB_NAME, IDB_DB_VER);
+          r.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(IDB_IMG_STORE)) db.createObjectStore(IDB_IMG_STORE);
+          };
+          r.onsuccess = () => resolve(r.result);
+          r.onerror = () => reject(r.error);
+        });
+      }
+      async function idbPut(key, val) {
+        const db = await idbOpen();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(IDB_IMG_STORE, "readwrite");
+          tx.oncomplete = () => res();
+          tx.onerror = () => rej(tx.error);
+          tx.objectStore(IDB_IMG_STORE).put(val, key);
+        });
+      }
+      async function idbGet(key) {
+        if (!key) return null;
+        const db = await idbOpen();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(IDB_IMG_STORE, "readonly");
+          tx.onerror = () => rej(tx.error);
+          const q = tx.objectStore(IDB_IMG_STORE).get(key);
+          q.onsuccess = () => res(q.result || null);
+          q.onerror = () => rej(q.error);
+        });
+      }
+
+      // ---------- Stepper state ----------
+      function setStep(n) {
+        const stepSub = document.getElementById('step-sub');
+        const s1i = document.getElementById('step1-icon');
+        const s2i = document.getElementById('step2-icon');
+        const s1l = document.getElementById('step1-label');
+        const s2l = document.getElementById('step2-label');
+        const connector = document.getElementById('step-connector');
+
+        if (n === 1) {
+          stepSub.textContent = 'Step 1 of 2: Set up your quote card';
+          s1i.textContent = '✓'; s1i.className = 'inline-flex h-8 w-8 items-center justify-center rounded-full step-on';
+          s1l.className = 'label-on';
+          s2i.textContent = 'o'; s2i.className = 'inline-flex h-8 w-8 items-center justify-center rounded-full step-off';
+          s2l.className = 'text-gray-500';
+          connector.className = 'flex-1 h-px bg-gray-200';
+          connector.style.backgroundColor = '#E5E7EB';
+        } else {
+          stepSub.textContent = 'Step 2 of 2: Review & publish';
+          s1i.textContent = '✓'; s1i.className = 'inline-flex h-8 w-8 items-center justify-center rounded-full step-on';
+          s1l.className = 'label-on';
+          s2i.textContent = '✓'; s2i.className = 'inline-flex h-8 w-8 items-center justify-center rounded-full step-on';
+          s2l.className = 'label-on';
+          connector.className = 'flex-1 h-px';
+          connector.style.backgroundColor = '#7FC58B';
+        }
+      }
+
+      // ---------- Storage helpers ----------
+      function persistStepData(data) {
+        try {
+          localStorage.setItem('quoteStep1', JSON.stringify(data));
+        } catch (e) {
+          if (e.name === 'QuotaExceededError') {
+            alert('This image is too large to store locally. Your text is saved, but the image may need to be reselected if you come back.');
+            delete data.img; // keep text, drop huge dataURL
+            localStorage.setItem('quoteStep1', JSON.stringify(data));
+          } else {
+            throw e;
+          }
+        }
+      }
+
+      function dataURItoBlob(dataURI) {
+        if (!dataURI || dataURI.indexOf(',') === -1) return null;
+        const [header, data] = dataURI.split(',');
+        const mimeMatch = header.match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : '';
+        const byteString = atob(data);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+        return new Blob([ab], { type: mime });
+      }
+
+      function generateDraftId() {
+        return `draft-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+      }
+
+      function ensureDraftId() {
+        const stored = JSON.parse(localStorage.getItem('quoteStep1') || '{}');
+        if (!stored.draftId) {
+          stored.draftId = generateDraftId();
+          localStorage.setItem('quoteStep1', JSON.stringify(stored));
+        }
+        return stored.draftId;
+      }
+
+      // ---------- Form & preview ----------
+      function readForm(includeImage = true) {
+        const title = (document.getElementById('quote-title').value || '').trim();
+        const author = (document.getElementById('quote-author').value || '').trim();
+        const text = (document.getElementById('quote-text').value || '').trim();
+        const famous = (document.getElementById('quote-famous').value || '').trim();
+        const country = (document.getElementById('quote-country').value || '').trim();
+        const stored = JSON.parse(localStorage.getItem('quoteStep1') || '{}');
+        const out = { title, author, text, famous, country, draftId: stored.draftId || null };
+        if (includeImage) {
+          const imgElem = document.getElementById('preview-image');
+          if (imgElem && imgElem.src && !imgElem.classList.contains('hidden')) out.img = imgElem.src;
+        }
+        return out;
+      }
+
+      function updateLivePreview() {
+        const { title, author, text, famous, country } = readForm(false);
+        document.getElementById('preview-title').textContent = title || 'Quote Title';
+        document.getElementById('preview-text').textContent = text ? `“${text}”` : '“Your quote will appear here…”';
+        document.getElementById('preview-author').textContent = author || 'Author Name';
+        document.getElementById('preview-country').textContent = country || 'Country';
+        document.getElementById('preview-famous').textContent = famous || '';
+      }
+
+      function updateNextButtonState() {
+        const { title, author, text, famous } = readForm(false);
+        document.getElementById('next-btn').disabled = !(title && author && text && famous);
+      }
+
+      async function showFinalPreview() {
+        const data = readForm(true);
+        data.draftId = data.draftId || ensureDraftId();
+        persistStepData(data);
+
+
+
+        document.getElementById('confirm-title').textContent = data.title || 'Title';
+        document.getElementById('confirm-text').textContent = data.text ? `“${data.text}”` : '“Quote text here…”';
+        document.getElementById('confirm-author').textContent = data.author || 'Author Name';
+        document.getElementById('confirm-country').textContent = data.country || 'Country';
+        document.getElementById('confirm-famous').textContent = data.famous || '';
+
+        const confirmImage = document.getElementById('confirm-image');
+        const stored = JSON.parse(localStorage.getItem('quoteStep1') || '{}');
+        let shown = false;
+
+        if (stored.coverRef) {
+          const blob = await idbGet(stored.coverRef);
+          if (blob) { confirmImage.src = URL.createObjectURL(blob); shown = true; }
+        }
+        if (!shown && data.img) { confirmImage.src = data.img; shown = true; }
+        document.getElementById('confirm-media').classList.toggle('hidden', !shown);
+
+        document.getElementById('two-column-layout').classList.add('hidden');
+        document.getElementById('final-preview').classList.remove('hidden');
+
+        if (actionsBar) actionsBar.classList.add('hidden');
+
+        setStep(2);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function returnToEditing() {
+        document.getElementById('final-preview').classList.add('hidden');
+        document.getElementById('two-column-layout').classList.remove('hidden');
+
+        if (actionsBar) actionsBar.classList.remove('hidden');
+
+        await fillFormFromStored();
+        updateLivePreview();
+        updateNextButtonState();
+        setStep(1);
+      }
+
+      function saveAsDraft() {
+        const data = readForm(true);
+        const draftId = data.draftId || generateDraftId();
+        data.draftId = draftId;
+        persistStepData(data);
+
+        const nowIso = new Date().toISOString();
+        const draftObj = {
+          id: draftId,
+          type: 'quote',
+          title: data.title || 'Untitled',
+          summary: data.text || '',
+          category: 'Quote',
+          thumbnail: data.img || '',
+          author: data.author || '',
+          famous: data.famous || '',
+          text: data.text || '',
+          country: data.country || '',
+          sections: [],
+          savedAt: nowIso,
+          archivedAt: nowIso,
+        };
+
+        localStorage.setItem('draft:upsert', JSON.stringify(draftObj));
+        localStorage.removeItem('publish:lastType');
+        localStorage.removeItem('publish:lastId');
+        window.location.href = '/admin/content.html';
+      }
+
+
+      async function publishQuote() {
+        const data = readForm(true);
+        if (!data.title || !data.author || !data.text || !data.famous) {
+          alert('Please complete all required fields before publishing.');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('quote', data.text);
+        formData.append('quoteTitle', data.title);
+        formData.append('authorName', data.author);
+        formData.append('famousFor', data.famous);
+        formData.append('country', data.country || '');
+
+        const draftId = data.draftId ? String(data.draftId) : null;
+        if (draftId && /^\d+$/.test(draftId)) formData.append('id', draftId);
+
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files && fileInput.files[0];
+        if (file) {
+          formData.append('thumbnail', file, file.name);
+        } else {
+          const stored = JSON.parse(localStorage.getItem('quoteStep1') || '{}');
+          if (stored.coverRef) {
+            const blob = await idbGet(stored.coverRef);
+            if (blob) formData.append('thumbnail', blob, 'cover.png');
+          } else if (data.img) {
+            const blob = dataURItoBlob(data.img);
+            if (blob) formData.append('thumbnail', blob, 'cover.png');
+          }
+        }
+
+        try {
+          const response = await fetch('/admin/quote', { method: 'POST', body: formData, credentials: 'include' });
+          const json = await response.json();
+          if (!response.ok || !json.success) {
+            const errMsg = (json && json.error) ? json.error : 'Server error while publishing quote.';
+            throw new Error(errMsg);
+          }
+
+          if (draftId && !draftId.startsWith('draft-')) {
+            await fetch(`/admin/quote/publish/${draftId}`, { method: 'PUT', credentials: 'include' });
+            localStorage.setItem('published:removeDraftId', draftId);
+          }
+          localStorage.setItem('publish:lastType', 'quote');
+          localStorage.setItem('publish:lastId', String(json.quoteId || json.id));
+
+          localStorage.removeItem('quoteStep1');
+          window.location.href = '/admin/content.html?published=1';
+        } catch (err) {
+          console.error(err);
+          alert(err.message || 'Failed to publish quote.');
+        }
+      }
+
+      // ---------- Image upload (no size cap) + cache blob in IDB ----------
+      function setupImageUpload() {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const previewImg = document.getElementById('preview-image');
+        const previewBox = document.getElementById('preview-media');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', ev => { ev.preventDefault(); dropzone.classList.add('hover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('hover'));
+        dropzone.addEventListener('drop', async ev => {
+          ev.preventDefault(); dropzone.classList.remove('hover');
+          const files = ev.dataTransfer?.files;
+          if (files && files.length > 0) { fileInput.files = files; await handleSelectedFile(files[0]); }
+        });
+        fileInput.addEventListener('change', async () => {
+          const file = fileInput.files && fileInput.files[0];
+          if (file) await handleSelectedFile(file);
+        });
+
+        async function handleSelectedFile(file) {
+          // immediate preview
+          const reader = new FileReader();
+          reader.onload = ev => {
+            previewImg.src = ev.target?.result || '';
+            previewImg.classList.remove('hidden');
+            previewBox.classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+
+          // cache in IDB
+          const did = ensureDraftId();
+          const ref = `quote:${did}`;
+          try {
+            await idbPut(ref, file);
+            const stored = JSON.parse(localStorage.getItem('quoteStep1') || '{}');
+            stored.coverRef = ref;
+            localStorage.setItem('quoteStep1', JSON.stringify(stored));
+          } catch (e) {
+            console.warn('Failed to cache quote cover in IDB:', e);
+          }
+        }
+      }
+
+      // ---------- Restore from storage (prefer IDB) ----------
+      async function fillFormFromStored() {
+        let stored = null;
+        try { stored = JSON.parse(localStorage.getItem('quoteStep1') || 'null'); } catch { }
+        if (!stored) {
+          try { stored = JSON.parse(localStorage.getItem('draft:upsert') || 'null'); } catch { }
+        }
+        if (!stored) stored = {};
+
+        document.getElementById('quote-title').value = stored.title || stored.quoteTitle || '';
+        document.getElementById('quote-author').value = stored.author || stored.authorName || '';
+        document.getElementById('quote-text').value = stored.text || stored.summary || stored.quote || '';
+        document.getElementById('quote-famous').value = stored.famous || stored.famousFor || '';
+        document.getElementById('quote-country').value = stored.country || '';
+
+        const previewImg = document.getElementById('preview-image');
+        const previewBox = document.getElementById('preview-media');
+
+        if (stored.coverRef) {
+          try {
+            const blob = await idbGet(stored.coverRef);
+            if (blob) {
+              previewImg.src = URL.createObjectURL(blob);
+              previewImg.classList.remove('hidden');
+              previewBox.classList.remove('hidden');
+              return;
+            }
+          } catch { }
+        }
+
+        const thumb = stored.thumbnail || stored.img || '';
+        if (thumb) {
+          previewImg.src = thumb;
+          previewImg.classList.remove('hidden');
+          previewBox.classList.remove('hidden');
+        }
+      }
+
+
+      // ---------- Init ----------
+      async function init() {
+        await fillFormFromStored();
+
+        ['quote-title', 'quote-author', 'quote-text', 'quote-famous', 'quote-country'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', () => { updateLivePreview(); updateNextButtonState(); });
+        });
+
+        document.getElementById('quote-form').addEventListener('submit', ev => {
+          ev.preventDefault(); showFinalPreview();
+        });
+
+        const editBtn = document.getElementById('edit-btn');
+        const publishBtn = document.getElementById('publish-btn');
+        const saveDraftBtn = document.getElementById('save-draft-btn');
+        if (editBtn) editBtn.addEventListener('click', returnToEditing);
+        if (publishBtn) publishBtn.addEventListener('click', ev => { ev.preventDefault(); publishQuote(); });
+        if (saveDraftBtn) saveDraftBtn.addEventListener('click', ev => { ev.preventDefault(); saveAsDraft(); });
+
+        setupImageUpload();
+        updateLivePreview();
+        updateNextButtonState();
+        setStep(1);
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => init());
+      else init();
+
+      // Expose for inline handler compatibility
+      window.addQuote = showFinalPreview;
+      window.cancelQuote = function () { history.back(); };
+    })();
+  </script>
+</body>
+
+</html>

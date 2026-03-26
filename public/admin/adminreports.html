@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports - FeelBright (Export Centered)</title>
+
+  <!-- Tailwind (for utility classes) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --accent: #7FC58B;
+      --green-600: #10b981;
+      --muted-border: #e5e7eb;
+      --card-bg: #ffffff;
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      background: linear-gradient(135deg, #f8fbfb 0%, #f0faf0 50%, #f8fbfb 100%);
+      color: #1f2937;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :root {
+      --expanded-width: 16rem;
+      --collapsed-width: 5rem;
+    }
+
+    /* Sidebar styles */
+    #sidebar {
+      transition: all 0.3s ease;
+      width: 260px;
+    }
+
+    #sidebar.collapsed {
+      width: 80px;
+    }
+
+    #sidebar.collapsed .menu-text,
+    #sidebar.collapsed #users-arrow,
+    #sidebar.collapsed #logo-text {
+      display: none;
+    }
+
+    #users-submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    #users-submenu.open {
+      max-height: 200px;
+    }
+
+    #sidebar {
+      width: var(--expanded-width);
+      transition: width 0.3s ease;
+    }
+
+    #sidebar.collapsed {
+      width: var(--collapsed-width);
+    }
+
+    .sidebar-item {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .5rem .75rem;
+    }
+
+    .sidebar-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card,
+    .export-card,
+    .sidebar-item,
+    nav#sidebar {
+      background: var(--card-bg);
+    }
+
+    .card {
+      border-radius: 12px;
+      border: 1px solid rgba(15, 23, 42, 0.04);
+      box-shadow: 0 8px 30px rgba(2, 6, 23, 0.04);
+      padding: 20px;
+    }
+
+    .export-card {
+      border-radius: 12px;
+      padding: 22px;
+      border: 1px solid rgba(200, 230, 200, 0.12);
+      position: relative;
+      box-shadow: 0 8px 30px rgba(2, 6, 23, 0.04);
+      background: var(--card-bg);
+    }
+
+    .download-action {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.06), rgba(99, 102, 241, 0.03));
+      cursor: pointer;
+    }
+
+    .export-section-hr {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 20px 0;
+    }
+
+    .export-options-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    .export-options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 220px);
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      padding: 8px 6px;
+      width: fit-content;
+      margin: 0 auto;
+    }
+
+    .export-option {
+      width: 220px;
+      min-height: 88px;
+      border-radius: 12px;
+      padding: 14px;
+      box-sizing: border-box;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      border: 1.5px solid var(--muted-border);
+      background: #fff;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+      outline: none;
+    }
+
+    .export-option .export-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .export-option .meta .title {
+      font-weight: 700;
+      color: #111827;
+      font-size: 15px;
+    }
+
+    .export-option .meta .subtitle {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .export-option.active {
+      border-color: #7FC58B;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.12);
+      transform: none;
+      outline: none;
+    }
+
+    .export-option .selected-dot {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 12px;
+      height: 12px;
+      border-radius: 9999px;
+      background: var(--accent);
+      display: none;
+    }
+
+    .export-option.active .selected-dot {
+      display: block;
+    }
+
+    .btn-export {
+      display: block;
+      margin: 24px auto 0;
+      padding: 12px 32px;
+      background-color: #7FC58B;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: background-color 300ms;
+      border: none;
+      cursor: pointer;
+      width: fit-content;
+    }
+
+    .btn-export:hover {
+      background-color: #6FB07C;
+    }
+
+    .h-80 {
+      height: 320px;
+    }
+
+    /* Fixed EQ card layout */
+    .eq-card-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .eq-chart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      padding: 20px 0;
+    }
+
+    .eq-chart-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 420px;
+      height: 280px;
+      margin: 0 auto 24px;
+    }
+
+    .category-legend {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 12px;
+      width: 100%;
+      justify-items: center;
+      align-items: center;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      color: #374151;
+      width: 100%;
+      justify-content: space-between;
+      padding: 8px 12px;
+      box-sizing: border-box;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+
+    .legend-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .legend-label {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .legend-value {
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:900px) {
+      .category-legend {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+
+      .export-options-grid {
+        grid-template-columns: repeat(1, 260px);
+      }
+    }
+
+    @media (max-width:520px) {
+      .category-legend {
+        grid-template-columns: repeat(1, minmax(140px, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-gray-800">
+  <div class="flex layout min-h-screen">
+
+    <!-- Sidebar -->
+    <nav id="sidebar"
+      class="bg-white border-r border-gray-200 h-screen sticky top-0 flex flex-col justify-between z-50 shadow-sm">
+      <div>
+        <!--AdminLogo-->
+        <div class="p-5 pb-7 pt-7 border-b border-gray-200 flex items-center gap-2">
+          <img src="../img/fb-tabs-icn.png" alt="Tabs Icon" class="h-7 w-7 ml-1 sidebar-icon" />
+          <h1 id="logo-text" class="text-xl ml-1 font-bold text-[#62c273]"><span
+              style="color: #3d1200;">Feel</span>Bright
+          </h1>
+        </div>
+
+        <!-- Menu -->
+        <ul class="p-4 space-y-2 ">
+          <!-- Dashboard -->
+          <li>
+            <a href="adminreports.html"
+              class="sidebar-item w-full rounded-lg hover:bg-green-100 bg-green-100 text-green-700 transition flex items-center">
+              <i class="fas fa-home text-[#7FC58B] text-lg sidebar-icon"></i>
+              <span class="menu-text text-sm ">Dashboard</span>
+            </a>
+          </li>
+
+          <!-- Users (collapsible) -->
+          <li><a href="./userlist.html">
+              <button id="users-btn"
+                class="sidebar-item w-full rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition flex justify-between items-center"
+                aria-expanded="false">
+                <div class="flex items-center gap-3">
+                  <i class="fas fa-users text-[#7FC58B] sidebar-icon"></i>
+                  <span class="menu-text text-sm ">Users</span>
+                </div>
+                <i id="users-arrow"
+                  class="fas fa-chevron-down text-sm text-[#6FB07C] transition-transform duration-300"></i>
+              </button>
+            </a>
+
+            <ul id="users-submenu" aria-hidden="true" class="">
+              <li>
+                <a href="archiveduser.html" class="sidebar-item rounded-lg hover:bg-green-100 transition pl-12">
+                  <i class="fas fa-archive text-[#7FC58B] sidebar-icon"></i>
+                  <span class="menu-text text-sm">Archive</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!-- Content -->
+          <li>
+            <a href="content.html"
+              class="sidebar-item rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition">
+              <i class="fas fa-file-alt text-[#7FC58B] text-lg sidebar-icon"></i>
+              <span class="menu-text text-sm">Content Management</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Logout -->
+      <div class="p-4 border-t border-gray-200">
+        <button onclick="window.location.href='/logout'"
+          class="sidebar-item w-full rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition">
+          <i class="fas fa-sign-out-alt sidebar-icon"></i>
+          <span class="menu-text">Logout</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main area -->
+    <main id="mainArea" class="flex-1 p-7">
+
+      <!-- Header -->
+      <header class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+        <div class="flex items-center gap-4">
+          <button onclick="toggleSidebar()" class="text-[#7FC58B] hover:text-green-600 transition-colors"
+            aria-label="Toggle sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="lucide lucide-panel-left">
+              <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+              <path d="M9 3v18"></path>
+            </svg>
+          </button>
+          <h2 class="text-2xl font-semibold">Admin Dashboard</h2>
+        </div>
+      </header>
+
+      <div class="max-w-7xl mx-auto px-6 pb-12">
+
+        <!-- Top metrics (cards now have the requested hover/focus styles) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <!-- Total Users -->
+          <div tabindex="0" role="region" aria-label="Total Users card"
+            class="card hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-md font-semibold text-gray-800">Total Users</div>
+                <div class="text-2xl font-bold text-gray-900 mt-1" id="totalUsers">--</div>
+                <div class="flex items-center mt-2 text-green-600">
+                  <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 17l6-6 4 4 8-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span id="trendUsers" class="text-xs">+12.5% vs weekly</span>
+                </div>
+              </div>
+
+              <!-- Icon: users -->
+              <div
+                class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-green-200 bg-green-50 text-green-600"
+                aria-hidden="true">
+                <i class="fas fa-users text-lg" aria-hidden="true"></i>
+                <span class="sr-only">Total users</span>
+              </div>
+            </div>
+          </div>
+
+         <!-- Active Assessees -->
+<div tabindex="0" role="region" aria-label="Active Assessees card"
+  class="card hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="text-md font-semibold text-gray-800">Active Assessees</div>
+      <div class="text-2xl font-bold text-gray-900 mt-1" id="uniqueUsers">--</div>
+      <div class="flex items-center mt-2 text-green-600">
+        <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M3 17l6-6 4 4 8-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span id="trendActive" class="text-xs">+8.3% vs weekly</span>
+      </div>
+    </div>
+
+              <!-- Icon: user-check -->
+              <div
+                class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-sky-200 bg-sky-50 text-sky-600"
+                aria-hidden="true">
+                <i class="fas fa-user-check text-lg" aria-hidden="true"></i>
+                <span class="sr-only">Active assessees</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assessments Completed -->
+          <div tabindex="0" role="region" aria-label="Assessments Completed card"
+            class="card hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-md font-semibold text-gray-800">Assessments Done</div>
+                <div class="text-2xl font-bold text-gray-900 mt-1" id="totalAssessments">--</div>
+                <div class="flex items-center mt-2 text-green-600">
+                  <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 17l6-6 4 4 8-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span id="trendAssessments" class="text-xs">+15.2% vs weekly</span>
+                </div>
+              </div>
+
+              <!-- Icon: clipboard-check -->
+              <div
+                class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-purple-200 bg-purple-50 text-purple-600"
+                aria-hidden="true">
+                <i class="fas fa-clipboard-check text-lg" aria-hidden="true"></i>
+                <span class="sr-only">Assessments completed</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average EQ Score -->
+          <div tabindex="0" role="region" aria-label="Average EQ Score card"
+            class="card hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 transition">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-md font-semibold text-gray-800">Average EQ Score</div>
+                <div class="text-2xl font-bold text-gray-900 mt-1" id="averageScore">--</div>
+                <div class="flex items-center mt-2 text-red-600">
+                  <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 7l-6 6-4-4-8 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span id="trendScore" class="text-xs">-2.1% vs weekly</span>
+                </div>
+              </div>
+
+              <!-- Icon: award -->
+              <div
+                class="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-yellow-200 bg-yellow-50 text-yellow-600"
+                aria-hidden="true">
+                <i class="fas fa-award text-lg" aria-hidden="true"></i>
+                <span class="sr-only">Average EQ score</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+          <div class="card">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-800">Active Users Trend</h2>
+                <p class="text-sm text-gray-500">Weekly active user growth</p>
+              </div>
+              <div
+                class="w-10 h-10 flex items-center justify-center rounded-lg border-2 border-sky-200 bg-sky-50 text-sky-600"
+                aria-hidden="true">
+                <i class="fas fa-chart-line text-lg" aria-hidden="true"></i>
+                <span class="sr-only">Active Users Trend</span>
+              </div>
+            </div>
+            <div class="h-80"><canvas id="activeUsersChart"></canvas></div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-800">Assessment Analytics</h2>
+                <p class="text-sm text-gray-500">Weekly completion trends & volume</p>
+              </div>
+              <div
+                class="w-10 h-10 flex items-center justify-center rounded-lg border-2 border-green-200 bg-green-50 text-green-600"
+                aria-hidden="true">
+                <i class="fas fa-chart-bar text-lg" aria-hidden="true"></i>
+                <span class="sr-only">Assessment Analytics</span>
+              </div>
+
+            </div>
+            <div class="h-80"><canvas id="assessmentsChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- EQ Category Averages (Fixed) -->
+        <div class="card mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-800">Pie Chart Categories</h2>
+              <p class="text-sm text-gray-500">Weekly Chart Percentages</p>
+            </div>
+            <div
+              class="w-10 h-10 flex items-center justify-center rounded-lg border-2 border-indigo-200 bg-indigo-50 text-indigo-600"
+              aria-hidden="true">
+              <i class="fas fa-chart-pie text-lg" aria-hidden="true"></i>
+              <span class="sr-only">Pie Chart categories</span>
+            </div>
+          </div>
+
+          <div class="eq-chart-container">
+            <div class="eq-chart-wrap">
+              <canvas id="categoryChart"></canvas>
+            </div>
+            <div id="categoryLegend" class="category-legend" aria-hidden="false"></div>
+          </div>
+        </div>
+
+        <!-- Export UI  -->
+        <div class="export-card mb-8">
+          <div
+            class="w-10 h-10 flex items-center justify-center rounded-lg border-2 border-indigo-200 bg-indigo-50 text-indigo-600 download-action"
+            title="Export Analytics Data">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 3v12m0 0l-3-3m3 3l3-3M21 21H3" />
+            </svg>
+            <span class="sr-only">Export Analytics Data</span>
+          </div>
+
+          <div class="flex items-start gap-6">
+            <div style="flex:1">
+              <h3 class="text-lg font-semibold text-gray-800">Export Analytics Data</h3>
+              <p class="text-sm text-gray-600 mt-1">Download selected analytics reports (Excel or PDF)</p>
+
+              <!-- Divider (horizontal line) -->
+              <div class="export-section-hr"></div>
+
+              <!-- Instructions text for format selection -->
+              <div class="text-sm text-gray-700 font-medium mb-2">Choose your export format:</div>
+
+              <!-- Selections -->
+              <div class="export-options-container">
+                <div class="export-options-grid" role="list" aria-label="Export formats">
+                  <!-- Excel -->
+                  <div
+                    class="export-option hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none focus:ring-2 focus:ring-green-50 data-[selected=true]:border-[#7FC58B] data-[selected=true]:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] transition"
+                    data-format="excel" id="opt-excel" role="button" tabindex="0" aria-pressed="false">
+                    <span class="selected-dot" aria-hidden="true"></span>
+                    <div style="display:flex;align-items:center;gap:12px">
+                      <!-- Rounded Excel Badge -->
+                      <div class="export-badge rounded-lg flex items-center justify-center"
+                        style="background:linear-gradient(180deg,#ecfdf5,#f0fdf4)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 rounded-lg" viewBox="0 0 48 48">
+                          <rect x="4" y="4" width="40" height="40" rx="8" ry="8" fill="#217346" />
+                          <text x="24" y="30" font-size="14" fill="#fff" font-family="Arial" font-weight="bold"
+                            text-anchor="middle">
+                            XLS
+                          </text>
+                        </svg>
+                      </div>
+                      <div class="meta">
+                        <div class="title">Excel Workbook</div>
+                        <div class="subtitle">Microsoft Document</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- PDF -->
+                  <div class="export-option hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)]
+                    focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] focus:outline-none
+                    focus:ring-2 focus:ring-green-50 data-[selected=true]:border-[#7FC58B]
+                    data-[selected=true]:shadow-[0_0_0_4px_rgba(127,197,139,0.12)] transition" data-format="pdf"
+                    id="opt-pdf" role="button" tabindex="0" aria-pressed="false">
+                    <span class="selected-dot" aria-hidden="true"></span>
+                    <div style="display:flex;align-items:center;gap:12px">
+                      <!-- Rounded PDF Badge -->
+                      <div class="export-badge rounded-lg flex items-center justify-center"
+                        style="background:linear-gradient(180deg,#fff7ed,#fffbf0)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 rounded-lg" viewBox="0 0 48 48">
+                          <!-- Rounded Background with Border -->
+                          <rect x="4" y="4" width="40" height="40" rx="8" ry="8" fill="#FF0000" stroke="#B91C1C" />
+                          <!-- Centered Text -->
+                          <text x="24" y="30" font-size="14" fill="#fff" font-family="Arial" font-weight="bold"
+                            text-anchor="middle">
+                            PDF
+                          </text>
+                        </svg>
+
+                      </div>
+                      <div class="meta">
+                        <div class="title">PDF Report</div>
+                        <div class="subtitle">Printable Document</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Centered, responsive export button outside the grid -->
+              <div class="mt-4 flex justify-center">
+                <button id="exportButton" class="btn-export mx-auto w-full sm:w-auto" aria-label="Export data">
+                  <span id="exportButtonLabel">Export Excel</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    /* ----------------- Utility & setup ----------------- */
+
+    // Colors mapping for EQ categories
+    const EQ_COLOR_MAP = {
+      'Self Awareness': '#64B5F6',
+      'Self Regulation': '#81C784',
+      'Motivation': '#FFB74D',
+      'Empathy': '#9575CD',
+      'Social Skills': '#4DB6AC'
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentPage = window.location.pathname.split("/").pop();
+
+      document.querySelectorAll(".sidebar-item[href]").forEach(item => {
+        const link = item.getAttribute("href");
+        if (link && link.includes(currentPage)) {
+          item.classList.add("active");
+
+          const submenu = item.closest("#users-submenu");
+          if (submenu) {
+            submenu.classList.add("open");
+            submenu.setAttribute("aria-hidden", "false");
+
+            const usersBtn = document.getElementById("users-btn");
+            const arrow = document.getElementById("users-arrow");
+            usersBtn.classList.add("active");
+            usersBtn.setAttribute("aria-expanded", "true");
+
+            // Show arrow only if sidebar is expanded
+            const sidebar = document.getElementById("sidebar");
+            arrow.style.display = sidebar.classList.contains("collapsed") ? "none" : "inline-block";
+            if (sidebar.classList.contains("collapsed")) {
+              arrow.classList.remove("rotate-180");
+            } else {
+              arrow.classList.add("rotate-180"); // rotate if submenu open
+            }
+          }
+        }
+      });
+    });
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const arrow = document.getElementById('users-arrow');
+
+      sidebar.classList.toggle('collapsed');
+
+      // Arrow visible only if sidebar expanded
+      if (sidebar.classList.contains('collapsed')) {
+        arrow.style.display = 'none';
+      } else {
+        arrow.style.display = 'inline-block';
+      }
+    }
+
+    // Users submenu toggle
+    document.getElementById('users-btn').addEventListener('click', function () {
+      const submenu = document.getElementById('users-submenu');
+      const arrow = document.getElementById('users-arrow');
+
+      const isOpen = submenu.classList.toggle('open'); // toggle submenu
+      submenu.setAttribute('aria-hidden', String(!isOpen));
+      this.setAttribute('aria-expanded', isOpen);
+
+      // Rotate arrow only if sidebar is expanded
+      if (!document.getElementById('sidebar').classList.contains('collapsed')) {
+        arrow.classList.toggle('rotate-180', isOpen);
+      }
+    });
+
+    // Optional: toggleSubmenu function if needed elsewhere
+    function toggleSubmenu(event) {
+      const sidebar = document.getElementById("sidebar");
+      const submenu = document.getElementById("users-submenu");
+      const usersBtn = document.getElementById("users-btn");
+      const arrow = document.getElementById("users-arrow");
+
+      if (sidebar.classList.contains("collapsed")) {
+        event.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      const opening = !submenu.classList.contains("open");
+      submenu.classList.toggle("open", opening);
+      submenu.setAttribute("aria-hidden", String(!opening));
+      usersBtn.setAttribute("aria-expanded", String(opening));
+
+      // Rotate arrow if sidebar expanded
+      if (!sidebar.classList.contains("collapsed")) {
+        arrow.classList.toggle("rotate-180", opening);
+      }
+    }
+
+    (function () {
+      function setActiveOption(el) {
+        document.querySelectorAll('.export-option').forEach(o => {
+          o.classList.remove('active');
+          o.setAttribute('aria-pressed', 'false');
+          o.setAttribute('data-selected', 'false'); // clear previous
+        });
+
+        el.classList.add('active');
+        el.setAttribute('aria-pressed', 'true');
+        el.setAttribute('data-selected', 'true'); // apply selected state
+
+        const format = el.dataset.format;
+        const labels = { excel: 'Export Excel', pdf: 'Export PDF' };
+        document.getElementById('exportButtonLabel').textContent = labels[format] || 'Export';
+      }
+
+      document.addEventListener('click', function (e) {
+        const opt = e.target.closest('.export-option');
+        if (opt) setActiveOption(opt);
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if ((e.key === 'Enter' || e.key === ' ') &&
+          document.activeElement &&
+          document.activeElement.classList.contains('export-option')) {
+          e.preventDefault();
+          setActiveOption(document.activeElement);
+        }
+      });
+
+      document.getElementById('exportButton').addEventListener('click', () => {
+        const active = document.querySelector('.export-option.active');
+        const selected = (active && active.getAttribute('data-format')) || 'excel';
+        if (selected === 'pdf') exportPDF();
+        else exportExcel();
+      });
+    })();
+
+
+    // Calculate percentage change with proper formatting
+    function pctChange(prev, curr) {
+      if (prev === 0 || prev === null || typeof prev === 'undefined' || isNaN(prev) || isNaN(curr)) return null;
+      const p = ((curr - prev) / Math.abs(prev)) * 100;
+      return `${p >= 0 ? '+' : ''}${Math.round(p * 10) / 10}%`;
+    }
+
+    // Format date for chart labels (Month Day format)
+    function formatLabelForAxis(raw) {
+      if (raw === null || typeof raw === 'undefined' || raw === '') return '';
+
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      // If object Date
+      if (raw instanceof Date) {
+        if (!isNaN(raw.getTime())) return `${months[raw.getMonth()]} ${raw.getDate()}`;
+      }
+
+      // If a "MM/DD - MM/DD" range string (common from your SQL date_range)
+      if (typeof raw === 'string' && /^\s*\d{1,2}\/\d{1,2}\s*-\s*\d{1,2}\/\d{1,2}\s*$/.test(raw)) {
+        const startPart = raw.split('-')[0].trim(); // "MM/DD"
+        const [m, d] = startPart.split('/').map(n => parseInt(n, 10));
+        if (!isNaN(m) && !isNaN(d)) {
+          // choose a reasonable year — use current year as a simple heuristic
+          const year = (new Date()).getFullYear();
+          const dt = new Date(year, m - 1, d);
+          if (!isNaN(dt.getTime())) return `${months[dt.getMonth()]} ${dt.getDate()}`;
+        }
+      }
+
+      // If numeric timestamp or numeric-like string
+      if (typeof raw === 'number' || (/^\d+$/.test(String(raw)))) {
+        const dt = new Date(Number(raw));
+        if (!isNaN(dt.getTime())) return `${months[dt.getMonth()]} ${dt.getDate()}`;
+      }
+
+      // Try parsing as ISO / other date string
+      const dt = new Date(String(raw));
+      if (!isNaN(dt.getTime())) return `${months[dt.getMonth()]} ${dt.getDate()}`;
+
+      // Fallback to raw string
+      return String(raw);
+    }
+
+
+    // Generate sample monthly data
+    function generateMonthlyData() {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const data = [];
+
+      for (let i = 0; i < 12; i++) {
+        const monthIndex = (currentMonth - 11 + i + 12) % 12;
+        const year = currentMonth - 11 + i < 0 ? currentYear - 1 : currentYear;
+        const date = new Date(year, monthIndex, 15); // Middle of month
+        data.push({
+          date: date.toISOString(),
+          active_users: Math.round(100 + Math.random() * 100 + i * 5),
+          total_assessments: Math.round(50 + Math.random() * 50 + i * 3),
+          completion_rate: Math.round(65 + Math.random() * 30)
+        });
+      }
+      return data;
+    }
+
+    // Data arrays
+    let activeUsersData = [];
+    let assessmentsData = [];
+    let categoryData = {};
+    let statsData = {};
+    let activeUsersChart = null, assessmentsChart = null, categoryChart = null;
+
+    // Formatting utility object
+const _fmt = {
+  pretty: () => new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+  isoDate: () => new Date().toISOString().split('T')[0],
+  num: (n) => Number(n).toLocaleString()
+};
+
+    // Fetch all data
+   async function fetchAllData() {
+  try {
+    const [weeklyActiveResponse, assessmentsResponse, categoryResponse, statsResponse] = await Promise.all([
+      fetch('/admin/api/weekly-active-users').catch(() => ({ json: async () => ({ success: false }) })),
+      fetch('/admin/api/total-assessments').catch(() => ({ json: async () => ({ success: false }) })),
+      fetch('/admin/api/assessment-breakdown').catch(() => ({ json: async () => ({ success: false }) })),
+      fetch('/admin/api/assessment-stats').catch(() => ({ json: async () => ({ success: false }) }))
+    ]);
+
+    const weeklyActiveData = await weeklyActiveResponse.json().catch(() => ({ success: false }));
+    const assessmentsDataResponse = await assessmentsResponse.json().catch(() => ({ success: false }));
+    const categoryDataResponse = await categoryResponse.json().catch(() => ({ success: false }));
+    const statsDataResponse = await statsResponse.json().catch(() => ({ success: false }));
+
+    console.log('Raw stats API response:', statsDataResponse);
+
+    if (weeklyActiveData.success) activeUsersData = weeklyActiveData.data || [];
+    else activeUsersData = [];
+
+    if (assessmentsDataResponse.success) assessmentsData = assessmentsDataResponse.data || [];
+    else assessmentsData = [];
+
+    if (categoryDataResponse.success) categoryData = categoryDataResponse.data || {};
+    else categoryData = {};
+
+    // THE FIX: Properly assign the stats data
+    if (statsDataResponse.success && statsDataResponse.data) {
+      statsData = statsDataResponse.data;
+      console.log('Assigned statsData:', statsData);
+    } else {
+      statsData = {
+        unique_users: 0,
+        unique_assessees: 0,
+        total_assessments: 0,
+        average_score: 0,
+        unique_users_prev: 0,
+        unique_assessees_prev: 0,
+        total_assessments_prev: 0,
+        average_score_prev: 0
+      };
+    }
+
+    // Use sample monthly data if no data returned
+    if (!activeUsersData || activeUsersData.length === 0) {
+      const monthlyData = generateMonthlyData();
+      activeUsersData = monthlyData;
+    }
+    if (!assessmentsData || assessmentsData.length === 0) {
+      const monthlyData = generateMonthlyData();
+      assessmentsData = monthlyData;
+    }
+
+    // Set sample category data if none exists
+    if (!categoryData.category_averages || Object.keys(categoryData.category_averages).length === 0) {
+      categoryData.category_averages = {
+        'Self Awareness': 85,
+        'Self Regulation': 78,
+        'Motivation': 92,
+        'Empathy': 88,
+        'Social Skills': 82
+      };
+    }
+
+    // IMPORTANT: Call updateStats AFTER statsData is properly assigned
+    updateStats();
+    renderCharts();
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    // Use fallback data
+    const monthlyData = generateMonthlyData();
+    activeUsersData = monthlyData;
+    assessmentsData = monthlyData;
+    categoryData = {
+      category_averages: {
+        'Self Awareness': 85,
+        'Self Regulation': 78,
+        'Motivation': 92,
+        'Empathy': 88,
+        'Social Skills': 82
+      }
+    };
+    statsData = {
+      unique_users: 0,
+      unique_assessees: 0,
+      total_assessments: 0,
+      average_score: 0,
+      unique_users_prev: 0,
+      unique_assessees_prev: 0,
+      total_assessments_prev: 0,
+      average_score_prev: 0
+    };
+    updateStats();
+    renderCharts();
+  }
+}
+
+    // Update stats with functional percentages
+    function updateStats() {
+  console.log('Raw statsData received:', statsData);
+  
+  // Extract values with detailed logging
+  const totalUsers = statsData?.unique_users || 0;
+  const activeAssessees = statsData?.unique_assessees || 0;
+  const totalAssessments = statsData?.total_assessments || 0;
+  const avgScore = statsData?.average_score || 0;
+  
+  console.log('Parsed values:', {
+    totalUsers,
+    activeAssessees,
+    totalAssessments,
+    avgScore
+  });
+  
+  // Update DOM elements with explicit checks
+  const totalUsersEl = document.getElementById('totalUsers');
+  const uniqueUsersEl = document.getElementById('uniqueUsers');
+  const totalAssessmentsEl = document.getElementById('totalAssessments');
+  const avgScoreEl = document.getElementById('averageScore');
+  
+  if (totalUsersEl) {
+    totalUsersEl.textContent = totalUsers.toLocaleString();
+    console.log('Updated totalUsers:', totalUsers);
+  }
+  
+  if (uniqueUsersEl) {
+    uniqueUsersEl.textContent = activeAssessees.toLocaleString();
+    console.log('Updated uniqueUsers (Active Assessees):', activeAssessees);
+  }
+  
+  if (totalAssessmentsEl) {
+    totalAssessmentsEl.textContent = totalAssessments.toLocaleString();
+    console.log('Updated totalAssessments:', totalAssessments);
+  }
+  
+  if (avgScoreEl) {
+    avgScoreEl.textContent = avgScore ? `${Math.round(avgScore)}%` : '0%';
+    console.log('Updated averageScore:', avgScore);
+  }
+
+  // Calculate weekly changes for Active Assessees
+  if (activeUsersData && activeUsersData.length >= 2) {
+    const sorted = activeUsersData.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+    const current = sorted[sorted.length - 1].active_users;
+    const weekAgo = sorted[Math.max(0, sorted.length - 8)].active_users;
+    const change = pctChange(weekAgo, current);
+    const trendActiveEl = document.getElementById('trendActive');
+    if (trendActiveEl && change) {
+      trendActiveEl.textContent = `${change} vs weekly`;
+    }
+  }
+
+  // Calculate weekly changes for Assessments
+  if (assessmentsData && assessmentsData.length >= 2) {
+    const sorted = assessmentsData.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+    const current = sorted[sorted.length - 1].total_assessments;
+    const weekAgo = sorted[Math.max(0, sorted.length - 8)].total_assessments;
+    const change = pctChange(weekAgo, current);
+    const trendAssessmentsEl = document.getElementById('trendAssessments');
+    if (trendAssessmentsEl && change) {
+      trendAssessmentsEl.textContent = `${change} vs weekly`;
+    }
+  }
+
+  // Total users trend
+  if (statsData.unique_users_prev) {
+    const change = pctChange(statsData.unique_users_prev, statsData.unique_users);
+    const trendUsersEl = document.getElementById('trendUsers');
+    if (trendUsersEl && change) {
+      trendUsersEl.textContent = `${change} vs weekly`;
+    }
+  }
+
+  // Average score trend
+  if (statsData.average_score_prev) {
+    const change = pctChange(statsData.average_score_prev, statsData.average_score);
+    const trendScoreEl = document.getElementById('trendScore');
+    const trendScoreParent = trendScoreEl?.parentElement;
+    
+    if (trendScoreEl && change) {
+      trendScoreEl.textContent = `${change} vs weekly`;
+      
+      // Update color based on trend
+      if (trendScoreParent) {
+        if (change.startsWith('-')) {
+          trendScoreParent.classList.remove('text-green-600');
+          trendScoreParent.classList.add('text-red-600');
+        } else {
+          trendScoreParent.classList.remove('text-red-600');
+          trendScoreParent.classList.add('text-green-600');
+        }
+      }
+    }
+  }
+  
+  console.log('✅ Stats update complete');
+}
+
+    // Create gradient
+    function createGradient(ctx, chartArea, c1, c2) {
+      const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+      g.addColorStop(0, c1);
+      g.addColorStop(1, c2);
+      return g;
+    }
+
+    // Render category legend
+    function renderCategoryLegend(labels, colors, dataValues) {
+      const container = document.getElementById('categoryLegend');
+      container.innerHTML = '';
+
+      labels.forEach((label, idx) => {
+        const percent = typeof dataValues[idx] !== 'undefined' ? `${Math.round(dataValues[idx])}%` : '--';
+        const sw = colors[idx] || '#ccc';
+
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+
+        const left = document.createElement('div');
+        left.className = 'legend-left';
+        const swatch = document.createElement('span');
+        swatch.className = 'legend-swatch';
+        swatch.style.background = sw;
+        const lbl = document.createElement('span');
+        lbl.className = 'legend-label';
+        lbl.textContent = label;
+        left.appendChild(swatch);
+        left.appendChild(lbl);
+
+        const right = document.createElement('div');
+        right.className = 'legend-value';
+        right.textContent = percent;
+
+        item.appendChild(left);
+        item.appendChild(right);
+        container.appendChild(item);
+      });
+    }
+
+    // Helper: returns short month name + day (e.g. "Sep 14")
+    // ----- REPLACE your existing formatLabelForAxis with this robust version -----
+    function formatLabelForAxis(raw) {
+      if (raw === null || typeof raw === 'undefined' || raw === '') return '';
+      // if it's already a Date
+      if (raw instanceof Date) {
+        const d = raw;
+        if (!isNaN(d.getTime())) {
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${months[d.getMonth()]} ${d.getDate()}`;
+        }
+      }
+
+      // if numeric timestamp or numeric string
+      if (typeof raw === 'number' || (/^\d+$/.test(String(raw)))) {
+        const d = new Date(Number(raw));
+        if (!isNaN(d.getTime())) {
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${months[d.getMonth()]} ${d.getDate()}`;
+        }
+      }
+
+      // otherwise try parsing as a date string (ISO / common formats)
+      const d = new Date(String(raw));
+      if (!isNaN(d.getTime())) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[d.getMonth()]} ${d.getDate()}`;
+      }
+
+      // fallback: return original raw string
+      return String(raw);
+    }
+
+    // ----- REPLACE your renderCharts() function with this one (only changed x-axis ticks) -----
+    function renderCharts() {
+      // Destroy old instances
+      if (activeUsersChart) activeUsersChart.destroy();
+      if (assessmentsChart) assessmentsChart.destroy();
+      if (categoryChart) categoryChart.destroy();
+
+      // ACTIVE USERS CHART
+      if (activeUsersData && activeUsersData.length > 0) {
+        const ctx = document.getElementById('activeUsersChart').getContext('2d');
+        const sorted = activeUsersData.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        const labels = sorted.map(d => d.date); // keep raw date values here (format on ticks)
+        const values = sorted.map(d => Number(d.active_users || 0));
+
+        activeUsersChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Active Users',
+              data: values,
+              borderColor: '#06b5d8',
+              backgroundColor: function (context) {
+                const ca = context.chart.chartArea || { top: 0, bottom: 300 };
+                return createGradient(context.chart.ctx, ca, 'rgba(6,181,216,0.12)', 'rgba(6,181,216,0.02)');
+              },
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: '#06b5d8',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: false,
+                callbacks: {
+                  title: (items) => {
+                    const idx = items[0].dataIndex;
+                    const raw = sorted[idx]?.date;
+                    const d = new Date(raw);
+                    if (!isNaN(d.getTime())) {
+                      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                    }
+                    return raw;
+                  },
+                  label: (ctx) => (`Active Users: ${ctx.formattedValue}`)
+                }
+              }
+            },
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#6b7280' },
+                grid: { color: 'rgba(6,182,212,0.06)' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: {
+                  color: '#6b7280',
+                  maxRotation: 0,
+                  autoSkip: true,
+                  maxTicksLimit: 8,
+                  callback: function (value, index, ticks) {
+                    // value may be index or label depending on Chart.js internals
+                    const chartLabels = this.chart && this.chart.data && this.chart.data.labels ? this.chart.data.labels : null;
+                    let raw = value;
+                    if (chartLabels && typeof value === 'number' && chartLabels[value] !== undefined) raw = chartLabels[value];
+                    // sometimes value is already the label string:
+                    return formatLabelForAxis(raw);
+                  }
+                }
+              }
+            },
+            layout: { padding: { left: 6, right: 6 } }
+          }
+        });
+      }
+
+      // ASSESSMENTS CHART
+      if (assessmentsData && assessmentsData.length > 0) {
+        const ctx2 = document.getElementById('assessmentsChart').getContext('2d');
+        const sorted = assessmentsData.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        const labels = sorted.map(d => d.date); // keep raw values
+        const volume = sorted.map(d => Number(d.total_assessments || 0));
+        const hasCompletionRate = typeof sorted[0]?.completion_rate !== 'undefined';
+
+        const datasets = [{
+          label: 'Total Assessments',
+          data: volume,
+          borderColor: '#10b981',
+          backgroundColor: function (context) {
+            const ca = context.chart.chartArea || { top: 0, bottom: 300 };
+            return createGradient(context.chart.ctx, ca, 'rgba(16,185,129,0.12)', 'rgba(16,185,129,0.02)');
+          },
+          fill: true,
+          tension: 0.35,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }];
+
+        if (hasCompletionRate) {
+          datasets.push({
+            label: 'Completion Rate (%)',
+            data: sorted.map(d => Number(d.completion_rate)),
+            borderColor: '#059669',
+            borderDash: [6, 4],
+            tension: 0.35,
+            yAxisID: 'y2',
+            pointRadius: 3,
+            pointBackgroundColor: '#059669',
+            fill: false
+          });
+        }
+
+        assessmentsChart = new Chart(ctx2, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: hasCompletionRate,
+                position: 'top',
+                labels: {
+                  padding: 15,
+                  usePointStyle: true,
+                  font: { size: 11 }
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                padding: 12,
+                callbacks: {
+                  title: (items) => {
+                    const idx = items[0].dataIndex;
+                    const raw = sorted[idx]?.date;
+                    const d = new Date(raw);
+                    if (!isNaN(d.getTime())) {
+                      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                    }
+                    return raw;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#6b7280' },
+                grid: { color: 'rgba(16,185,129,0.06)' },
+                title: {
+                  display: hasCompletionRate,
+                  text: 'Assessments',
+                  color: '#6b7280'
+                }
+              },
+              x: {
+                grid: { display: false },
+                ticks: {
+                  color: '#6b7280',
+                  autoSkip: true,
+                  maxTicksLimit: 8,
+                  callback: function (value, index, ticks) {
+                    const chartLabels = this.chart && this.chart.data && this.chart.data.labels ? this.chart.data.labels : null;
+                    let raw = value;
+                    if (chartLabels && typeof value === 'number' && chartLabels[value] !== undefined) raw = chartLabels[value];
+                    return formatLabelForAxis(raw);
+                  }
+                }
+              },
+              y2: {
+                position: 'right',
+                grid: { display: false },
+                ticks: {
+                  color: '#6b7280',
+                  callback: function (value) {
+                    return value + '%';
+                  }
+                },
+                display: hasCompletionRate,
+                title: {
+                  display: hasCompletionRate,
+                  text: 'Completion Rate',
+                  color: '#6b7280'
+                }
+              }
+            },
+            interaction: { mode: 'index', intersect: false },
+            layout: { padding: { left: 6, right: 6 } }
+          }
+        });
+      }
+
+      // CATEGORY DOUGHNUT (unchanged)
+      if (categoryData?.category_averages && Object.keys(categoryData.category_averages).length > 0) {
+        const categories = Object.keys(categoryData.category_averages);
+        const averages = Object.values(categoryData.category_averages);
+        const colors = categories.map(c => EQ_COLOR_MAP[c] || ['#64B5F6', '#81C784', '#FFB74D', '#9575CD', '#4DB6AC'][categories.indexOf(c) % 5]);
+
+        const ctx3 = document.getElementById('categoryChart').getContext('2d');
+        categoryChart = new Chart(ctx3, {
+          type: 'doughnut',
+          data: {
+            labels: categories,
+            datasets: [{
+              data: averages,
+              backgroundColor: colors,
+              borderColor: '#ffffff',
+              borderWidth: 3,
+              hoverBorderWidth: 3,
+              hoverOffset: 10
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.5,
+            cutout: '60%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: { label: (ctx) => `${ctx.label}: ${Math.round(ctx.raw)}%` }
+              }
+            }
+          }
+        });
+
+        renderCategoryLegend(categories, colors, averages);
+      } else {
+        document.getElementById('categoryLegend').innerHTML = '<div style="color:#9aa6b2">No category data available</div>';
+      }
+    }
+
+    
+
+
+    /* ----------------- Export functions (unchanged logic) ----------------- */
+    // Excel Export
+function exportExcel(adminView = false) {
+  if (typeof XLSX === 'undefined') {
+    alert('XLSX library is required for Excel export.');
+    return;
+  }
+  const wb = XLSX.utils.book_new();
+  const summary = [
+    ['FeelBright Analytics Report'], [], ['Generated On', _fmt.pretty()], [],
+    ['Summary Statistics'],
+    ['Metric', 'Value'],
+    ['Total Users', statsData?.unique_users || 0],
+    ['Total Assessments', statsData?.total_assessments || 0],
+    ['Average Score', statsData?.average_score ? `${Math.round(statsData.average_score)}%` : '0%']
+  ];
+  const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+  wsSummary['!cols'] = [{ wch: 30 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  const weekly = [['No.', 'Date', 'Active Users']];
+  (activeUsersData || []).forEach((it, i) => weekly.push([i + 1, formatLabelForAxis(it.date || it.week || ''), it.active_users || 0]));
+
+  const wsWeekly = XLSX.utils.aoa_to_sheet(weekly);
+  wsWeekly['!cols'] = [{ wch: 8 }, { wch: 25 }, { wch: 15 }];
+  XLSX.utils.book_append_sheet(wb, wsWeekly, 'Weekly Active');
+
+  const assess = [['No.', 'Date', 'Total Assessments', 'Completion Rate']];
+  (assessmentsData || []).forEach((it, i) => assess.push([i + 1, formatLabelForAxis(it.date || it.week || ''), it.total_assessments || 0, typeof it.completion_rate !== 'undefined' ? it.completion_rate : '']));
+  
+  const wsAssess = XLSX.utils.aoa_to_sheet(assess);
+  wsAssess['!cols'] = [{ wch: 8 }, { wch: 25 }, { wch: 20 }, { wch: 18 }];
+  XLSX.utils.book_append_sheet(wb, wsAssess, 'Assessments');
+
+  if (categoryData?.category_averages) {
+    const cats = [['Category', 'Average (%)']];
+    Object.entries(categoryData.category_averages).forEach(([cat, avg]) => cats.push([cat, Math.round(avg)]));
+    const wsCats = XLSX.utils.aoa_to_sheet(cats);
+    wsCats['!cols'] = [{ wch: 30 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, wsCats, 'Category Averages');
+  }
+  XLSX.writeFile(wb, `feelbright-analytics-${_fmt.isoDate()}.xlsx`);
+}
+    // PDF Export (keeps your original layout logic)
+    async function exportPDF(adminView = false) {
+      if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+        alert('jsPDF is required for PDF export.');
+        return;
+      }
+      const { jsPDF } = window.jspdf || window;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 40;
+      let y = margin;
+      doc.setFillColor(250, 250, 250);
+      doc.rect(0, 0, pageW, 56, 'F');
+      const logoW = 160, logoH = 40, logoX = (pageW - logoW) / 2;
+      doc.setDrawColor(220); doc.setFillColor(255, 255, 255);
+      doc.roundedRect(logoX, 8, logoW, logoH, 6, 6, 'S');
+      doc.setFontSize(10); doc.setTextColor(120);
+      doc.text('FeelBright (logo)', logoX + logoW / 2, 30, { align: 'center' });
+
+      y = 80;
+      doc.setFontSize(16); doc.setTextColor(40, 55, 71);
+      doc.text('FeelBright Analytics Report', margin, y);
+      doc.setFontSize(9); doc.setTextColor(100);
+      doc.text(`Generated on: ${_fmt.pretty()}`, pageW - margin - 220, y);
+
+      y += 18;
+      doc.setFillColor(255, 255, 255); doc.setDrawColor(220);
+      doc.rect(margin, y, pageW - margin * 2, 72, 'F');
+      doc.setFontSize(11); doc.setTextColor(40, 55, 71);
+      doc.text('Summary Statistics', margin + 8, y + 18);
+      doc.setFontSize(10); doc.setTextColor(80, 101, 115);
+      doc.text(`Total Users: ${_fmt.num(statsData?.unique_users || 0)}`, margin + 8, y + 36);
+      doc.text(`Total Assessments: ${_fmt.num(statsData?.total_assessments || 0)}`, margin + 200, y + 36);
+      doc.text(`Average Score: ${statsData?.average_score ? Math.round(statsData.average_score) + '%' : '0%'}`, margin + 420, y + 36);
+
+      y += 72 + 12;
+      doc.setFontSize(12); doc.setTextColor(40, 55, 71);
+      doc.text('Weekly Activity', margin, y); y += 14;
+      const hdrH = 16;
+      doc.setFillColor(70, 85, 100); doc.rect(margin, y, pageW - margin * 2, hdrH, 'F');
+      doc.setFontSize(9); doc.setTextColor(255, 255, 255); doc.text('No.', margin + 6, y + 12); doc.text('Date', margin + 60, y + 12); doc.text('Active Users', pageW - margin - 100, y + 12);
+      y += hdrH + 6;
+      doc.setFontSize(9); doc.setTextColor(70, 85, 100);
+      const rows = (activeUsersData || []).slice(0, 200); const lineH = 14;
+      for (let i = 0; i < rows.length; i++) {
+        if (y > pageH - margin - 40) { addPdfFooter(doc, pageW, pageH, margin); doc.addPage(); y = margin; }
+        const r = rows[i];
+        doc.text(String(i + 1), margin + 6, y);
+        doc.text(String(r.date || r.week || ''), margin + 60, y);
+        doc.text(String(r.active_users || 0), pageW - margin - 100, y);
+        y += lineH;
+      }
+      doc.addPage(); y = margin;
+      doc.setFontSize(12); doc.setTextColor(40, 55, 71); doc.text('Assessments', margin, y); y += 14;
+      doc.setFillColor(70, 85, 100); doc.rect(margin, y, pageW - margin * 2, hdrH, 'F');
+      doc.setFontSize(9); doc.setTextColor(255, 255, 255); doc.text('No.', margin + 6, y + 12); doc.text('Date', margin + 60, y + 12); doc.text('Total Assessments', margin + 250, y + 12); doc.text('Completion Rate', pageW - margin - 100, y + 12);
+      y += hdrH + 6;
+      doc.setFontSize(9); doc.setTextColor(70, 85, 100);
+      const assessRows = (assessmentsData || []).slice(0, 200);
+      assessRows.forEach((it, i) => {
+        if (y > pageH - margin - 40) { addPdfFooter(doc, pageW, pageH, margin); doc.addPage(); y = margin; }
+        doc.text(String(i + 1), margin + 6, y); doc.text(String(it.date || it.week || ''), margin + 60, y); doc.text(String(it.total_assessments || 0), margin + 250, y); doc.text((typeof it.completion_rate !== 'undefined' ? String(it.completion_rate) : ''), pageW - margin - 100, y);
+        y += lineH;
+      });
+      doc.addPage(); y = margin;
+      doc.setFontSize(12); doc.setTextColor(40, 55, 71); doc.text('EQ Category Averages', margin, y); y += 18;
+      doc.setFontSize(10); doc.setTextColor(60, 78, 91);
+      if (categoryData?.category_averages) {
+        Object.entries(categoryData.category_averages).forEach(([cat, avg]) => {
+          if (y > pageH - margin - 40) { addPdfFooter(doc, pageW, pageH, margin); doc.addPage(); y = margin; }
+          doc.text(cat, margin + 10, y); doc.text(`${Math.round(avg)}%`, pageW - margin - 60, y); y += 16;
+        });
+      } else {
+        doc.text('No category data available', margin + 10, y);
+      }
+      addPdfFooter(doc, pageW, pageH, margin);
+      doc.save(`feelbright-analytics-report-${_fmt.isoDate()}.pdf`);
+    }
+
+    function addPdfFooter(doc, pageW, pageH, margin) {
+      const p = doc.internal.getNumberOfPages();
+      doc.setFontSize(9); doc.setTextColor(120);
+      doc.text(`Generated: ${_fmt.pretty()}`, margin, pageH - 28);
+      doc.text(`Page ${p}`, pageW - margin - 60, pageH - 28);
+    }
+
+    // printReport preserved (unchanged from your earlier code if needed)
+    function printReport(overallPct, breakdown = [], adminView = false) {
+      // left as-is to preserve original behavior; you can call it if needed
+      const user = adminView ? null : (typeof getUserProfileForReport === 'function' ? getUserProfileForReport() : { name: '', email: '', avatar: '' });
+      const container = document.createElement('div'); container.style.width = '820px'; container.style.margin = '20px auto'; container.style.fontFamily = "Inter, 'Segoe UI', Roboto, sans-serif"; container.style.color = '#152938'; container.style.background = '#fff'; container.style.padding = '20px';
+      const header = document.createElement('div'); header.style.textAlign = 'center';
+      header.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;margin-bottom:12px;"><div style="width:180px;height:48px;border:1px solid #e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#fff;"><span style="color:#9aa6b2;font-size:13px;">FeelBright (logo)</span></div></div><h2 style="margin:0 0 6px 0;font-size:18px;">FeelBright Analytics Report</h2><div style="color:#6b7280;font-size:12px;">Generated on: ${_fmt.pretty()}</div>`;
+      container.appendChild(header);
+      const infoRow = document.createElement('div'); infoRow.style.display = 'flex'; infoRow.style.justifyContent = 'space-between'; infoRow.style.alignItems = 'center'; infoRow.style.margin = '16px 0';
+      const left = document.createElement('div');
+      if (!adminView && user) left.innerHTML = `<div style="font-weight:700">${user.name}</div><div style="color:#6b7280;font-size:12px">${user.email}</div>`; else left.innerHTML = `<div style="font-weight:700">Admin Summary</div><div style="color:#6b7280;font-size:12px">Totals only — no individual names</div>`;
+      infoRow.appendChild(left);
+      const right = document.createElement('div'); right.style.textAlign = 'right'; right.innerHTML = `<div style="font-size:20px;font-weight:700">${overallPct}%</div><div style="color:#6b7280;font-size:12px">Overall Score</div>`;
+      infoRow.appendChild(right); container.appendChild(infoRow);
+      const catsWrap = document.createElement('div'); catsWrap.style.display = 'grid'; catsWrap.style.rowGap = '10px';
+      (breakdown || []).forEach(b => {
+        const row = document.createElement('div'); row.style.display = 'grid'; row.style.gridTemplateColumns = '160px 1fr 60px'; row.style.alignItems = 'center'; row.style.columnGap = '12px';
+        const label = document.createElement('div'); label.style.fontSize = '13px'; label.style.fontWeight = '600'; label.style.color = '#1f2937'; label.textContent = b.key;
+        const barWrap = document.createElement('div'); barWrap.style.background = '#f3f4f6'; barWrap.style.height = '12px'; barWrap.style.borderRadius = '999px'; barWrap.style.overflow = 'hidden';
+        const bar = document.createElement('div'); bar.style.height = '100%'; bar.style.width = `${b.pct}%`; bar.style.borderRadius = '999px'; bar.style.background = (typeof barColor === 'function') ? barColor(b.pct) : 'linear-gradient(90deg,#7fd38b,#4aa86a)';
+        barWrap.appendChild(bar);
+        const pctDiv = document.createElement('div'); pctDiv.style.textAlign = 'right'; pctDiv.style.fontWeight = '700'; pctDiv.textContent = `${b.pct}%`;
+        row.appendChild(label); row.appendChild(barWrap); row.appendChild(pctDiv); catsWrap.appendChild(row);
+      });
+      container.appendChild(catsWrap);
+      if (adminView) {
+        const footer = document.createElement('div'); footer.style.marginTop = '18px'; footer.style.display = 'flex'; footer.style.justifyContent = 'space-between';
+        footer.innerHTML = `<div style="font-size:13px"><div style="font-weight:700">Totals</div><div style="color:#6b7280;font-size:12px">Users: ${_fmt.num(statsData?.unique_users || 0)}</div><div style="color:#6b7280;font-size:12px">Assessments: ${_fmt.num(statsData?.total_assessments || 0)}</div></div><div style="text-align:right;font-size:12px;color:#6b7280">${categoryData?.category_averages ? Object.entries(categoryData.category_averages).map(([k, v]) => `<div>${k}: ${Math.round(v)}%</div>`).join('') : ''}</div>`;
+        container.appendChild(footer);
+      }
+      document.body.appendChild(container);
+      const original = Array.from(document.body.children).filter(el => el !== container);
+      original.forEach(el => el.style.display = 'none');
+      const oldTitle = document.title; document.title = (user ? `Report - ${user.name}` : 'Admin Report') + ` - ${_fmt.isoDate()}`;
+      window.print();
+      document.title = oldTitle;
+      original.forEach(el => el.style.display = '');
+      document.body.removeChild(container);
+    }
+
+    // initial load
+    document.addEventListener('DOMContentLoaded', () => { fetchAllData(); setInterval(fetchAllData, 5 * 60 * 1000); });
+
+  </script>
+</body>
+
+</html>

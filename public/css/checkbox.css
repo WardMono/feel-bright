@@ -1,0 +1,84 @@
+ /* custom checkbox */
+    .checkbox-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 4px;
+      background: #fff;
+      display: inline-block;
+      vertical-align: middle;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+
+    /* checked: green background with a white check SVG centered */
+    .checkbox-input:checked {
+      background-color: #7FC58B;
+      border-color: #7FC58B;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 9'%3E%3Cpath fill='white' d='M4.5 7.5L1 4l1.2-1.2L4.5 5.1 9.8.8 11 2z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 70% 70%;
+    }
+
+    /* focus ring */
+    .checkbox-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.12);
+    }
+
+
+
+
+       /* Loading */
+
+    /* simple spinner for btn-loading */
+    .btn-loading {
+      position: relative;
+      pointer-events: none;
+    }
+
+    .btn-loading::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-top-color: rgba(255, 255, 255, 1);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: translateY(-50%) rotate(360deg);
+      }
+    }
+
+    /* shake animation */
+    @keyframes shake {
+      0% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-6px);
+      }
+
+      50% {
+        transform: translateX(6px);
+      }
+
+      75% {
+        transform: translateX(-4px);
+      }
+
+      100% {
+        transform: translateX(0);
+      }
+    }

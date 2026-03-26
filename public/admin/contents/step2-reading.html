@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Reading Material — Step 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../../img/fb-tab.png" type="image/x-icon">
+
+  <style>
+    body {
+      font-family: "League Spartan", sans-serif;
+      background: #f4fdf7;
+      margin: 0;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: .75rem;
+      background: #fafafa;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+
+    .dropzone.hover {
+      background: #ecfdf5;
+      border-color: #34d399;
+    }
+
+    /* Delete button: red by default with hover effect */
+    .delete-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      color: #dc2626;
+      /* red */
+      font-size: 1rem;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .delete-btn:hover {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .break-anywhere {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* Stepper tokens (reuse from article) */
+    .step-on {
+      background: #7FC58B;
+      color: #fff;
+    }
+
+    .label-on {
+      color: #7FC58B;
+      font-weight: 600;
+    }
+
+    .step-off {
+      border: 1px solid #D0D5DD;
+      color: #98A2B3;
+    }
+
+    /* Section fields (inputs/textareas): auto-resize, no scrollbars */
+    .section-field {
+      width: 100%;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      outline: none;
+      transition: all 0.2s ease-in-out;
+      border: 1.5px solid #e5e7eb;
+      padding: 0.75rem;
+      overflow-y: hidden;
+      /* hide scrollbars */
+      resize: none;
+      /* disable manual resizing */
+    }
+
+    .section-field:hover {
+      border-color: #7FC58B;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.1);
+    }
+
+    .section-field:focus {
+      border-color: #7FC58B;
+      box-shadow: 0 0 0 4px rgba(127, 197, 139, 0.1);
+      outline: none;
+    }
+
+    /* Ensure textareas have a reasonable default height so they don't appear too narrow */
+    textarea.section-field {
+      min-height: 6rem;
+    }
+
+    .add-section-btn {
+      flex: 1 0 280px;
+      max-width: 180px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      padding: 0.5rem 1rem;
+      background-color: #ffffff;
+      color: #1f2937;
+      font-weight: 600;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      border-radius: .375rem;
+      border: 1px solid #d1d5db;
+      outline: none;
+
+      cursor: pointer;
+      transition: background-color .2s ease-in-out,
+        box-shadow .2s ease-in-out,
+        border-color .2s ease-in-out;
+      box-shadow: none;
+    }
+
+    .add-section-btn:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      box-shadow: none;
+    }
+
+    .add-section-btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #e5e7eb;
+    }
+
+    .add-section-btn:focus:not(:focus-visible) {
+      box-shadow: none;
+    }
+  </style>
+</head>
+
+<body class="p-8">
+  <!-- Mark return so Step 1 won't clear drafts if user goes back -->
+  <script>
+    sessionStorage.setItem("returnFromStep2Reading", "1");
+  </script>
+
+  <!-- STATIC HEADER -->
+  <div id="page-header" class="max-w-[1480px] mx-auto mb-6">
+    <div class="mt-2 text-center">
+      <h1 class="text-3xl font-bold text-gray-900">Preview Reading Material</h1>
+      <p class="text-gray-500 mt-1">Step 2 of 3: Add your content</p>
+    </div>
+
+    <div class="relative mt-10 flex justify-between">
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="absolute top-4 left-1/2 w-full h-0.5 bg-green-500 -z-10"></div>
+
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-200 rounded-full">
+          <span class="w-3 h-3 bg-green-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Content Setup</h3>
+      </div>
+
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="absolute top-4 left-1/2 w-full h-0.5 bg-gray-200 -z-10"></div>
+
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-200 rounded-full">
+          <span class="w-3 h-3 bg-green-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Add Content</h3>
+      </div>
+
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full">
+          <span class="w-3 h-3 bg-gray-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Review &amp; Publish</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <div class="panel p-6 space-y-6">
+      <h2 id="step2-title" class="text-2xl font-semibold text-gray-800 text-center break-anywhere">Untitled</h2>
+
+      <!-- Hero Image Upload -->
+      <div>
+        <label class="font-semibold text-gray-700">Hero Image</label>
+        <div id="hero-drop" class="dropzone flex flex-col items-center justify-center p-8 mt-1 text-gray-500 rounded-lg
+                 border-2 border-dashed border-[#cbd5e1] bg-[#fafafa]
+                 hover:bg-[#f0faf5] hover:border-[#7FC58B] transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24"
+            stroke="#6B7280">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          <span class="font-medium text-gray-600">Drag & Drop to Upload</span>
+          <span class="text-sm text-gray-400 mt-1">or click to browse</span>
+        </div>
+        <input id="hero-file" type="file" accept="image/*" class="hidden" />
+        <div class="mt-4">
+          <img id="hero-preview" src="" alt="Hero Preview"
+            class="w-full h-96 object-cover rounded-lg hidden border border-gray-200" />
+        </div>
+      </div>
+      <div id="sections-container" class="space-y-4 text-gray-700">
+        <p class="text-center text-gray-500">No reading sections added yet.</p>
+      </div>
+    </div>
+
+    <!-- Primary Actions -->
+    <div id="primary-actions" class="max-w-[1140px] mx-auto mt-6">
+      <hr class="border-t border-gray-200">
+      <div class="mx-auto max-w-sm py-6 flex justify-center">
+        <button id="preview-btn" type="button" disabled class="block mx-auto w-full sm:w-auto px-8 h-10 rounded-lg font-semibold text-base text-white
+             bg-[#7FC58B] hover:bg-[#6FB07C]
+             disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed
+             transition">
+          Continue to Content
+        </button>
+      </div>
+    </div>
+
+
+
+  </div>
+
+  <script>
+    // mark that we're coming from step 2 so step1 won't wipe drafts if user returns
+    sessionStorage.setItem("returnFromStep2Reading", "1");
+
+    // ===== Config =====
+    const DASHBOARD_URL = "../content.html";
+
+    // ===== IndexedDB helpers =====
+    const IDB_DB_NAME = "ContentDraftDB";
+    const IDB_DB_VER = 1;
+    const IDB_IMG_STORE = "images";
+    function idbOpen() {
+      return new Promise((resolve, reject) => {
+        const r = indexedDB.open(IDB_DB_NAME, IDB_DB_VER);
+        r.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_IMG_STORE)) db.createObjectStore(IDB_IMG_STORE);
+        };
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      });
+    }
+    async function idbPut(key, val) {
+      const db = await idbOpen();
+      return new Promise((res, rej) => {
+        const tx = db.transaction(IDB_IMG_STORE, "readwrite");
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+        tx.objectStore(IDB_IMG_STORE).put(val, key);
+      });
+    }
+    async function idbGet(key) {
+      if (!key) return null;
+      const db = await idbOpen();
+      return new Promise((res, rej) => {
+        const tx = db.transaction(IDB_IMG_STORE, "readonly");
+        tx.onerror = () => rej(tx.error);
+        const q = tx.objectStore(IDB_IMG_STORE).get(key);
+        q.onsuccess = () => res(q.result || null);
+        q.onerror = () => rej(q.error);
+      });
+    }
+
+    // ===== Safe localStorage read =====
+    function safeGet(k) {
+      try {
+        const v = localStorage.getItem(k);
+        if (!v || v === "undefined") return null;
+        return JSON.parse(v);
+      } catch {
+        return null;
+      }
+    }
+
+    // ===== Edit Mode Detection =====
+    const params = new URLSearchParams(location.search);
+    const EDIT_MODE = params.get("edit") === "1";
+    const EDIT_ID = params.get("id");
+
+    // ===== Step 1 data =====
+    const step1 = safeGet("readingStep1") || {};
+    const draftId = EDIT_ID || step1.draftId || `read-${Date.now()}`;
+    if (!step1.draftId) localStorage.setItem("readingStep1", JSON.stringify({ ...step1, draftId }));
+    document.getElementById("step2-title").textContent = step1.title || "Untitled";
+
+    // ===== Elements & state =====
+    const heroDrop = document.getElementById("hero-drop");
+    const heroFile = document.getElementById("hero-file");
+    const heroPreview = document.getElementById("hero-preview");
+    const previewBtn = document.getElementById("preview-btn");
+    const cont = document.getElementById("sections-container");
+
+    let heroObjectUrl = "";
+    const sections = [];
+
+    // ===== Hero upload events =====
+    heroDrop.addEventListener("dragover", (e) => { e.preventDefault(); heroDrop.classList.add("hover") });
+    heroDrop.addEventListener("dragleave", () => heroDrop.classList.remove("hover"));
+    heroDrop.addEventListener("drop", (e) => {
+      e.preventDefault();
+      heroDrop.classList.remove("hover");
+      if (e.dataTransfer.files.length) {
+        heroFile.files = e.dataTransfer.files;
+        handleHeroSelected();
+      }
+    });
+    heroDrop.addEventListener("click", () => heroFile.click());
+    heroFile.addEventListener("change", handleHeroSelected);
+
+    async function handleHeroSelected() {
+      const file = heroFile.files[0];
+      if (!file) return;
+      if (heroObjectUrl) URL.revokeObjectURL(heroObjectUrl);
+      heroObjectUrl = URL.createObjectURL(file);
+      heroPreview.src = heroObjectUrl;
+      heroPreview.classList.remove("hidden");
+      await persistStep2({ file });
+      updatePreviewBtn();
+    }
+
+    // ===== Auto-resize helper for textareas =====
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
+
+    // ===== Sections UI =====
+    function renderSections() {
+      cont.innerHTML = "";
+      if (!sections.length) {
+        cont.innerHTML = `<p class="text-center text-gray-500">No reading sections added yet.</p>`;
+        // Always append add-buttons even if no sections exist
+      }
+      sections.forEach((sec, i) => {
+        const block = document.createElement("div");
+        block.id = `section-${i}`;
+        block.className = "relative border border-gray-200 rounded-lg p-4";
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.textContent = "✕";
+        del.onclick = () => {
+          sections.splice(i, 1);
+          renderSections();
+          updatePreviewBtn();
+          saveStep2Draft();
+        };
+        block.append(del);
+        const hdr = document.createElement("h1");
+        hdr.className = "font-semibold mb-2 break-anywhere";
+        hdr.textContent = sec.type === "text" ? `Text Section ${i + 1}` : `Quote ${i + 1}`;
+        block.append(hdr);
+        if (sec.type === "text") {
+          const inp1 = document.createElement("input");
+          inp1.type = "text";
+          inp1.placeholder = "Enter subtitle";
+          inp1.className = "section-field mb-3";
+          inp1.value = sec.subtitle || "";
+          inp1.oninput = () => {
+            sec.subtitle = inp1.value;
+            updatePreviewBtn();
+            saveStep2Draft();
+          };
+          block.append(inp1);
+          const ta = document.createElement("textarea");
+          ta.rows = 6; // larger default height for text section
+          ta.placeholder = "Enter content";
+          ta.className = "section-field";
+          ta.value = sec.text || "";
+          autoResize(ta);
+          ta.oninput = () => {
+            sec.text = ta.value;
+            autoResize(ta);
+            updatePreviewBtn();
+            saveStep2Draft();
+          };
+          block.append(ta);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.rows = 4; // larger default height for quote section
+          ta.placeholder = "Enter quote";
+          ta.className = "section-field mb-3";
+          ta.value = sec.quoteText || "";
+          autoResize(ta);
+          ta.oninput = () => {
+            sec.quoteText = ta.value;
+            autoResize(ta);
+            updatePreviewBtn();
+            saveStep2Draft();
+          };
+          block.append(ta);
+          const inp2 = document.createElement("input");
+          inp2.type = "text";
+          inp2.placeholder = "Author name";
+          inp2.className = "section-field";
+          inp2.value = sec.author || "";
+          inp2.oninput = () => {
+            sec.author = inp2.value;
+            updatePreviewBtn();
+            saveStep2Draft();
+          };
+          block.append(inp2);
+        }
+        cont.append(block);
+      });
+      // Append Add Section Buttons (always present)
+      const addWrapper = document.createElement('div');
+      addWrapper.className = 'flex gap-4 justify-center mt-4';
+      const btnText = document.createElement('button');
+      btnText.className = 'add-section-btn shadow-sm text-gray-700 bg-yellow-50 border rounded-lg border-yellow-400 font-semibold hover:bg-yellow-100 hover:border-yellow-400 transition';
+      btnText.textContent = 'Add Text Section';
+      btnText.onclick = () => {
+        sections.push({ type: 'text', subtitle: '', text: '' });
+        renderSections();
+        updatePreviewBtn();
+        saveStep2Draft();
+        focusLastSection();
+      };
+      const btnQuote = document.createElement('button');
+      btnQuote.className = 'add-section-btn shadow-sm text-gray-700 bg-yellow-50 border rounded-lg border-yellow-400 font-semibold hover:bg-yellow-100 hover:border-yellow-400 transition';
+      btnQuote.textContent = 'Add Quote';
+      btnQuote.onclick = () => {
+        sections.push({ type: 'quote', quoteText: '', author: '' });
+        renderSections();
+        updatePreviewBtn();
+        saveStep2Draft();
+        focusLastSection();
+      };
+      addWrapper.append(btnText, btnQuote);
+      cont.append(addWrapper);
+    }
+
+    // ===== Focus newly added section =====
+    function focusLastSection() {
+      setTimeout(() => {
+        const idx = sections.length - 1;
+        const block = document.getElementById(`section-${idx}`);
+        if (block) {
+          const field = block.querySelector("textarea, input");
+          if (field) field.focus();
+          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
+    }
+
+    // ===== Enable Preview when valid =====
+    function updatePreviewBtn() {
+      const saved2 = safeGet("readingStep2") || {};
+      const hasHero = !!(heroFile.files.length || heroPreview.src || saved2.heroRef || saved2.heroSrc);
+      const hasContent = sections.some((s) =>
+        s.type === "text"
+          ? s.text && s.text.trim()
+          : s.quoteText && s.quoteText.trim() && s.author && s.author.trim()
+      );
+      previewBtn.disabled = !(hasHero && hasContent);
+    }
+
+    // ===== Persist Step 2 =====
+    async function persistStep2({ file = null } = {}) {
+      const saved2 = safeGet("readingStep2") || {};
+      const nextState = {
+        draftId,
+        heroRef: saved2.heroRef || null,
+        // If we already have a ref, keep src empty so preview will prefer the ref
+        heroSrc: saved2.heroRef ? "" : (saved2.heroSrc || (heroPreview.src || "")),
+        sections
+      };
+      if (file) {
+        const key = `hero:${draftId}`;
+        await idbPut(key, file);
+        nextState.heroRef = key;
+        nextState.heroSrc = ""; // ref takes ownership
+      }
+      localStorage.setItem("readingStep2", JSON.stringify(nextState));
+    }
+
+    function saveStep2Draft() { persistStep2(); }
+
+    // ===== Upsert dashboard item with status =====
+    function upsertDashboardItem(status = "draft") {
+      const step1Fresh = safeGet("readingStep1") || {};
+      const step2Fresh = safeGet("readingStep2") || {};
+      const item = {
+        id: draftId,
+        type: "reading",
+        title: step1Fresh.title || "Untitled",
+        summary: step1Fresh.desc || "",
+        category: step1Fresh.cat || "",
+        thumbnail: step1Fresh.img || "",
+        thumbnailRef: step1Fresh.thumbnailRef || null,
+        hero: step2Fresh.heroSrc || "",
+        heroRef: step2Fresh.heroRef || null,
+        sections: step2Fresh.sections || [],
+        status,
+        savedAt: new Date().toISOString(),
+      };
+      const key = "contentDrafts";
+      const drafts = JSON.parse(localStorage.getItem(key) || "[]");
+      const idx = drafts.findIndex((d) => d.id === item.id);
+      if (idx >= 0) drafts[idx] = item; else drafts.push(item);
+      localStorage.setItem(key, JSON.stringify(drafts));
+    }
+
+    // ===== Preview & Continue =====
+    previewBtn.onclick = async () => {
+      // Ensure we have a persistent heroRef before leaving
+      const saved2 = safeGet("readingStep2") || {};
+      if (!saved2.heroRef && heroPreview.src) {
+        try {
+          const r = await fetch(heroPreview.src);
+          if (r.ok) {
+            const blob = await r.blob();
+            const key = `hero:${draftId}`;
+            await idbPut(key, blob);
+            localStorage.setItem("readingStep2", JSON.stringify({
+              ...saved2,
+              draftId,
+              heroRef: key,
+              heroSrc: "",
+              sections
+            }));
+          }
+        } catch (e) {
+          // ignore; we'll still navigate
+        }
+      }
+
+      saveStep2Draft();
+      upsertDashboardItem("draft");
+      localStorage.setItem("readingEditMode", JSON.stringify({ edit: EDIT_MODE, id: draftId }));
+      window.location.href = "reading-preview.html";
+    };
+
+
+    // ===== Hydrate Step 2 =====
+    (async function hydrateStep2() {
+      const saved2 = safeGet("readingStep2");
+      if (saved2 && saved2.draftId === draftId) {
+        if (saved2.heroRef) {
+          const blob = await idbGet(saved2.heroRef);
+          if (blob) {
+            if (heroObjectUrl) URL.revokeObjectURL(heroObjectUrl);
+            heroObjectUrl = URL.createObjectURL(blob);
+            heroPreview.src = heroObjectUrl;
+            heroPreview.classList.remove("hidden");
+          }
+        } else if (saved2.heroSrc) {
+          heroPreview.src = saved2.heroSrc;
+          heroPreview.classList.remove("hidden");
+        }
+        if (Array.isArray(saved2.sections)) {
+          sections.splice(0, sections.length, ...saved2.sections);
+        }
+      }
+      renderSections();
+      updatePreviewBtn();
+    })();
+  </script>
+</body>
+
+</html>

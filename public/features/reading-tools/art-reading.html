@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="icon" href="/img/fb-tab.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/articles.css">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <title>FeelBright - Authenticity and the Self</title>
+</head>
+
+<body>
+
+    <!--NAVBAR SECTION-->
+    <nav class="bg-white p-5 shadow-md transition-all duration-300" x-data="{ open: false }">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+            <!-- LOGO -->
+            <div class="relative flex-shrink-0">
+                <a href="../../index.html">
+                    <img src="../../img/fb-banners.png"
+                        class="max-h-[6vh] sm:max-h-[6vh] md:max-h-[7vh] transition-all duration-300" alt="Logo">
+                </a>
+            </div>
+
+            <!-- DESKTOP NAV LINKS -->
+            <div class="hidden xl:flex items-center gap-8 ml-8">
+                <a href="../../index.html"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors">Home</a>
+                <a href="../../features.html" class="font-bold text-[#1C1C1C] text-[#7FC58B] font-bold">Features</a>
+                <a href="../../resources.html"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors">Resources</a>
+                <a href="../../about.html"
+                    class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors">About</a>
+                <a href="#" class="font-bold text-[#1C1C1C] hover:text-[#7FC58B] transition-colors">Contacts</a>
+            </div>
+
+            <!-- DESKTOP AUTH BUTTONS -->
+            <div class="hidden xl:flex items-center gap-4">
+                <a href="../../login.html"
+                    class="font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#7FC58B] hover:text-white transition-all">Log
+                    in</a>
+                <a href="../../register.html"
+                    class="font-bold text-white bg-[#7FC58B] px-4 py-1.5 rounded-full hover:bg-[#6FB07C] transition-all">Sign
+                    up</a>
+            </div>
+
+            <!-- HAMBURGER MENU BUTTON -->
+            <button @click="open = !open"
+                class="xl:hidden flex flex-col gap-1 focus:outline-none ml-2 transition-opacity duration-300"
+                :aria-expanded="open" aria-label="Toggle menu">
+                <span class="block w-6 h-0.5 bg-[#1C1C1C] transition-all duration-300"
+                    :class="{'rotate-45 translate-y-1.5': open}"></span>
+                <span class="block w-6 h-0.5 bg-[#1C1C1C] transition-all duration-300"
+                    :class="{'opacity-0': open}"></span>
+                <span class="block w-6 h-0.5 bg-[#1C1C1C] transition-all duration-300"
+                    :class="{'-rotate-45 -translate-y-1.5': open}"></span>
+            </button>
+        </div>
+
+        <!-- MOBILE DROPDOWN MENU -->
+        <div x-show="open" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="xl:hidden w-full mt-4 bg-white shadow-lg backdrop-blur-sm" @click.outside="open = false" role="menu">
+            <div class="flex flex-col items-center space-y-4 px-4 py-6">
+                <a href="../../index.html"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] py-2 hover:bg-gray-100 rounded-lg">Home</a>
+                <a href="../../features.html"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] py-2 hover:bg-gray-100 rounded-lg">Features</a>
+                <a href="../../resources.html"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] py-2 hover:bg-gray-100 rounded-lg">Resources</a>
+                <a href="../../about.html"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] py-2 hover:bg-gray-100 rounded-lg">About
+                    Us</a>
+                <a href="#"
+                    class="block w-full text-center font-bold text-[#1C1C1C] hover:text-[#7FC58B] py-2 hover:bg-gray-100 rounded-lg">Contacts</a>
+
+                <div class="flex flex-col gap-3 w-full pt-4 border-t border-gray-200 mt-4">
+                    <a href="../../login.html"
+                        class="text-center font-bold text-[#7FC58B] border border-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#7FC58B] hover:text-white transition-all">Log
+                        in</a>
+                    <a href="../../register.html"
+                        class="text-center font-bold text-white bg-[#7FC58B] px-4 py-2 rounded-full hover:bg-[#6FB07C] transition-all">Sign
+                        up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO CONTENT -->
+    <section class="relative isolate overflow-hidden h-full bg-white ">
+        <div class="container px-6 py-8 mx-auto text-center mb-10 relative">
+            <!-- Top Blur Shape -->
+            <div aria-hidden="true"
+                class="absolute inset-x-0 -top-0 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
+                <div style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"
+                    class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#CDEED7] to-[#A4DAB6] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]">
+                </div>
+            </div>
+            <!-- LEFT SIDE BLUR SHAPE -->
+            <div aria-hidden="true"
+                class="absolute top-1/2 left-[-10rem] -translate-y-1/2 rotate-[30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-r from-[#CDEED7] to-[#A4DAB6] opacity-15 blur-3xl -z-10">
+            </div>
+            <!-- RIGHT SIDE BLUR SHAPE -->
+            <div aria-hidden="true"
+                class="absolute top-1/2 right-[-10rem] -translate-y-1/2 rotate-[-30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-l from-[#CDEED7] to-[#A4DAB6] opacity-15 blur-3xl -z-10">
+            </div>
+            <!-- BOTTOM BLUR SHAPE -->
+            <div aria-hidden="true"
+                class="absolute bottom-[-10rem] sm:bottom-[-20rem] left-1/2 -translate-x-1/2 w-[60rem] h-[30rem] rounded-full bg-gradient-to-t from-[#CDEED7] to-[#A4DAB6] opacity-15 blur-3xl -z-10">
+            </div>
+
+            <div class="max-w-6xl mx-auto pt-5 relative">
+                <div class="text-center">
+                    <div
+                        class="inline-block px-4 py-1 border border-[#7FC58B] border-opacity-30 rounded-full bg-[#E6F9ED] text-[#22693F] font-medium text-sm mb-6 mx-auto">
+                        Personal Growth
+                    </div>
+                    <h1 class="text-3xl font-semibold text-[#1C1C1C] lg:text-4xl">Authenticity and the Self</h1>
+                </div>
+            </div>
+            <div class="flex justify-center mt-12">
+                <img class="object-cover w-full h-50 rounded-xl lg:w-5/5 shadow-[0_10px_20px_rgba(77,161,103,0.3)]"
+                    src="../../img/30.png" />
+            </div>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="max-w-4xl mx-auto border border-gray-200 rounded-xl shadow-sm bg-white mb-10">
+
+            <!-- First Section -->
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 mt-2">Unfolding the True Self</h2>
+                <p class="text-gray-800 leading-relaxed">
+                    In a world that constantly tells us who we should be — through social media, culture, family, and
+                    societal
+                    roles — staying true to who we really are has become one of the most important, yet challenging,
+                    pursuits of
+                    modern life. The concept of authenticity has taken center stage in personal development, psychology,
+                    leadership, and
+                    well-being. But what does it actually mean to be authentic? And how do we access and live from our
+                    true self?
+                </p>
+                <p class="text-gray-800 leading-relaxed mt-4">
+                    <span class="text-green-800 font-bold">Authenticity isn't just about "being yourself."</span>
+                    It's about being deeply connected to your <em>values, feelings, desires, and beliefs</em> — and
+                    having the
+                    courage to express and live from that inner truth, even when it's inconvenient or uncomfortable.
+                    It requires a level of self-awareness and integrity that goes beyond surface-level self-expression.
+                    Authenticity is not something we are born with; it's something we continuously uncover, shape, and
+                    strengthen
+                    as we grow.
+                </p>
+            </div>
+
+            <!-- Second Section -->
+            <div class="flex flex-col md:flex-row items-start gap-8 p-6 sm:p-8">
+                <div class="w-full ">
+                    <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Understanding Authenticity</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        Authenticity means being true to who you really are inside. It’s when your thoughts, feelings,
+                        and values
+                        match your actions and choices in everyday life. You’re not pretending or trying to impress
+                        others — you’re
+                        simply being real. This kind of honesty helps you feel more at peace with yourself. It allows
+                        you to live
+                        with a sense of purpose, knowing your life reflects what truly matters to you.
+
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-4">
+
+                        Being authentic doesn’t mean you have to be perfect or tell everyone everything. It means making
+                        choices
+                        that feel right for you, even if others don’t always agree. When you live this way, you build
+                        stronger
+                        relationships and gain more self-confidence. Over time, authenticity leads to a more joyful and
+                        meaningful
+                        life. Most importantly, it helps you stay connected to your true self, no matter what challenges
+                        you face.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quote -->
+            <div class="mt-8 p-10 bg-gray-50 border-l-4 border-green-600 rounded-r">
+                <blockquote class="text-gray-700 italic">
+                    "Authenticity is not just a matter of 'finding oneself' but of constructing a life narrative that
+                    makes sense
+                    of who one is in a reflective and socially responsive way."
+                </blockquote>
+                <p class="text-gray-600 mt-2 text-right">
+                    — Charles Guignon, <span class="font-medium">Stanford Encyclopedia of Philosophy</span> (2014)
+                </p>
+            </div>
+
+            <!-- Third Section -->
+            <div class="p-6 sm:p-8">
+                <p class="text-lg font-bold text-gray-800">
+                    According to psychologist Michael Kernis and colleagues, authenticity is made up of four key
+                    components:
+                </p>
+                <ol class="list-decimal pl-6 mt-4 space-y-2 text-gray-700">
+                    <li><strong>Self-awareness</strong> — Knowing your values, emotions, and motives.</li>
+                    <li><strong>Unbiased processing</strong> — A willingness to see both strengths and weaknesses
+                        clearly.</li>
+                    <li><strong>Behavior aligned with values</strong> — Acting in ways that reflect your beliefs.</li>
+                    <li><strong>Relational openness</strong> — Being honest and transparent in relationships.</li>
+                </ol>
+            </div>
+
+            <!-- Fourth Section -->
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">The Self: Constructed vs. True</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>
+                        Much of our identity is shaped early in life. As children, we receive messages from family,
+                        school,
+                        religion,
+                        and media about what is acceptable, lovable, and worthy. Over time, we internalize these
+                        messages and build
+                        a "constructed self" — a version of ourselves shaped by external approval and avoidance of
+                        rejection. This
+                        is often referred to as the ego or the false self.
+                    </p>
+                    <p>
+                        The true self, by contrast, is the deeper, more essential part of us. It exists beneath roles,
+                        labels, and
+                        social conditioning. It is where our values, passions, creativity, and authenticity reside.
+                        While the ego
+                        self
+                        is reactive, defensive, and image-focused, the true self is calm, grounded, and honest.
+                    </p>
+                    <p>
+                        Living authentically requires unlearning the masks we wear to fit in, and reconnecting with the
+                        part of
+                        ourselves that is already whole. It's about peeling away the layers of conditioning to reveal
+                        who we were
+                        before the world told us who to be.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Fifth Section -->
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Why Authenticity Matters</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>
+                        Authenticity is deeply connected to psychological well-being, self-esteem, and overall life
+                        satisfaction.
+                        Studies consistently show that people who live authentically experience higher levels of
+                        self-acceptance and
+                        confidence. They tend to be more resilient when facing criticism or rejection, and they enjoy
+                        deeper, more
+                        meaningful relationships. Living in alignment with one’s true self also leads to increased
+                        motivation, a
+                        stronger sense of purpose, and lower levels of anxiety and depression.
+                        <br><br>
+                        On the other hand, when we are not living authentically, we often feel disconnected — as if
+                        we’re acting out
+                        a
+                        role rather than truly living our own life. This inner disconnection can show up as stress,
+                        burnout,
+                        self-doubt, or even a quiet feeling of emptiness. Everything might appear fine on the outside,
+                        but inside,
+                        we
+                        may feel lost, unfulfilled, or unsure of who we really are.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Sixth Section -->
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Cultivating Authenticity</h2>
+
+                <p class="text-gray-700 mb-4">
+                    Cultivating authenticity is a lifelong journey that begins with self-awareness and reflection. It
+                    means taking
+                    the time to understand your values, passions, and what truly matters to you. As you get to know
+                    yourself
+                    better, you begin to make choices that feel honest and true, rather than doing things just to fit in
+                    or gain
+                    approval. Being authentic also means allowing others to see the real you — not just your strengths,
+                    but also
+                    your fears, imperfections, and hopes.
+                </p>
+
+                <p class="text-gray-700">
+                    Living this way helps you build stronger connections, feel more confident, and create a life that
+                    reflects who
+                    you really are. It's not always easy, and not everyone will agree with your path — but that's okay.
+                    What
+                    matters most is staying true to yourself and being kind along the way. With patience and
+                    self-compassion,
+                    authenticity becomes not just a goal, but a way of living with honesty, peace, and purpose.
+                </p>
+            </div>
+
+            <!-- Seventh Section -->
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Authenticity in Relationships and Society</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>
+                        Authenticity isn't just a personal virtue — it has relational and social power. In
+                        relationships,
+                        authenticity builds trust. When people know that you're honest, consistent, and transparent,
+                        they feel safer
+                        opening up and being themselves. This creates stronger, more respectful connections.
+                    </p>
+                    <p>
+                        In leadership, authenticity fosters credibility and integrity. Authentic leaders are seen as
+                        trustworthy
+                        because they lead with clarity, openness, and consistency between words and actions. In teams,
+                        authenticity
+                        encourages psychological safety, where individuals feel free to share ideas, take risks, and
+                        admit mistakes.
+                    </p>
+                    <p>
+                        In society, authentic living can be a radical act — especially in environments that discourage
+                        self-expression. Speaking your truth, setting boundaries, and resisting conformity challenges
+                        systems that
+                        depend on silence or compliance. Authenticity, in this way, becomes a form of empowerment and
+                        resistance.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="max-w-6xl mx-auto pb-10">
+            <div class="flex justify-center space-x-2">
+                <!-- Previous Button -->
+                <a href="./art-reading2.html"
+                    class="mt-auto self-start text-sm font-medium text-green-600 border border-green-300 px-4 py-2 rounded-full hover:bg-green-100 transition">
+                    Previous
+                </a>
+
+                <!-- Back to Resources Button -->
+                <a href="../meditation.html"
+                    class="mt-auto self-start text-sm font-medium text-green-600 border border-green-300 px-4 py-2 rounded-full hover:bg-green-100 transition">
+                    Back to Features
+                </a>
+
+                <!-- Next Button -->
+                <a href="./art-reading2.html"
+                    class="mt-auto self-start text-sm font-medium text-green-600 border border-green-300 px-4 py-2 rounded-full hover:bg-green-100 transition">
+                    Next
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Straight Green CTA Section -->
+    <section class="w-full bg-[#E6F9ED] py-12 px-6 sm:px-8">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
+            <div class="md:w-1/2">
+                <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Develop Your Emotional Intelligence
+                </h2>
+                <p class="text-gray-700 mb-6">
+                    Authentic leadership begins with emotional awareness. Learn how to recognize and manage emotions -
+                    both yours
+                    and your team's - to create more meaningful connections and effective collaboration.
+                </p>
+                <a href="/test.html"><button
+                        class="px-6 py-3 bg-[#7fc58b] text-white font-medium hover:bg-[#6FB07C] transition-all rounded-full border border-[#7FC58B] transition duration-200">
+                        Explore Emotional Intelligence Course
+                    </button></a>
+            </div>
+            <div class="md:w-1/2">
+                <div class="relative rounded-lg overflow-hidden shadow-md aspect-video bg-gray-100">
+                    <img src="/img/18.png" alt="Team demonstrating emotional intelligence in workplace"
+                        class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--Back to top-->
+    <button id="backToTop" onclick="scrollToTop()">↑</button>
+
+    <!--FOOTER SECTION-->
+    <footer
+        class="relative z-20 bg-white pt-12 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.01)] transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-8 mb-8 text-center md:text-left md:grid-cols-2 lg:grid-cols-4">
+                <div class="md:col-span-1 flex flex-col items-center md:items-start">
+                    <a href="#" class="flex items-center mb-4 justify-center md:justify-start">
+                        <img src="../img/fb-banners.png" alt="Logo"
+                            class="h-10 mr-3 transition-transform duration-300 hover:scale-105">
+                    </a>
+                    <p class="text-[#333333] mb-5 font-bold text-base md:text-lg">Emotional Intelligence Assessment</p>
+                    <div class="flex space-x-4 justify-center md:justify-start">
+                        <a href="#"
+                            class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#"
+                            class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#"
+                            class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#"
+                            class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 text-lg md:text-xl transform hover:scale-110">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="md:col-span-1">
+                    <h3 class="text-lg font-semibold text-[#333333] mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Home</a>
+                        </li>
+                        <li><a href="#features"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Features</a>
+                        </li>
+                        <li><a href="#resources"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Resources</a>
+                        </li>
+                        <li><a href="#about"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">About
+                                Us</a></li>
+                        <li><a href="#contact"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Resources -->
+                <div class="md:col-span-1">
+                    <h3 class="text-lg font-semibold text-[#333333] mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Articles</a>
+                        </li>
+                        <li><a href="#"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Meditations</a>
+                        </li>
+                        <li><a href="#"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Exercise
+                                Tools</a></li>
+                        <li><a href="#"
+                                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300 block py-1 transform hover:translate-x-1">Musics</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+        <div class="md:col-span-1">
+          <h3 class="text-lg font-semibold text-[#333333] mb-4">Contact Us</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fas fa-envelope mr-3 text-[#333333]"></i>
+              <a href="https://mail.google.com/mail/u/0/#inbox?compose=DmwnWrRttNpPhFPlStprmfpgBbhWdqlSlqbblWggTlgnLfGzxNNdhSHxcPHMbWrnRcXVvgcXcmtv"
+                class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300" target="_blank">contact.feelbright@gmail.com</a>
+            </li>
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fab fa-facebook-f mr-3 text-[#333333]"></i>
+<a href="https://www.facebook.com/aujaspsysoc" target="_blank" class="text-[#333333] hover:text-[#7FC58B] transition-all duration-300">
+  Psychology Society - AUJAS 
+</a>
+
+            </li>
+            <li class="flex items-center justify-center md:justify-start">
+              <i class="fas fa-map-marker-alt mr-3 text-[#333333]"></i>
+              <span class="text-[#333333] text-center md:text-left">Arellano - JAS<br>3058 Taft Ave,<br> Pasay City, Metro Manila</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+            <!-- Bottom Footer Section -->
+            <div
+                class="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0 text-center md:text-left transition-all duration-300">
+                    &copy; <span id="copyright-year"></span> FeelBright. All rights reserved.
+                </p>
+                <div class="flex flex-wrap justify-center space-x-3 md:space-x-6 transition-all duration-300">
+                    <a href="#"
+                        class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Privacy
+                        Policy</a>
+                    <a href="#"
+                        class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Terms
+                        of Service</a>
+                    <a href="#"
+                        class="text-gray-500 hover:text-[#7FC58B] text-sm transition-all duration-300 transform hover:scale-105">Cookie
+                        Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!--SCRIPT-->
+</body>
+
+</html>

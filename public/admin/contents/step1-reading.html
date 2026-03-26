@@ -1,0 +1,586 @@
+<!-- =============================================
+FILE: step1-reading.html
+============================================= -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Create Reading Material — Step 1 & Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../../img/fb-tab.png" type="image/x-icon">
+
+  <style>
+    body {
+      font-family: "League Spartan", sans-serif;
+      background: #f4fdf7;
+      margin: 0
+    }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: .5rem;
+      background: #fafafa;
+      cursor: pointer;
+      transition: background-color .2s, border-color .2s
+    }
+
+    .dropzone.hover {
+      background: #ecfdf5;
+      border-color: #34d399
+    }
+
+    #preview-title,
+    #preview-desc {
+      word-break: break-word;
+      overflow-wrap: anywhere
+    }
+
+    .fp-center {
+      max-width: 1040px;
+      margin-left: auto;
+      margin-right: auto
+    }
+
+    .fp-card {
+      border: 1px solid #EEF2F7;
+      border-radius: .75rem;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .06)
+    }
+
+    #confirm-media {
+      height: 16rem;
+      background: linear-gradient(180deg, #eef2f7 0%, #dde3ea 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    #confirm-image[src=""],
+    #confirm-image:not([src]) {
+      display: none
+    }
+
+    #confirm-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    #confirm-image[src]+#confirm-placeholder {
+      display: none
+    }
+
+    /* Builder-green stepper tokens */
+    .step-on {
+      background: #7FC58B;
+      color: #fff
+    }
+
+    .label-on {
+      color: #7FC58B;
+      font-weight: 600
+    }
+
+    .step-off {
+      border: 1px solid #D0D5DD;
+      color: #98A2B3
+    }
+
+    .fp-btn {
+      min-width: 200px;
+      height: 44px;
+      border-radius: .5rem;
+      font-weight: 600;
+      font-size: .875rem
+    }
+
+    :root {
+      --preview-card-max: 760px;
+    }
+
+    /* tweak 760–900px if you like */
+    .fp-narrow {
+      max-width: var(--preview-card-max);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .fp-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem auto 0
+    }
+
+    /* Confirm media height */
+    #confirm-media {
+      height: 360px;
+      background: linear-gradient(180deg, #eef2f7 0%, #dde3ea 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #confirm-image[src=""],
+    #confirm-image:not([src]) {
+      display: none;
+    }
+
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+  </style>
+</head>
+
+<body class="p-8">
+  <!-- Clear drafts unless returning from step 2 -->
+  <script>
+    const cameBackFromStep2Reading = sessionStorage.getItem("returnFromStep2Reading") === "1";
+    if (!cameBackFromStep2Reading) {
+      localStorage.removeItem("readingStep1");
+      localStorage.removeItem("readingStep2");
+    }
+  </script>
+
+  <!-- STATIC HEADER -->
+  <div id="page-header" class="max-w-[1480px] mx-auto mb-6">
+    <div class="mt-2 text-center">
+      <h1 class="text-3xl font-bold text-gray-900">Preview Reading Material</h1>
+      <p class="text-gray-500 mt-1">Step 1 of 3: Add your content</p>
+    </div>
+
+    <!-- Stepper -->
+    <div class="relative mt-10 flex justify-between">
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="absolute top-4 left-1/2 w-full h-0.5 bg-gray-200 -z-10"></div>
+
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-200 rounded-full">
+          <span class="w-3 h-3 bg-green-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Content Setup</h3>
+      </div>
+
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="absolute top-4 left-1/2 w-full h-0.5 bg-gray-200 -z-10"></div>
+
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full">
+          <span class="w-3 h-3 bg-gray-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Add Content</h3>
+      </div>
+
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full">
+          <span class="w-3 h-3 bg-gray-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Review &amp; Publish</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO-COLUMN BUILDER -->
+  <div id="two-column-layout" class="max-w-[1140px] mx-auto grid lg:grid-cols-2 gap-8">
+    <!-- FORM -->
+    <form id="reading-form" class="space-y-5 bg-white p-8 rounded-xl shadow"
+      onsubmit="event.preventDefault(); addReading();">
+      <h2 class="text-lg font-semibold text-gray-900">Content Details</h2>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Title</label>
+        <input id="reading-title" type="text" required
+          class="w-full px-4 py-2 rounded-lg shadow-sm outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="Enter content title" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm text-gray-700 mb-1">Description</label>
+        <textarea id="reading-desc" rows="3" required
+          class="w-full px-4 py-2 rounded-lg shadow-sm outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0"
+          placeholder="Enter content description"></textarea>
+      </div>
+
+      <!-- Category -->
+      <div class="relative">
+        <label class="block text-sm text-gray-700 mb-1 font-semibold">Category</label>
+        <button id="readingCategoryBtn" type="button" aria-haspopup="menu" aria-expanded="false"
+          aria-controls="readingCategoryMenu"
+          class="w-full flex items-center justify-between rounded-lg bg-white text-gray-800 shadow-sm py-2 px-4 outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0">
+
+          <span id="readingCategoryLabel">Select a category</span>
+
+          <svg id="readingCategoryChevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+            class="h-4 w-4 text-gray-500 transition-transform duration-150">
+            <path fill-rule="evenodd"
+              d="M5.23 7.21a.75.75 0 011.06.02L10 10.939l3.71-3.71a.75.75 0 111.06 1.061l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+
+
+        <ul id="readingCategoryMenu"
+          class="absolute mt-1 w-full rounded-lg border border-gray-300 bg-white p-1.5 shadow-lg hidden z-10">
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100"
+            data-value="Emotional Intelligence">Emotional Intelligence</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100" data-value="Self-Regulation">
+            Self-Regulation</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100"
+            data-value="Empathy & Compassion">Empathy & Compassion</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100"
+            data-value="Interpersonal Communication">Interpersonal Communication</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100"
+            data-value="Conflict Resolution">Conflict Resolution</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100"
+            data-value="Ethical Decision-Making">Ethical Decision-Making</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100"
+            data-value="Emotional Creativity">Emotional Creativity</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100" data-value="Social Skills">
+            Social Skills</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100" data-value="Awareness">
+            Awareness</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100" data-value="Leadership">
+            Leadership</li>
+          <li class="cursor-pointer text-black text-sm rounded-md p-3 hover:bg-gray-100" data-value="Self-Growth">
+            Self-Growth</li>
+        </ul>
+        <input type="hidden" id="reading-category" required>
+      </div>
+
+      <!-- Cover Image -->
+      <div>
+        <label class="font-semibold text-sm text-gray-700">Cover Image</label>
+        <div id="dropzone" class="dropzone flex flex-col items-center justify-center p-7 mt-1 text-gray-500 rounded-lg
+           border border-dashed border-[#cbd5e1] bg-[#fafafa]
+           hover:bg-[#f0faf5] hover:border-[#7FC58B] transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="#6B7280">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          <span class="font-medium text-gray-600">Drag & Drop to Upload</span>
+          <span class="text-sm text-gray-400 mt-1">or click to browse</span>
+        </div>
+        <input id="fileInput" type="file" accept="image/*" required class="hidden" />
+        <div>
+          <img id="cover-preview" src="" alt="Cover Preview"
+            class="w-full h-96 object-cover rounded-lg hidden border border-gray-200" />
+        </div>
+      </div>
+    </form>
+
+    <!-- LIVE PREVIEW -->
+    <div class="space-y-4" id="preview-right-panel">
+      <div id="preview-tip" role="note"
+        class="text-sm text-yellow-900 bg-yellow-50 border border-yellow-200 rounded-lg p-6 shadow-sm flex items-start gap-3">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Warning" class="shrink-0 mt-0.5">
+          <path d="M12 2L2 22h20L12 2z" fill="#F59E0B" stroke="#D97706" stroke-width="1" />
+          <rect x="11" y="9.5" width="2" height="6" rx="1" fill="#1F2937" />
+          <circle cx="12" cy="17.5" r="1.25" fill="#1F2937" />
+        </svg>
+
+        <div>
+          <strong>
+            <h2 class="font-semibold">Live Preview</h2>
+          </strong>
+          This is how your content card will appear
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden relative">
+        <span id="preview-category"
+          class="absolute top-4 left-4 text-xs font-medium text-green-800 bg-green-50 rounded-full px-3 py-1 hidden z-10"></span>
+        <div id="preview-media" class="relative hidden -mb-4">
+          <img id="preview-image" src="" alt="Cover preview" class="w-full h-64 object-cover" />
+        </div>
+        <div class="p-8 space-y-2 pt-10 -mb-2">
+          <h3 id="preview-title" class="text-lg font-semibold text-gray-900 break-words">Your content title will appear
+            here</h3>
+          <p id="preview-desc" class="text-sm text-gray-500 break-words">Your content description will appear here. This
+            gives readers a preview of what to expect.</p>
+        </div>
+      </div>
+
+      <div id="preview-tip" role="note"
+        class="mt-7 text-sm text-blue-900 bg-blue-50 border border-blue-100 rounded-lg p-6 shadow-sm flex items-start gap-3">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Info" class="shrink-0 mt-0.5">
+          <circle cx="12" cy="12" r="11" fill="#2563EB" />
+          <rect x="11" y="10" width="2" height="7" rx="1" fill="#FFFFFF" />
+          <circle cx="12" cy="7.5" r="1.25" fill="#FFFFFF" />
+        </svg>
+
+        <p class="leading-6">
+          <strong class="font-semibold">Tip:</strong>
+          This card will be the entry point to your content. Make sure your title and description are engaging!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary builder actions (hidden on final preview) -->
+  <div id="primary-actions" class="max-w-[1140px] mx-auto mt-6">
+    <hr class="border-t border-gray-200">
+    <div class="mx-auto max-w-md grid grid-cols-2 gap-4 py-6">
+      <button type="button" onclick="cancelReading()"
+        class="w-full h-11 rounded-lg bg-red-50 text-gray-700 border border-red-200 rounded-lg font-semibold hover:bg-red-100 transition">
+        Cancel
+      </button>
+      <button id="next-btn" type="submit" form="reading-form" disabled
+        class="w-full h-11 rounded-md font-semibold text-sm text-white bg-[#7FC58B] hover:bg-[#6FB07C] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition">
+        Continue to Content →
+      </button>
+    </div>
+  </div>
+
+  <!-- FINAL PREVIEW  -->
+  <div id="final-preview" class="hidden max-w-[600px] mx-auto mt-10 fade-in">
+    <!-- Card -->
+    <div class="fp-narrow bg-white fp-card overflow-hidden mt-6">
+      <div id="confirm-media" class="relative" style="height:360px;">
+        <img id="confirm-image" src="" alt="Cover preview" class="w-full h-full object-cover" />
+        <div id="confirm-placeholder" class="absolute inset-0 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+            stroke="#98A2B3" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <circle cx="9" cy="9" r="2.25"></circle>
+            <path d="M21 15l-4.5-4.5L7 20"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="p-6">
+        <h3 id="confirm-title" class="text-xl font-semibold text-gray-900 break-words">Title</h3>
+        <p id="confirm-desc" class="text-sm text-gray-600 break-words mt-1">Description here…</p>
+      </div>
+    </div>
+
+    <div id="preview-tip" role="note"
+      class="mt-7 text-sm text-blue-900 bg-blue-50 border border-blue-100 rounded-lg p-7 shadow-sm flex items-start gap-3">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Info" class="shrink-0 mt-0.5">
+        <circle cx="12" cy="12" r="11" fill="#2563EB" />
+        <rect x="11" y="10" width="2" height="7" rx="1" fill="#FFFFFF" />
+        <circle cx="12" cy="7.5" r="1.25" fill="#FFFFFF" />
+      </svg>
+
+      <p class="leading-6">
+        <strong class="font-semibold">Tip:</strong>
+        This card will be the entry point to your content. Make sure your title and description are engaging!
+      </p>
+    </div>
+
+    <!-- Centered actions -->
+    <div class="fp-narrow fp-actions">
+      <button onclick="editAgain()"
+        class="fp-btn border border-blue-300 text-gray-700 hover:bg-blue-100 bg-blue-50">Edit
+        Setup</button>
+      <button onclick="window.location.href='step2-reading.html'"
+        class="fp-btn text-white text-sm text-white bg-[#7FC58B] hover:bg-[#6FB07C]">Add Content</button>
+    </div>
+  </div>
+
+  <script>
+    // Category dropdown
+    const readingCategoryBtn = document.getElementById("readingCategoryBtn");
+    const readingCategoryMenu = document.getElementById("readingCategoryMenu");
+    const readingCategoryLabel = document.getElementById("readingCategoryLabel");
+    const readingCategoryChevron = document.getElementById("readingCategoryChevron");
+
+    readingCategoryBtn.addEventListener("click", () => {
+      readingCategoryMenu.classList.toggle("hidden");
+      const open = !readingCategoryMenu.classList.contains("hidden");
+      readingCategoryChevron.classList.toggle("rotate-180", open);
+      readingCategoryBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    readingCategoryMenu.querySelectorAll("li").forEach(item => {
+      item.addEventListener("click", () => {
+        const value = item.dataset.value;
+        catIn.value = value;
+        readingCategoryLabel.textContent = value;
+        readingCategoryMenu.classList.add("hidden");
+        readingCategoryChevron.classList.remove("rotate-180");
+        readingCategoryBtn.setAttribute("aria-expanded", "false");
+        updatePreviewUIOnly();
+        persistStep1({ imageOnly: false });
+        validateNextEnabled();
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!readingCategoryBtn.parentElement.contains(e.target)) {
+        readingCategoryMenu.classList.add("hidden");
+        readingCategoryChevron.classList.remove("rotate-180");
+        readingCategoryBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // IndexedDB helpers
+    const IDB_DB_NAME = "ContentDraftDB"; const IDB_DB_VER = 1; const IDB_IMG_STORE = "images";
+    function idbOpen() { return new Promise((resolve, reject) => { const req = indexedDB.open(IDB_DB_NAME, IDB_DB_VER); req.onupgradeneeded = (ev) => { const db = ev.target.result; if (!db.objectStoreNames.contains(IDB_IMG_STORE)) db.createObjectStore(IDB_IMG_STORE) }; req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+    async function idbPut(key, value) { const db = await idbOpen(); return new Promise((resolve, reject) => { const tx = db.transaction(IDB_IMG_STORE, "readwrite"); tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); tx.objectStore(IDB_IMG_STORE).put(value, key); }); }
+    async function idbGet(key) { if (!key) return null; const db = await idbOpen(); return new Promise((resolve, reject) => { const tx = db.transaction(IDB_IMG_STORE, "readonly"); tx.onerror = () => reject(tx.error); const req = tx.objectStore(IDB_IMG_STORE).get(key); req.onsuccess = () => resolve(req.result || null); req.onerror = () => reject(req.error); }); }
+
+    // Refs
+    const titleIn = document.getElementById("reading-title");
+    const descIn = document.getElementById("reading-desc");
+    const catIn = document.getElementById("reading-category");
+    const fileIn = document.getElementById("fileInput");
+    const dropzone = document.getElementById("dropzone");
+    const nextBtn = document.getElementById("next-btn");
+    const prevImg = document.getElementById("preview-image");
+    const previewMedia = document.getElementById("preview-media");
+    const prevTitle = document.getElementById("preview-title");
+    const prevDesc = document.getElementById("preview-desc");
+    const previewCat = document.getElementById("preview-category");
+    let thumbnailObjectUrl = "";
+
+    function safeGet(key) { try { const v = localStorage.getItem(key); if (v == null || v === "" || v === "undefined") return null; return JSON.parse(v); } catch { return null; } }
+
+    (async function init() {
+      const saved = safeGet("readingStep1");
+      const hasStep2 = !!localStorage.getItem("readingStep2");
+      let draftId = saved?.draftId || `read-${Date.now()}`;
+      if (!saved) localStorage.setItem("readingStep1", JSON.stringify({ draftId }));
+
+      if (saved?.cat) readingCategoryLabel.textContent = saved.cat;
+
+      if (saved) {
+        titleIn.value = saved.title || "";
+        descIn.value = saved.desc || "";
+        catIn.value = saved.cat || "";
+        if (saved.thumbnailRef) {
+          const blob = await idbGet(saved.thumbnailRef);
+          if (blob) {
+            if (thumbnailObjectUrl) URL.revokeObjectURL(thumbnailObjectUrl);
+            thumbnailObjectUrl = URL.createObjectURL(blob);
+            prevImg.src = thumbnailObjectUrl;
+            previewMedia.classList.remove("hidden");
+            fileIn.required = false;
+          }
+        } else if (saved.img) {
+          prevImg.src = saved.img; previewMedia.classList.remove("hidden");
+        }
+        previewCat.textContent = saved.cat || "";
+        previewCat.classList.toggle("hidden", !saved.cat);
+      }
+
+      updatePreviewUIOnly();
+
+      if ((cameBackFromStep2Reading || hasStep2) && saved) {
+        // Keep page header visible; only hide builder body/actions
+        document.getElementById("two-column-layout").classList.add("hidden");
+        document.getElementById("primary-actions").classList.add("hidden");
+        document.getElementById("final-preview").classList.remove("hidden");
+
+        document.getElementById("confirm-title").textContent = saved.title || "Title";
+        document.getElementById("confirm-desc").textContent = saved.desc || "Description here…";
+        const imgEl = document.getElementById("confirm-image");
+        if (saved.thumbnailRef) {
+          const blob = await idbGet(saved.thumbnailRef);
+          if (blob) { imgEl.src = URL.createObjectURL(blob); } else { imgEl.removeAttribute("src"); }
+        } else if (saved.img) { imgEl.src = saved.img; } else { imgEl.removeAttribute("src"); }
+        const catEl = document.getElementById("confirm-category");
+        if (catEl) {
+          if (saved.cat) { catEl.textContent = saved.cat; catEl.classList.remove("hidden"); }
+          else { catEl.classList.add("hidden"); }
+        }
+      }
+
+      sessionStorage.removeItem("returnFromStep2Reading");
+      validateNextEnabled();
+    })();
+
+    // DnD
+    dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("hover"); });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("hover"));
+    dropzone.addEventListener("drop", (e) => { e.preventDefault(); dropzone.classList.remove("hover"); if (e.dataTransfer.files.length) { fileIn.files = e.dataTransfer.files; handleFileSelected(); } });
+    dropzone.addEventListener("click", () => fileIn.click());
+    fileIn.addEventListener("change", handleFileSelected);
+    [titleIn, descIn, catIn].forEach(el => el.addEventListener("input", onMetaChanged));
+
+    function onMetaChanged() { updatePreviewUIOnly(); persistStep1({ imageOnly: false }); validateNextEnabled(); }
+
+    function updatePreviewUIOnly() {
+      prevTitle.textContent = titleIn.value || "Your content title will appear here";
+      prevDesc.textContent = descIn.value || "Your content description will appear here. This gives readers a preview of what to expect.";
+      const hasCat = !!(catIn.value && catIn.value !== "");
+      previewCat.textContent = hasCat ? catIn.value : "";
+      previewCat.classList.toggle("hidden", !hasCat);
+    }
+
+    async function handleFileSelected() {
+      const file = fileIn.files[0]; if (!file) return;
+      if (thumbnailObjectUrl) URL.revokeObjectURL(thumbnailObjectUrl);
+      thumbnailObjectUrl = URL.createObjectURL(file);
+      prevImg.src = thumbnailObjectUrl; previewMedia.classList.remove("hidden");
+      await persistStep1({ imageOnly: true, file }); fileIn.required = false; validateNextEnabled();
+    }
+
+    async function persistStep1({ imageOnly = false, file = null } = {}) {
+      const saved = safeGet("readingStep1") || {};
+      const draftId = saved.draftId || `read-${Date.now()}`;
+      const nextState = { draftId, title: imageOnly ? (saved.title || titleIn.value) : titleIn.value, desc: imageOnly ? (saved.desc || descIn.value) : descIn.value, cat: imageOnly ? (saved.cat || catIn.value) : catIn.value, thumbnailRef: saved.thumbnailRef || null };
+      if (file) { try { const key = `thumb:${draftId}`; await idbPut(key, file); nextState.thumbnailRef = key; } catch (e) { console.error("Failed to save image in IndexedDB", e); } }
+      localStorage.setItem("readingStep1", JSON.stringify(nextState));
+    }
+
+    function validateNextEnabled() {
+      const saved = safeGet("readingStep1");
+      const hasCat = !!(catIn.value && catIn.value !== "");
+      const hasImage = !!(fileIn.files.length || saved?.thumbnailRef || saved?.img);
+      nextBtn.disabled = !(titleIn.value && descIn.value && hasCat && hasImage);
+    }
+
+    async function addReading() {
+      const saved = safeGet("readingStep1") || {};
+      const saveObj = { ...saved, title: titleIn.value, desc: descIn.value, cat: catIn.value };
+      localStorage.setItem("readingStep1", JSON.stringify(saveObj));
+
+      // Keep header; hide builder body/actions
+      document.getElementById("two-column-layout").classList.add("hidden");
+      document.getElementById("primary-actions").classList.add("hidden");
+      document.getElementById("final-preview").classList.remove("hidden");
+
+      document.getElementById("confirm-title").textContent = saveObj.title || "Title";
+      document.getElementById("confirm-desc").textContent = saveObj.desc || "Description here…";
+
+      const imgEl = document.getElementById("confirm-image");
+      if (saveObj.thumbnailRef) {
+        const blob = await idbGet(saveObj.thumbnailRef);
+        if (blob) { imgEl.src = URL.createObjectURL(blob); } else { imgEl.removeAttribute("src"); }
+      } else if (saved.img) { imgEl.src = saved.img; } else { imgEl.removeAttribute("src"); }
+
+      const catEl = document.getElementById("confirm-category");
+      if (catEl) {
+        if (saveObj.cat) { catEl.textContent = saveObj.cat; catEl.classList.remove("hidden"); }
+        else { catEl.classList.add("hidden"); }
+      }
+    }
+
+    function editAgain() {
+      document.getElementById("two-column-layout").classList.remove("hidden");
+      document.getElementById("primary-actions").classList.remove("hidden");
+      document.getElementById("final-preview").classList.add("hidden");
+    }
+
+    function cancelReading() {
+      const saved = JSON.parse(localStorage.getItem("readingStep1") || "{}");
+      (async () => {
+        if (saved.thumbnailRef) {
+          try { const db = await idbOpen(); const tx = db.transaction("images", "readwrite"); tx.objectStore("images").delete(saved.thumbnailRef); } catch (e) { console.error("Failed to delete thumbnail blob from IndexedDB", e); }
+        }
+        localStorage.removeItem("readingStep1"); localStorage.removeItem("readingStep2");
+        window.location.href = "../content.html";
+      })();
+    }
+  </script>
+</body>
+
+</html>

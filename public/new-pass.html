@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Reset Password - FeelBright</title>
+
+    <!-- Tailwind + Fonts + Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="./img/fb-tab.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'League Spartan', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* small shake animation used by JS */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* loading overlay animations */
+        @keyframes spinSlow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulseSoft {
+            0% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .7
+            }
+
+            100% {
+                opacity: 1
+            }
+        }
+
+        :root {
+            --fb-green: #7FC58B;
+            --fb-emerald: #10B981;
+        }
+    </style>
+</head>
+
+<body class="relative isolate overflow-hidden bg-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- LEFT SIDE BLUR SHAPE -->
+    <div aria-hidden="true"
+        class="absolute top-1/2 left-[-10rem] -translate-y-1/2 rotate-[30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-r from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+    </div>
+
+    <!-- RIGHT SIDE BLUR SHAPE -->
+    <div aria-hidden="true"
+        class="absolute top-1/2 right-[-10rem] -translate-y-1/2 rotate-[-30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-l from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="LoadingOverlay"
+        class="fixed inset-0 z-[70] hidden items-center justify-center bg-white/90 backdrop-blur-xl">
+        <div class="flex flex-col items-center">
+            <div class="relative h-20 w-20">
+                <div class="absolute inset-2 rounded-full border-[6px] border-[color:var(--fb-green)] border-t-transparent"
+                    style="animation:spinSlow 1.2s linear infinite;"></div>
+            </div>
+            <div class="mt-4 text-sm font-semibold tracking-wide text-[color:var(--fb-green)]"
+                style="animation:pulseSoft 1.6s ease-in-out infinite;">Loading please be patient…
+            </div>
+        </div>
+    </div>
+
+    <!-- Card (Gate-style design) -->
+    <main class="max-w-md w-full bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-200">
+        <!-- Header / Logo -->
+        <div class="py-8 px-6 bg-white border-b border-gray-200 text-center">
+            <img id="systemLogo" src="./img/fb-banners.png" alt="FeelBright Logo" class="h-50 w-80 mx-auto"
+                onerror="this.style.display='none'">
+        </div>
+
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-1">Reset Password</h2>
+                <p class="text-lg text-[color:var(--fb-green)]">Enter a new secure password for your account</p>
+            </div>
+
+            <!-- Error / Notice (admin-style) -->
+            <div id="error-message"
+                class="hidden mb-4 rounded-lg p-3 bg-[#FFF1F1] text-[#D32F2F] text-sm border border-[#FFE5E5] flex items-start gap-2">
+                <i class="fas fa-exclamation-circle mt-0.5"></i>
+                <span id="error-text">Invalid credentials. Please try again.</span>
+            </div>
+
+            <!-- Inline message using 'msg' id for success/neutral messages -->
+            <p id="msg" class="hidden mb-4 rounded-md p-3 text-sm text-center"></p>
+
+            <!-- Form (IDs kept exactly) -->
+            <form id="resetForm" class="space-y-5" novalidate onsubmit="submitReset(event)">
+                <!-- Password -->
+                <div>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
+                        <input type="password" id="password" name="password" placeholder="Create a new password"
+                            required oninput="validatePasswordStrength()"
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        <button type="button"
+                            class="absolute right-3 top-1/2 -translate-y-2 text-gray-500 hover:text-[color:var(--fb-green)] transition"
+                            onclick="togglePassword('password','toggleIcon1')" aria-label="Toggle password visibility">
+                            <i id="toggleIcon1" class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Password requirements -->
+                <div id="passwordRequirements"
+                    class="hidden rounded-md border-l-4 p-3 text-sm bg-red-50 border-red-400 text-red-700 space-y-1">
+                    <div id="lengthReq" class="flex items-center"><span class="w-4">•</span> At least 8 characters</div>
+                    <div id="lowerReq" class="flex items-center"><span class="w-4">•</span> One lowercase letter</div>
+                    <div id="upperReq" class="flex items-center"><span class="w-4">•</span> One uppercase letter</div>
+                    <div id="numberReq" class="flex items-center"><span class="w-4">•</span> One number</div>
+                    <div id="specialReq" class="flex items-center"><span class="w-4">•</span> One special character (@$!%*?&)
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                            placeholder="Confirm your new password" required oninput="validatePasswordMatch()"
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        <button type="button"
+                            class="absolute right-3 top-1/2 -translate-y-2 text-gray-500 hover:text-[color:var(--fb-green)] transition"
+                            onclick="togglePassword('confirmPassword','toggleIcon2')"
+                            aria-label="Toggle password visibility">
+                            <i id="toggleIcon2" class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div>
+                    <button id="resetBtn" type="submit"
+                        class="w-full py-2 bg-[color:var(--fb-green)] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">
+                        Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- JS: preserves your backend flow and IDs; uses admin-style error display -->
+    <script>
+        // Toggle password visibility (keeps toggleIcon1/toggleIcon2 IDs)
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+                icon.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+                icon.setAttribute('aria-label', 'Show password');
+            }
+        }
+
+        // Live password requirement checker
+        function validatePasswordStrength() {
+            const pass = document.getElementById('password')?.value || '';
+            const reqBox = document.getElementById('passwordRequirements');
+            if (!reqBox) return;
+            reqBox.classList.remove('hidden');
+
+            const setColor = (id, ok) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.color = ok ? '#16a34a' : '#dc2626'; // green when ok, red when not
+            };
+
+            setColor('lengthReq', pass.length >= 8);
+            setColor('lowerReq', /[a-z]/.test(pass));
+            setColor('upperReq', /[A-Z]/.test(pass));
+            setColor('numberReq', /\d/.test(pass));
+            setColor('specialReq', /[@$!%*?&]/.test(pass));
+        }
+
+        // Live confirm-password match check
+        function validatePasswordMatch() {
+            const pass = document.getElementById('password')?.value || '';
+            const conf = document.getElementById('confirmPassword')?.value || '';
+            
+            if (conf.length === 0) {
+                // hide any message if confirm empty
+                const errorMessage = document.getElementById('error-message');
+                const msg = document.getElementById('msg');
+                if (errorMessage) {
+                    errorMessage.classList.remove('flex');
+                    errorMessage.classList.add('hidden');
+                }
+                if (msg) msg.classList.add('hidden');
+                return;
+            }
+
+            if (pass !== conf) {
+                showError('Passwords do not match.');
+            } else {
+                // clear the error message
+                const errorMessage = document.getElementById('error-message');
+                const msg = document.getElementById('msg');
+                if (errorMessage) {
+                    errorMessage.classList.remove('flex');
+                    errorMessage.classList.add('hidden');
+                }
+                if (msg) msg.classList.add('hidden');
+            }
+        }
+
+        // Admin-style showError (uses #error-message and #error-text)
+        function showError(message) {
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            if (!errorMessage || !errorText) return;
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            errorMessage.classList.add('flex');
+            errorMessage.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => { errorMessage.style.animation = ''; }, 600);
+            // auto-hide after 5s
+            setTimeout(() => {
+                if (errorMessage) {
+                    errorMessage.classList.remove('flex');
+                    errorMessage.classList.add('hidden');
+                }
+            }, 5000);
+        }
+
+        // Admin-style success using the #msg element (keeps your existing msg usage)
+        function showSuccess(message) {
+            const msg = document.getElementById('msg');
+            if (!msg) return;
+            msg.textContent = message;
+            msg.classList.remove('hidden', 'text-red-500', 'bg-[#FFF1F1]');
+            msg.classList.add('text-green-600', 'bg-[#E8F5E9]', 'rounded-md', 'p-3', 'mb-4');
+            msg.classList.remove('hidden');
+        }
+
+        // Neutral / fallback message setter (keeps compatibility)
+        function setMessage(text, isSuccess) {
+            if (isSuccess === true) showSuccess(text);
+            else if (isSuccess === false) showError(text);
+            else {
+                const msg = document.getElementById('msg');
+                if (!msg) return;
+                msg.textContent = text || '';
+                msg.classList.remove('hidden', 'text-red-500', 'text-green-600', 'bg-[#FFF1F1]', 'bg-[#E8F5E9]');
+                msg.classList.add('text-gray-600', 'rounded-md', 'p-3', 'mb-4');
+                msg.classList.remove('hidden');
+            }
+        }
+
+        // Submit reset handler (keeps same endpoint & payload shape)
+        async function submitReset(e) {
+            e.preventDefault();
+
+            const passwordEl = document.getElementById('password');
+            const confirmEl = document.getElementById('confirmPassword');
+            const btn = document.getElementById('resetBtn');
+
+            if (!passwordEl || !confirmEl || !btn) return;
+
+            const password = (passwordEl.value || '').trim();
+            const confirm = (confirmEl.value || '').trim();
+
+            // basic validation
+            if (!password) {
+                showError('Please enter a new password.');
+                return;
+            }
+
+            // Password strength validation
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                showError('Password must meet all requirements above.');
+                return;
+            }
+
+            if (password !== confirm) {
+                showError('Passwords do not match.');
+                return;
+            }
+
+            // token from query
+            const token = new URLSearchParams(window.location.search).get('token');
+            if (!token) {
+                showError('Missing or invalid token. Please use the reset link sent to your email.');
+                return;
+            }
+
+            // disable UI while request runs
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = 'Resetting...';
+
+            try {
+                const baseUrl = window.location.origin;
+                const res = await fetch(`${baseUrl}/reset/${encodeURIComponent(token)}`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                // parse JSON with fallback
+                let data = {};
+                try {
+                    data = await res.json();
+                } catch (parseErr) {
+                    data = { success: res.ok, message: res.ok ? 'Password reset successful.' : 'Request failed.' };
+                }
+
+                if (res.ok && (data.success === undefined || data.success === true)) {
+                    showSuccess(data.message || 'Password reset successfully. Redirecting to home...');
+                    // slight delay then redirect to home/login
+                    setTimeout(() => {
+                        window.location.href = './index.html';
+                    }, 1200);
+                } else {
+                    const errText = data.error || data.message || 'Failed to reset password. Try the link again or request a new one.';
+                    showError(errText);
+                }
+            } catch (err) {
+                console.error('Reset request failed:', err);
+                showError('Network error. Please try again.');
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Clear error/message when user starts typing in the inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                const errorMessage = document.getElementById('error-message');
+                const msg = document.getElementById('msg');
+                if (errorMessage) { errorMessage.classList.add('hidden'); errorMessage.classList.remove('flex'); }
+                if (msg) { msg.classList.add('hidden'); }
+            });
+        });
+
+        // Optional: Enter key submits
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const form = document.getElementById('resetForm');
+                if (form) form.dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+
+</html>

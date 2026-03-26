@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" class="font-[League_Spartan]">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Management - FeelBright</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="./css/userlist.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../img/fb-tab.png" type="image/x-icon">
+  <style>
+    .online-indicator {
+      position: relative;
+    }
+
+    .online-indicator::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background-color: #22c55e;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+    }
+
+    .offline-indicator {
+      position: relative;
+    }
+
+    .offline-indicator::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background-color: #9ca3af;
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-online {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .status-offline {
+      background-color: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .5;
+      }
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .action-button {
+      transition: all 0.2s ease;
+    }
+
+    .action-button:hover {
+      transform: translateY(-1px);
+    }
+
+    #sidebar .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #sidebar.collapsed .logo-container {
+      justify-content: center;
+    }
+
+    /* Sidebar styles */
+    #sidebar {
+      transition: all 0.3s ease;
+      width: 260px;
+    }
+
+    #sidebar.collapsed {
+      width: 80px;
+    }
+
+    #sidebar.collapsed .menu-text,
+    #sidebar.collapsed #users-arrow,
+    #sidebar.collapsed #logo-text {
+      display: none;
+    }
+
+    #users-submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    #users-submenu.open {
+      max-height: 250px;
+    }
+  </style>
+</head>
+
+<body class="flex min-h-screen bg-[#f4fdf7] text-gray-800">
+
+  <!-- Sidebar -->
+  <nav id="sidebar"
+    class="bg-white border-r border-gray-200 h-screen sticky top-0 flex flex-col justify-between z-50 shadow-sm">
+    <div>
+      <!--AdminLogo-->
+      <div class="p-5 pb-7 pt-7 border-b border-gray-200 flex items-center gap-2">
+        <img src="../img/fb-tabs-icn.png" alt="Tabs Icon" class="h-7 w-7 ml-1 sidebar-icon" />
+        <h1 id="logo-text" class="text-xl ml-1 font-bold text-[#62c273]"><span style="color: #3d1200;">Feel</span>Bright
+        </h1>
+      </div>
+
+      <!-- Menu -->
+      <ul class="p-4 space-y-2 ">
+        <!-- Dashboard -->
+        <li>
+          <a href="adminreports.html"
+            class="sidebar-item rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition">
+            <i class="fas fa-home text-[#7FC58B] text-lg sidebar-icon"></i>
+            <span class="menu-text text-sm">Dashboard</span>
+          </a>
+        </li>
+
+        <!-- Users (collapsible) -->
+        <li>
+          <button id="users-btn"
+            class="sidebar-item w-full rounded-lg hover:bg-green-100 bg-green-100 text-green-700 transition flex justify-between items-center"
+            aria-expanded="false">
+            <div class="flex items-center gap-3">
+              <i class="fas fa-users text-[#7FC58B] sidebar-icon"></i>
+              <span class="menu-text text-sm">Users</span>
+            </div>
+            <i id="users-arrow"
+              class="fas fa-chevron-down text-sm text-[#6FB07C] transition-transform duration-300"></i>
+          </button>
+
+          <ul id="users-submenu" aria-hidden="true" class="">
+            <li>
+              <a href="archiveduser.html" class="sidebar-item rounded-lg hover:bg-green-100 transition pl-12">
+                <i class="fas fa-archive text-[#7FC58B] sidebar-icon"></i>
+                <span class="menu-text text-sm">Archive</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Content -->
+        <li>
+          <a href=" content.html"
+            class="sidebar-item rounded-lg hover:bg-green-100 hover:text-green-700 text-gray-700 transition">
+            <i class="fas fa-file-alt text-[#7FC58B] text-lg sidebar-icon"></i>
+            <span class="menu-text text-sm">Content Management</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Logout -->
+    <div class="p-4 border-t border-gray-200">
+      <button onclick="window.location.href='/logout'"
+        class="sidebar-item w-full rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition">
+        <i class="fas fa-sign-out-alt sidebar-icon"></i>
+        <span class="menu-text">Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="flex-1 p-7">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="text-[#7FC58B] hover:text-green-600 transition-colors"
+          aria-label="Toggle sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-panel-left">
+            <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+            <path d="M9 3v18"></path>
+          </svg>
+        </button>
+        <h2 class="text-2xl font-semibold">User Management</h2>
+      </div>
+
+      <!-- Stats Display -->
+      <div class="flex gap-4">
+        <!-- Online  -->
+        <div class="bg-green-50 px-4 py-2 rounded-lg shadow-sm border border-green-300">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-sm font-semibold text-green-700">
+              Online: <span id="onlineCount">0</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Active -->
+        <div class="bg-blue-50 px-4 py-2 rounded-lg shadow-sm border border-blue-300">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-users text-blue-500 text-sm"></i>
+            <span class="text-sm font-semibold text-blue-600">
+              Active: <span id="totalCount">0</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Archived  -->
+        <div class="bg-yellow-50 px-4 py-2 rounded-lg shadow-sm border border-yellow-400">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-archive text-yellow-600 text-sm"></i>
+            <span class="text-sm font-semibold text-yellow-600">
+              Archived: <span id="archivedCount">0</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </header>
+
+    <!-- Search + Filters -->
+    <div class="flex flex-col md:flex-row justify-between gap-4 mb-6 items-center">
+      <div class="flex flex-col md:flex-row gap-4 w-full">
+        <!-- Search -->
+        <div class="relative w-full md:w-80">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="userSearch" placeholder="Search users"
+            class="w-full pl-10 pr-4 py-2 rounded-lg border bg-white shadow-sm
+                outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0" />
+        </div>
+
+        <!-- Status Dropdown -->
+        <div class="relative w-full md:w-48 ">
+          <button id="status-btn"
+            class="w-full bg-white rounded-lg shadow-sm px-4 py-2 text-left inline-flex justify-between items-center outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0">
+            <span id="status-text">All Status</span>
+            <i class="fas fa-chevron-down w-4 h-4 ml-2"></i>
+          </button>
+          <ul id="status-menu"
+            class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-sm mt-1 w-full text-sm text-gray-700">
+            <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectStatus('All Status')">All Status</li>
+            <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectStatus('Online')">Online</li>
+            <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectStatus('Offline')">Offline</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sort By Dropdown -->
+      <div class="relative w-full sm:w-80">
+        <button id="sort-btn"
+          class="w-full bg-white text-gray-700 rounded-lg shadow-sm px-4 py-2 text-left inline-flex justify-between items-center outline-none transition-all duration-200 ease-in-out border-[1.5px] border-[#e5e7eb] hover:border-[#7FC58B] hover:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:border-[#7FC58B] focus:shadow-[0_0_0_4px_rgba(127,197,139,0.1)] focus:outline-none focus:ring-0">
+          <span id="sort-text">Sort by Date (Newest)</span>
+          <i class="fas fa-chevron-down w-4 h-4 ml-2"></i>
+        </button>
+        <ul id="sort-menu"
+          class="absolute hidden z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-sm mt-1 w-full text-sm text-gray-700 items-center justify-center">
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Sort by Date (Newest)')">Sort by
+            Date (Newest)</li>
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Sort by Date (Oldest)')">Sort by
+            Date (Oldest)</li>
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Sort by Last Active (Recent)')">
+            Sort by
+            Last Active (Recent)</li>
+          <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" onclick="selectSort('Sort by Last Active (Oldest)')">
+            Sort by
+            Last Active (Oldest)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse min-w-full">
+          <thead class="bg-gray-50">
+            <tr class="border-b border-gray-200">
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[80px]">Profile</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">First Name</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">Middle Name</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">Last Name</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[200px]">Email</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[100px]">Status</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[150px]">Last Active</th>
+              <th class="px-4 py-3 text-center font-semibold border-b border-gray-200 min-w-[120px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <ul id="paginationControls" class="flex justify-end gap-2 mt-6"></ul>
+  </div>
+
+  <!-- Archive Confirmation Modal -->
+  <div id="archiveModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="text-center">
+        <div
+          class="w-16 h-16 mx-auto mb-4 bg-yellow-50 border border-yellow-400 rounded-full flex items-center justify-center">
+          <i class="fas fa-archive text-yellow-500 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Archive User</h3>
+        <p class="text-gray-600 mb-6">“Archive this user? They’ll move to the archived list and lose system access.”</p>
+
+        <div class="flex gap-3 justify-center">
+          <button onclick="closeArchiveModal()"
+            class="w-32 h-11 shadow-sm text-red-700 bg-red-50 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-100 transition">
+            Cancel
+          </button>
+          <button onclick="confirmArchiveUser()"
+            class="w-32 h-11 shadow-sm text-yellow-700 bg-yellow-50 border border-yellow-400 rounded-lg font-medium text-sm hover:bg-yellow-100 hover:border-yellow-400 transition">
+            Archive User
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Warning Modal -->
+  <div id="emailWarningModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="text-center">
+        <div
+          class="w-16 h-16 mx-auto mb-4 bg-blue-50 border border-blue-400 rounded-full flex items-center justify-center">
+          <i class="fas fa-envelope text-blue-500 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Send Inactivity Warning</h3>
+        <p class="text-gray-600 mb-6">Send an email notification to this inactive user warning them that their account
+          may be archived if they don't log in soon.</p>
+
+        <div class="flex gap-3 justify-center">
+          <button onclick="closeEmailWarningModal()"
+            class="w-32 h-11 shadow-sm text-red-700 bg-red-50 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-100 transition">
+            Cancel
+          </button>
+          <button onclick="confirmSendWarning()"
+            class="w-32 h-11 shadow-sm text-blue-700 bg-blue-50 border border-blue-300 rounded-lg font-medium text-sm hover:bg-blue-100 hover:border-blue-500 transition">
+            Send Email
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    let userToArchive = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentPage = window.location.pathname.split("/").pop();
+
+      document.querySelectorAll(".sidebar-item[href]").forEach(item => {
+        const link = item.getAttribute("href");
+        if (link && link.includes(currentPage)) {
+          item.classList.add("active");
+
+          const submenu = item.closest("#users-submenu");
+          if (submenu) {
+            submenu.classList.add("open");
+            submenu.setAttribute("aria-hidden", "false");
+
+            const usersBtn = document.getElementById("users-btn");
+            const arrow = document.getElementById("users-arrow");
+            usersBtn.classList.add("active");
+            usersBtn.setAttribute("aria-expanded", "true");
+
+            // Show arrow only if sidebar is expanded
+            const sidebar = document.getElementById("sidebar");
+            arrow.style.display = sidebar.classList.contains("collapsed") ? "none" : "inline-block";
+            if (sidebar.classList.contains("collapsed")) {
+              arrow.classList.remove("rotate-180");
+            } else {
+              arrow.classList.add("rotate-180"); // rotate if submenu open
+            }
+          }
+        }
+      });
+    });
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const arrow = document.getElementById('users-arrow');
+
+      sidebar.classList.toggle('collapsed');
+
+      // Arrow visible only if sidebar expanded
+      if (sidebar.classList.contains('collapsed')) {
+        arrow.style.display = 'none';
+      } else {
+        arrow.style.display = 'inline-block';
+      }
+    }
+
+    // Users submenu toggle
+    document.getElementById('users-btn').addEventListener('click', function () {
+      const submenu = document.getElementById('users-submenu');
+      const arrow = document.getElementById('users-arrow');
+
+      const isOpen = submenu.classList.toggle('open'); // toggle submenu
+      submenu.setAttribute('aria-hidden', String(!isOpen));
+      this.setAttribute('aria-expanded', isOpen);
+
+      // Rotate arrow only if sidebar is expanded
+      if (!document.getElementById('sidebar').classList.contains('collapsed')) {
+        arrow.classList.toggle('rotate-180', isOpen);
+      }
+    });
+
+    // Optional: toggleSubmenu function if needed elsewhere
+    function toggleSubmenu(event) {
+      const sidebar = document.getElementById("sidebar");
+      const submenu = document.getElementById("users-submenu");
+      const usersBtn = document.getElementById("users-btn");
+      const arrow = document.getElementById("users-arrow");
+
+      if (sidebar.classList.contains("collapsed")) {
+        event.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      const opening = !submenu.classList.contains("open");
+      submenu.classList.toggle("open", opening);
+      submenu.setAttribute("aria-hidden", String(!opening));
+      usersBtn.setAttribute("aria-expanded", String(opening));
+
+      // Rotate arrow if sidebar expanded
+      if (!sidebar.classList.contains("collapsed")) {
+        arrow.classList.toggle("rotate-180", opening);
+      }
+    }
+
+    // Dropdown toggle functions
+    function toggleDropdown(btnId, menuId) {
+      const btn = document.getElementById(btnId);
+      const menu = document.getElementById(menuId);
+      menu.classList.toggle('hidden');
+    }
+
+    function selectStatus(value) {
+      document.getElementById('status-text').textContent = value;
+      document.getElementById('status-menu').classList.add('hidden');
+      // Filter users by status
+      currentPage = 1;
+      fetchUsers();
+    }
+
+    function selectSort(value) {
+      document.getElementById('sort-text').textContent = value;
+      document.getElementById('sort-menu').classList.add('hidden');
+      currentPage = 1;
+      fetchUsers();
+    }
+
+    document.getElementById('status-btn').addEventListener('click', () => toggleDropdown('status-btn', 'status-menu'));
+    document.getElementById('sort-btn').addEventListener('click', () => toggleDropdown('sort-btn', 'sort-menu'));
+
+    // Close dropdowns if clicked outside
+    window.addEventListener('click', function (e) {
+      ['status', 'sort'].forEach(id => {
+        const btn = document.getElementById(`${id}-btn`);
+        const menu = document.getElementById(`${id}-menu`);
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+    });
+
+    /* ===== Archive Modal Functions ===== */
+    function openArchiveModal(userId, userName) {
+      userToArchive = { id: userId, name: userName };
+      document.getElementById('archiveModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeArchiveModal() {
+      document.getElementById('archiveModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      userToArchive = null;
+    }
+
+    async function confirmArchiveUser() {
+      if (!userToArchive) return;
+
+      try {
+        const response = await fetch(`/admin/users/${userToArchive.id}/archive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (response.ok) {  // This is the key fix - just check response.ok
+          const responseData = await response.json();
+          closeArchiveModal();
+          fetchUsers();
+          showNotification(responseData.message || `User "${userToArchive.name}" has been archived successfully.`, 'success');
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to archive user');
+        }
+      } catch (error) {
+        console.error('Error archiving user:', error);
+        showNotification('Failed to archive user. Please try again.', 'error');
+      }
+    }
+    // Notification function
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300
+    ${type === 'success' ? 'bg-green-500 text-white' :
+          type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+      notification.textContent = message;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+
+    /* ===== Users table: search + pagination ===== */
+    const USERS_PER_PAGE = 10;
+    let currentPage = 1;
+    let totalUsers = 0;
+    let allUsers = [];
+
+    const userTableBody = document.getElementById('userTableBody');
+    const searchInput = document.getElementById('userSearch');
+    const paginationControls = document.getElementById('paginationControls');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchUsers();
+      searchInput.addEventListener('input', debounce(() => {
+        currentPage = 1;
+        fetchUsers();
+      }, 300));
+
+      // Auto-refresh every 30 seconds to update online status
+      setInterval(fetchUsers, 30000);
+    });
+
+    async function fetchUsers() {
+      try {
+        const searchTerm = searchInput.value.trim();
+        const sortBy = document.getElementById('sort-text').textContent;
+        const statusFilter = document.getElementById('status-text').textContent;
+
+        // Add parameter to only fetch non-archived users
+        const response = await fetch(`/list/users?page=${currentPage}&limit=${USERS_PER_PAGE}&search=${encodeURIComponent(searchTerm)}&sort=${encodeURIComponent(sortBy)}&status=${encodeURIComponent(statusFilter)}&archived=false`);
+
+        if (!response.ok) throw new Error('Network error');
+
+        const data = await response.json();
+        allUsers = data.users ?? [];
+        totalUsers = data.total ?? 0;
+
+        // Update stats display
+        document.getElementById('onlineCount').textContent = data.stats?.online || 0;
+        document.getElementById('totalCount').textContent = data.stats?.users || 0;
+        document.getElementById('archivedCount').textContent = data.stats?.archived || 0;
+
+        renderUsers();
+        renderPagination();
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        userTableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Failed to load users.</td></tr>`;
+      }
+    }
+
+    function renderUsers() {
+      userTableBody.innerHTML = '';
+      if (!allUsers.length) {
+        userTableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">No users found</td></tr>`;
+        return;
+      }
+
+      // Filter by status if selected
+      const statusFilter = document.getElementById('status-text') ? document.getElementById('status-text').textContent : '';
+      let filteredUsers = allUsers;
+
+      if (statusFilter === 'Online') {
+        filteredUsers = allUsers.filter(user => user.isOnline);
+      } else if (statusFilter === 'Offline') {
+        filteredUsers = allUsers.filter(user => !user.isOnline);
+      }
+
+      filteredUsers.forEach(user => {
+        const profileImg = user.profile_picture
+          ? `<img src="${user.profile_picture}" alt="${(user.first_name || 'User')}" class="w-10 h-10 rounded-full object-cover mx-auto">`
+          : `<div class="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-bold mx-auto">${getInitials(user.first_name, user.last_name)}</div>`;
+
+        const statusBadge = user.isOnline
+          ? `<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm font-medium border border-green-100">
+         <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+         Online
+       </span>`
+          : `<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 text-gray-600 text-sm font-medium border border-gray-100">
+         <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+         Offline
+       </span>`;
+
+        const lastActive = formatLastActive(user.last_active);
+        const userName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-gray-50 transition";
+
+        tr.innerHTML = `
+      <td class="px-4 py-3 align-middle text-center">
+        ${profileImg}
+      </td>
+
+      <td class="px-4 py-3 align-middle text-center">${user.first_name || '-'}</td>
+      <td class="px-4 py-3 align-middle text-center">${user.middle_name || '-'}</td>
+      <td class="px-4 py-3 align-middle text-center">${user.last_name || '-'}</td>
+      <td class="px-4 py-3 align-middle text-center text-sm text-gray-700">${user.email || '-'}</td>
+
+      <td class="px-4 py-3 align-middle text-center">
+        ${statusBadge}
+      </td>
+
+      <td class="px-4 py-3 align-middle text-center text-sm text-gray-600">${lastActive}</td>
+
+      <td class="px-4 py-3 align-middle">
+        <div class="flex justify-center gap-2">
+          <button 
+            onclick="openEmailWarningModal('${user.id}', '${userName.replace(/'/g, "\\'")}')"
+            class="w-28 h-10 inline-flex items-center justify-center gap-2 
+                   bg-blue-50 text-blue-600 border border-blue-300 rounded-lg 
+                   text-sm font-medium shadow-sm 
+                   hover:bg-blue-100 hover:border-blue-500 transition-colors duration-200"
+            title="Send inactivity warning email">
+            <i class="fas fa-envelope"></i>
+            Email
+          </button>
+          
+          <button 
+            onclick="openArchiveModal('${user.id}', '${userName.replace(/'/g, "\\'")}')"
+            class="w-28 h-10 inline-flex items-center justify-center gap-2 
+                   bg-yellow-50 text-yellow-600 border border-yellow-400 rounded-lg 
+                   text-sm font-medium shadow-sm 
+                   hover:bg-yellow-100 hover:border-yellow-500 transition-colors duration-200">
+            <i class="fas fa-archive"></i>
+            Archive
+          </button>
+        </div>
+      </td>
+    `;
+        userTableBody.appendChild(tr);
+      });
+    }
+
+
+    function formatLastActive(lastActive) {
+      if (!lastActive) return 'Never';
+
+      const now = new Date();
+      const lastActiveDate = new Date(lastActive);
+      const diffMs = now - lastActiveDate;
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 30) return `${diffDays}d ago`;
+
+      return lastActiveDate.toLocaleDateString();
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil((totalUsers || 0) / USERS_PER_PAGE);
+      if (totalPages <= 1) {
+        paginationControls.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      const disabledPrev = currentPage === 1;
+      const disabledNext = currentPage === totalPages;
+
+      html += `
+        <li>
+          <a href="#"
+             class="px-3 py-1 border rounded-lg ${disabledPrev ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'border-green-600 text-green-700 hover:bg-green-100'}"
+             onclick="${disabledPrev ? 'return false' : `changePage(${currentPage - 1})`}">Previous</a>
+        </li>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        html += `
+          <li>
+            <a href="#"
+               class="px-3 py-1 border rounded-lg ${currentPage === i ? 'bg-green-600 text-white border-green-600' : 'border-green-600 text-green-700 hover:bg-green-100'}"
+               onclick="changePage(${i})">${i}</a>
+          </li>`;
+      }
+
+      html += `
+        <li>
+          <a href="#"
+             class="px-3 py-1 border rounded-lg ${disabledNext ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'border-green-600 text-green-700 hover:bg-green-100'}"
+             onclick="${disabledNext ? 'return false' : `changePage(${currentPage + 1})`}">Next</a>
+        </li>`;
+
+      paginationControls.innerHTML = html;
+    }
+
+    function getInitials(firstName, lastName) {
+      const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+      const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+      return firstInitial && lastInitial ? `${firstInitial}${lastInitial}` : (firstInitial || lastInitial || '??');
+    }
+
+    function debounce(func, timeout = 300) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+      };
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      fetchUsers();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    let userToEmail = null;
+
+    /* ===== Email Warning Modal Functions ===== */
+    function openEmailWarningModal(userId, userName) {
+      userToEmail = { id: userId, name: userName };
+      document.getElementById('emailWarningModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeEmailWarningModal() {
+      document.getElementById('emailWarningModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      userToEmail = null;
+    }
+
+    async function confirmSendWarning() {
+      if (!userToEmail) return;
+
+      try {
+        const response = await fetch(`/admin/users/${userToEmail.id}/send-inactivity-warning`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          closeEmailWarningModal();
+          showNotification(data.message || `Inactivity warning sent to "${userToEmail.name}".`, 'success');
+        } else {
+          throw new Error(data.error || 'Failed to send warning email');
+        }
+      } catch (error) {
+        console.error('Error sending warning email:', error);
+        showNotification('Failed to send warning email. Please try again.', 'error');
+      }
+    }
+  </script>
+  <script src="../script/userheartbeat.js"></script>
+</body>
+
+</html>

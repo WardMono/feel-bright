@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Assessment — Gate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="./img/fb-tab.png" type="image/x-icon">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .fade-text {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .hidden-opacity {
+            opacity: 0;
+        }
+
+        /* New loading overlay styles */
+        @keyframes spinSlow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulseSoft {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        :root {
+            --fb-green: #7FC58B;
+            --fb-emerald: #10B981;
+        }
+    </style>
+</head>
+
+<body class="relative isolate overflow-hidden bg-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- LEFT SIDE BLUR SHAPE -->
+    <div aria-hidden="true"
+        class="absolute top-1/2 left-[-10rem] -translate-y-1/2 rotate-[30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-r from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+    </div>
+
+    <!-- RIGHT SIDE BLUR SHAPE -->
+    <div aria-hidden="true"
+        class="absolute top-1/2 right-[-10rem] -translate-y-1/2 rotate-[-30deg] w-[60rem] h-[30rem] rounded-full bg-gradient-to-l from-[#CDEED7] to-[#A4DAB6] opacity-30 blur-3xl -z-10">
+    </div>
+
+    <!-- RESULTS LOADING OVERLAY -->
+    <div id="LoadingOverlay"
+        class="fixed inset-0 z-[70] hidden items-center justify-center bg-white/90 backdrop-blur-xl">
+        <div class="flex flex-col items-center">
+            <div class="relative h-20 w-20">
+                <div class="absolute inset-2 rounded-full border-[6px] border-[color:var(--fb-green)] border-t-transparent"
+                    style="animation:spinSlow 1.2s linear infinite;"></div>
+            </div>
+            <div class="mt-4 text-sm font-semibold tracking-wide text-[color:var(--fb-green)]"
+                style="animation:pulseSoft 1.6s ease-in-out infinite;">Loading please be patient…
+            </div>
+        </div>
+    </div>
+
+
+    <main class="max-w-md w-full bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
+        <!-- Header -->
+        <div class="py-8 px-6 bg-white border-b border-gray-200 text-center">
+            <img id="systemLogo" src="./img/fb-banners.png" alt="App Logo" class="h-50 w-80 mx-auto" />
+
+        </div>
+
+        <div class="p-6">
+            <!-- Status indicator -->
+            <div id="statusWrap"
+                class="flex items-center justify-center p-4 bg-gray-50 rounded-xl mb-6 border border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div id="statusSpinner"
+                        class="w-5 h-5 border-2 border-gray-300 border-l-[#7FC58B] rounded-full animate-spin"></div>
+                    <div id="statusText" class="fade-text text-sm font-medium text-gray-700">Checking session…</div>
+                </div>
+            </div>
+
+            <!-- Guest flow -->
+            <section id="gateContent" class="hidden">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">How would you like to continue?</h2>
+                    <p class="text-sm text-gray-600">Choose your preferred method to start the assessment</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col gap-4">
+                    <button id="guestBtn"
+                        class="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-[#7FC58B] hover:bg-[#68B37B] text-white font-semibold transition-colors">
+                        Continue as Guest
+                    </button>
+
+                    <button id="loginBtn"
+                        class="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border border-green-200 bg-green-50 text-gray-500 hover:bg-green-100 hover:text-green-600 hover:border-green-300 transition font-semibold transition">
+                        Log in to Account
+                    </button>
+                </div>
+
+            </section>
+
+            <div class="mt-8 pt-6 border-t border-gray-200 text-center text-xs text-gray-500">
+                <p>By continuing, you agree to our <a href="#"
+                        class="text-[#7FC58B] hover:underline font-medium">Terms</a> and <a href="#"
+                        class="text-[#7FC58B] hover:underline font-medium">Privacy Policy</a>.</p>
+            </div>
+        </div>
+
+
+        <!-- LOGIN Modal Overlay -->
+        <div id="loginModal"
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-300 ease-in-out"
+            style="padding: 3vh;">
+            <!-- Modal Content -->
+            <div
+                class="bg-white rounded-2xl shadow-lg w-full max-w-md relative overflow-hidden border border-[#EAF7EF]">
+
+                <!-- Close Button -->
+                <button onclick="closeLoginModal()"
+                    class="absolute top-3 right-3 text-gray-500 hover:text-gray-600 transition bg-red-100 hover:bg-red-200 p-1 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Centered Logo Slot -->
+                <div id="modalLogo" class="w-full flex justify-center pt-6">
+                    <div
+                        class="h-14 w-14 rounded-full bg-[#E6F9ED] flex items-center justify-center shadow-inner ring-1 ring-[#CFF2DA]">
+                        <img id="systemLogo" src="./img/fb-tabs-icn.png" alt="App Logo" class="h-8 w-8" />
+                    </div>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <div id="loginFormWrapper" class="px-6 pb-6 pt-4">
+                    <form onsubmit="handleLogin(event)" class="w-full">
+                        <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Welcome Back</h2>
+                        <p class="text-center text-sm text-[#6FB07C] mb-6">Sign in to your account to continue</p>
+                        <div id="msgBox" class="hidden mb-4 p-2 text-sm rounded text-white text-center"></div>
+
+                        <!-- Email -->
+                        <div class="relative mb-4">
+                            </span>
+                            <input id="email" type="email" name="email" placeholder="Enter your Email Address"
+                                class="inputField peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20"
+                                required />
+                        </div>
+
+                        <!-- Password -->
+                        <div class="relative mb-6">
+                            </span>
+                            <input id="password" type="password" name="password" placeholder="Enter your Password"
+                                class="inputField peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20 "
+                                required />
+                            <span
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+                                onclick="togglePassword()">
+                                <i id="toggleIcon" class="fa-regular fa-eye"></i>
+                            </span>
+                        </div>
+
+                        <!-- Remember Me and Forgot -->
+                        <div class="flex justify-between items-center mb-6 text-sm">
+                            <label class="flex items-center text-gray-600">
+                                <input type="checkbox" id="remember" class="mr-2 accent-[#16A34A]">
+                                Remember me
+                            </label>
+                            <a href="javascript:void(0)" onclick="showForgotForm()"
+                                class="text-[#7FC58B] hover:underline">Forgot
+                                password?</a>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit"
+                            class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl font-semibold transition">
+                            Sign In
+                        </button>
+
+                        <!-- Register Link -->
+                        <p class="text-sm text-center mt-4 text-gray-700">
+                            Don't have an account?
+                            <a href="javascript:void(0)" onclick="showRegisterForm()"
+                                class="text-[#6FB07C] hover:underline">Create
+                                one</a>
+                        </p>
+                    </form>
+                </div>
+
+                <!-- REGISTER FORM -->
+                <div id="registerFormWrapper" class="hidden px-6 pb-6 pt-4">
+                    <form onsubmit="handleRegister(event)" class="w-full">
+                        <h2 class="text-center text-xl font-bold text-gray-800 mb-1">Create Account</h2>
+                        <p class="text-center text-sm text-[#6FB07C] mb-6">Create a new account to get started</p>
+
+                        <div id="msgBox" class="hidden mb-4 p-2 text-sm rounded text-white text-center"></div>
+
+                        <!-- First + Last Name -->
+                        <div class="flex gap-4 mb-4">
+                            <div class="w-1/2 relative">
+                                </span>
+                                <input id="firstName" type="text" required placeholder="First name"
+                                    class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                            </div>
+                            <div class="w-1/2 relative">
+                                <input id="lastName" type="text" required placeholder="Last name"
+                                    class="check-fill peer w-full rounded-lg border border-gray-300 bg-white pr-auto px-3.5 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                            </div>
+                        </div>
+
+                        <!-- Middle Name -->
+                        <div class="relative mb-4">
+                            <input id="middleName" type="text" placeholder="Middle name (optional)"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+
+                        <!-- Email -->
+                        <div class="relative mb-4">
+                            </span>
+                            <input id="email" type="email" required placeholder="Enter your email"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+
+                        <!-- Password -->
+                        <div class="relative mb-4">
+                            </span>
+                            <input id="password" type="password" required placeholder="Create a password"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                            <span
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+                                onclick="togglePasswordField('password', 'togglePassIcon')">
+                                <i id="togglePassIcon" class="far fa-eye"></i>
+                            </span>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="relative mb-4">
+                            </span>
+                            <input id="confirmPassword" type="password" required placeholder="Confirm your password"
+                                class="check-fill peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-auto py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                            <span
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#7FC58B] peer-focus:text-[#7FC58B] cursor-pointer transition"
+                                onclick="togglePasswordField('confirmPassword', 'toggleConfirmIcon')">
+                                <i id="toggleConfirmIcon" class="far fa-eye"></i>
+                            </span>
+                        </div>
+
+                       <!-- Terms -->
+          <div class="text-center mt-4 mb-4">
+            <p class="text-sm text-gray-600">
+              By signing in, you agree to the
+              <a href="termscondition.html" class="text-[#7FC58B] hover:underline" target="_blank">Terms of
+                Service</a>
+              and
+              <a href="privacy.html" class="text-[#7FC58B] hover:underline" target="_blank">Privacy Policy</a>.
+            </p>
+          </div>
+
+
+                        <!-- Submit -->
+                        <button type="submit" class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl
+                font-semibold transition">
+                            Create Account
+                        </button>
+
+                        <!-- Login Link -->
+                        <p class="text-sm text-center mt-4 text-gray-700">
+                            Already have an account?
+                            <a href="javascript:void(0)" onclick="showLoginForm()"
+                                class="text-[#6FB07C] hover:underline">Sign
+                                in</a>
+                        </p>
+                    </form>
+                </div>
+
+                <!-- FORGOT PASSWORD FORM -->
+                <div id="forgotFormWrapper" class="hidden px-6 pb-6 pt-4">
+                    <form onsubmit="sendReset(event)" class="w-full">
+                        <h2 class="text-2xl font-bold mb-2 text-center text-gray-800">Forgot Something?</h2>
+                        <p class="text-sm text-[#6FB07C] text-center mb-6">
+                            Enter your registered email and we’ll send you a link to reset your password.
+                        </p>
+
+                        <div class="mb-4">
+                            <input type="email" id="email" placeholder="you@example.com" required
+                                class="peer w-full rounded-lg border border-gray-300 bg-white px-3.5 pr-20 py-2.5 text-[15px] outline-none transition-all hover:border-[#7FC58B] focus:border-[#7FC58B] focus:ring-4 focus:ring-[#7FC58B]/20" />
+                        </div>
+
+                        <button type="submit" class="w-full py-2 bg-[#7FC58B] hover:bg-[#68B37B] text-white rounded-xl
+                font-semibold transition">
+                            Send Reset Link
+                        </button>
+
+                        <p id=" msg" class="mt-4 text-sm text-center text-gray-600"></p>
+
+                        <div class="w-full flex justify-center">
+                            <a href="javascript:void(0)" onclick="showLoginForm()" class="block w-full rounded-xl border border-green-200 bg-green-50 text-gray-500 
+           hover:bg-green-100 hover:text-green-600 hover:border-green-300 
+           font-semibold transition duration-200 text-center py-2">
+                                Back to Login
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        <!--END OF POP UP FORMS-->
+
+    </main>
+
+    <script src="./script/assessmentgate.js"></script>
+    <script src="./script/login-mods.js"></script>
+
+</body>
+
+</html>

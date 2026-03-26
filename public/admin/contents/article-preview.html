@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Article Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="../../img/fb-tab.png" type="image/x-icon">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "League Spartan", sans-serif;
+      background: #f4fdf7;
+    }
+
+    /* builder-green stepper tokens (same as steps 1 & 2) */
+    .step-on {
+      background: #7FC58B;
+      color: #fff;
+    }
+
+    .label-on {
+      color: #7FC58B;
+      font-weight: 600;
+    }
+
+    .step-off {
+      border: 1px solid #D0D5DD;
+      color: #98A2B3;
+    }
+
+    /* hero slightly taller */
+    #preview-hero {
+      width: 100%;
+      max-height: 640px;
+      object-fit: cover;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
+    }
+
+    .break-anywhere {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    #preview-title,
+    #preview-content h2,
+    #preview-content p,
+    #preview-content blockquote {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+
+<body class="p-8">
+
+  <!-- STATIC HEADER -->
+  <div id="page-header" class="max-w-[1480px] mx-auto mb-6">
+    <div class="mt-2 text-center">
+      <h1 class="text-3xl font-bold text-gray-900">Preview Article</h1>
+      <p class="text-gray-500 mt-1">Step 3 of 3: Add your content</p>
+    </div>
+
+    <div class="relative mt-10 flex justify-between">
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="absolute top-4 left-1/2 w-full h-0.5 bg-green-500 -z-10"></div>
+
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-200 rounded-full">
+          <span class="w-3 h-3 bg-green-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Content Setup</h3>
+      </div>
+
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="absolute top-4 left-1/2 w-full h-0.5 bg-green-500 -z-10"></div>
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-200 rounded-full">
+          <span class="w-3 h-3 bg-green-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Add Content</h3>
+      </div>
+
+      <div class="flex flex-col items-center text-center w-1/3 relative">
+        <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-200 rounded-full">
+          <span class="w-3 h-3 bg-green-600 rounded-full"></span>
+        </div>
+        <h3 class="mt-3 font-medium text-gray-900">Review &amp; Publish</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW BODY -->
+  <section class="relative isolate overflow-hidden h-full bg-white/0">
+    <div class="container px-6 py-8 mx-auto text-center mb-10">
+      <div class="max-w-6xl mx-auto pt-2">
+        <div class="text-center">
+          <div id="preview-cat-pill"
+            class="inline-block px-4 py-1 border border-[#7FC58B] rounded-full bg-[#E6F9ED] text-[#22693F] font-medium text-sm mb-6">
+          </div>
+          <h1 id="preview-title" class="text-3xl font-semibold text-[#1C1C1C] lg:text-4xl"></h1>
+        </div>
+      </div>
+
+      <div class="flex justify-center mt-10">
+        <img id="preview-hero" src="" alt="Hero Image" class="rounded-xl shadow-[0_10px_20px_rgba(77,161,103,0.3)]" />
+      </div>
+    </div>
+
+    <div id="preview-content"
+      class="max-w-4xl mx-auto border border-gray-200 rounded-xl shadow-sm bg-white mb-10 space-y-8 panel"></div>
+
+    <div class="flex justify-center gap-4 mb-12">
+      <button id="edit-btn" type="button"
+        class="flex-1 max-w-[180px] inline-flex items-center justify-center h-10 px-6 rounded-lg font-semibold border border-blue-300 text-gray-700 hover:bg-blue-100 bg-blue-50 transition">
+        Edit Setup
+      </button>
+
+      <button id="draft-btn" type="button"
+        class="flex-1 max-w-[180px] inline-flex items-center justify-center h-10 px-6 text-gray-700 bg-yellow-50 border rounded-lg border-yellow-400 font-semibold hover:bg-yellow-100 transition">
+        Save as Draft
+      </button>
+
+      <button id="publish-btn" type="button"
+        class="flex-1 max-w-[180px] inline-flex items-center justify-center h-10 px-6 text-white border border-[#6FB07C] rounded-lg font-semibold transition bg-[#7FC58B] hover:bg-[#6FB07C]">
+        Publish Article
+      </button>
+    </div>
+  </section>
+
+  <!-- Section templates -->
+  <template id="tpl-text">
+    <div class="p-6 sm:p-8">
+      <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4 mt-2 break-anywhere"></h2>
+      <p class="text-gray-800 leading-relaxed break-anywhere"></p>
+    </div>
+  </template>
+  <template id="tpl-quote">
+    <div class="mt-8 p-10 bg-gray-50 border-l-4 border-green-600 rounded-r">
+      <blockquote class="text-gray-700 italic mb-2 break-anywhere"></blockquote>
+      <p class="text-gray-600 mt-2 text-right break-anywhere"></p>
+    </div>
+  </template>
+
+  <script>
+    (function () {
+      const STEP1_KEY = "articleStep1";
+      const STEP2_KEY = "articleStep2";
+      const DRAFTS_KEY = "contentDrafts";
+      const DASHBOARD = "../content.html";
+
+      const params = new URLSearchParams(location.search);
+      const EDIT_MODE = params.get("edit") === "1";
+      const EDIT_ID = params.get("id");
+
+      // IndexedDB
+      const IDB_DB_NAME = "ContentDraftDB";
+      const IDB_DB_VER = 1;
+      const IDB_STORE = "images";
+      function idbOpen() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(IDB_DB_NAME, IDB_DB_VER);
+          req.onupgradeneeded = e => { const db = e.target.result; if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE) };
+          req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error);
+        });
+      }
+      async function idbPut(key, val) {
+        const db = await idbOpen(); return new Promise((res, rej) => {
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.objectStore(IDB_STORE).put(val, key);
+        });
+      }
+      async function idbGet(key) {
+        if (!key) return null; const db = await idbOpen(); return new Promise((res, rej) => {
+          const tx = db.transaction(IDB_STORE, "readonly");
+          tx.onerror = () => rej(tx.error); const rq = tx.objectStore(IDB_STORE).get(key); rq.onsuccess = () => res(rq.result || null); rq.onerror = () => rej(rq.error);
+        });
+      }
+      async function idbDel(key) {
+        if (!key) return; const db = await idbOpen(); return new Promise((res, rej) => {
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.objectStore(IDB_STORE).delete(key);
+        });
+      }
+
+      const qs = id => document.getElementById(id);
+      const safeParse = (s, f) => { try { if (!s || s === "undefined") return f; return JSON.parse(s); } catch { return f; } };
+      const safeGet = (k, f) => safeParse(localStorage.getItem(k), f);
+
+      async function dataURLToBlob(url) {
+        if (!url) return null;
+        if (url.startsWith("data:")) { const r = await fetch(url); return await r.blob(); }
+        if (url.startsWith("blob:")) {
+          const img = new Image(); img.src = url; await img.decode();
+          const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+          c.getContext("2d").drawImage(img, 0, 0); return await new Promise(res => c.toBlob(res));
+        }
+        const r = await fetch(url, { credentials: "include" }).catch(() => null); if (!r || !r.ok) return null; return await r.blob();
+      }
+
+      function cleanedSections(step2) {
+        const raw = Array.isArray(step2.sections) ? step2.sections : [];
+        const out = [];
+        raw.forEach(s => {
+          if (s.type === "quote") {
+            const text = (s.quoteText || "").trim(); const author = (s.author || "").trim();
+            if (text || author) out.push({ type: "quote", quoteText: text, author });
+          } else {
+            const subtitle = (s.subtitle || "").trim(); const text = (s.text || "").trim();
+            if (subtitle || text) out.push({ type: "text", subtitle, text });
+          }
+        });
+        return out.map((s, i) => ({ ...s, order: i }));
+      }
+
+      function validateBeforePublish(step1, step2) {
+        const errs = [];
+        if (!step1.title?.trim()) errs.push("Title");
+        if (!step1.cat?.trim()) errs.push("Category");
+        if (!step1.img && !step1.thumbnailRef) errs.push("Thumbnail");
+        if (!step2.heroSrc && !step2.heroRef) errs.push("Hero image");
+        if (!cleanedSections(step2).length) errs.push("At least one section");
+        return errs;
+      }
+
+      async function buildForm(step1, step2, isDraft) {
+        const fd = new FormData();
+        fd.append("previewTitle", step1.title || "");
+        fd.append("summary", step1.desc || "");
+        fd.append("category", step1.cat || "");
+        fd.append("clientDraftId", step1.draftId || "");
+        if (EDIT_MODE && EDIT_ID) fd.append("contentId", EDIT_ID);
+
+        let tb = step1.img ? await dataURLToBlob(step1.img) : step1.thumbnailRef ? await idbGet(step1.thumbnailRef) : null;
+        if (tb) fd.append("thumbnail", tb, "thumbnail.png");
+
+        let hb = step2.heroSrc ? await dataURLToBlob(step2.heroSrc) : step2.heroRef ? await idbGet(step2.heroRef) : null;
+        if (hb) fd.append("heroImage", hb, "hero.png");
+
+        const normalized = cleanedSections(step2).map((s, i) => ({
+          text: s.type === "quote" ? (s.quoteText || "") : (s.text || ""),
+          isQuote: s.type === "quote",
+          order: i,
+          subtitle: s.subtitle || "",
+          author: s.author || ""
+        }));
+        fd.append("sections", JSON.stringify(normalized));
+        if (isDraft) fd.append("draft", "true");
+        return fd;
+      }
+
+      async function paintPreview(step1, step2) {
+        qs("preview-cat-pill").textContent = step1.cat || "";
+        qs("preview-title").textContent = step1.title || "";
+
+        const heroEl = qs("preview-hero");
+        let shown = false;
+        if (step2.heroSrc) { heroEl.src = step2.heroSrc; shown = true; }
+        else if (step2.heroRef) {
+          const b = await idbGet(step2.heroRef);
+          if (b) { heroEl.src = URL.createObjectURL(b); shown = true; }
+        }
+        heroEl.classList.toggle("hidden", !shown);
+
+        const container = qs("preview-content");
+        container.innerHTML = "";
+        cleanedSections(step2).forEach(sec => {
+          if (sec.type === "text") {
+            const tpl = qs("tpl-text").content.cloneNode(true);
+            tpl.querySelector("h2").textContent = sec.subtitle || "";
+            tpl.querySelector("p").textContent = sec.text || "";
+            container.appendChild(tpl);
+          } else {
+            const tpl = qs("tpl-quote").content.cloneNode(true);
+            tpl.querySelector("blockquote").textContent = sec.quoteText || "";
+            tpl.querySelector("p").textContent = sec.author ? `— ${sec.author}` : "";
+            container.appendChild(tpl);
+          }
+        });
+      }
+
+      async function init() {
+        const step1 = safeGet(STEP1_KEY, {});
+        const step2 = safeGet(STEP2_KEY, {});
+        if (!step1.draftId) { step1.draftId = `art-${Date.now()}`; localStorage.setItem(STEP1_KEY, JSON.stringify(step1)); }
+
+        await paintPreview(step1, step2);
+
+        // Save draft
+        qs("draft-btn").onclick = async () => {
+          try {
+            if (step1.img && !step1.thumbnailRef) {
+              const blob = await dataURLToBlob(step1.img);
+              if (blob) { step1.thumbnailRef = `thumb:${step1.draftId}`; await idbPut(step1.thumbnailRef, blob); }
+            }
+            if (step2.heroSrc && !step2.heroRef) {
+              const blob = await dataURLToBlob(step2.heroSrc);
+              if (blob) { step2.heroRef = `hero:${step1.draftId}`; await idbPut(step2.heroRef, blob); }
+            }
+            const item = {
+              id: step1.draftId,
+              contentId: EDIT_MODE && EDIT_ID ? EDIT_ID : null,
+              type: "article",
+              title: step1.title || "Untitled",
+              summary: step1.desc || "",
+              category: step1.cat || "",
+              thumbnailRef: step1.thumbnailRef || null,
+              heroRef: step2.heroRef || null,
+              sections: cleanedSections(step2),
+              savedAt: new Date().toISOString(),
+            };
+            const arr = safeGet(DRAFTS_KEY, []);
+            const idx = arr.findIndex(d => d.id === item.id);
+            if (idx >= 0) arr[idx] = item; else arr.push(item);
+            localStorage.setItem(DRAFTS_KEY, JSON.stringify(arr));
+            localStorage.setItem("draft:upsert", JSON.stringify(item));
+            location.href = DASHBOARD;
+          } catch (e) { console.error(e); alert("Couldn't save draft."); }
+        };
+
+        // Publish
+        let publishing = false;
+        qs("publish-btn").onclick = async () => {
+          if (publishing) return;
+          publishing = true;
+          const btn = qs("publish-btn");
+          const original = btn.textContent;
+          btn.disabled = true; btn.textContent = EDIT_MODE ? "Publishing Update…" : "Publishing…";
+          try {
+            const errs = validateBeforePublish(step1, step2);
+            if (errs.length) throw new Error("Missing: " + errs.join(", "));
+            const fd = await buildForm(step1, step2, false);
+            const res = await fetch("/admin/article", { method: "POST", body: fd, credentials: "include" });
+            if (!res.ok) { const t = await res.text(); console.error("Server error:", t); throw new Error("Publish failed"); }
+            await res.json();
+
+            try { if (step1.thumbnailRef) await idbDel(step1.thumbnailRef); } catch { }
+            try { if (step2.heroRef) await idbDel(step2.heroRef); } catch { }
+            let drafts = safeGet(DRAFTS_KEY, []);
+            drafts = drafts.filter(d => (EDIT_MODE && EDIT_ID) ? (d.contentId !== EDIT_ID && d.id !== step1.draftId) : (d.id !== step1.draftId));
+            localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+            localStorage.removeItem(STEP1_KEY);
+            localStorage.removeItem(STEP2_KEY);
+            location.href = DASHBOARD;
+          } catch (e) {
+            console.error(e); alert("Publish failed: " + e.message);
+            publishing = false; btn.disabled = false; btn.textContent = original;
+          }
+        };
+
+        // Back to edit
+        qs("edit-btn").onclick = () => {
+          sessionStorage.setItem("returnFromStep2Article", "1");
+          if (history.length > 1) history.back(); else location.href = "step2-article.html";
+        };
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+      else init();
+    })();
+  </script>
+
+</body>
+
+</html>
