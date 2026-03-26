@@ -1856,7 +1856,14 @@ app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
+
+
 module.exports = app;
+
+
+const bcrypt = require('bcrypt');
+
+bcrypt.hash('admin1234', 10).then(console.log);
 
 // ======================================
 // 14. PASSWORD HELPERS & ROUTES
