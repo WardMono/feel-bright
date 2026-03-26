@@ -1855,15 +1855,12 @@ app.get('/admin/archived-content', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
-
-
 module.exports = app;
-
-
 const bcrypt = require('bcrypt');
 
-bcrypt.hash('admin1234', 10).then(console.log);
+bcrypt.compare('admin1234', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMoVqpBpnkGm7lY6.5MaE4IXHK')
+  .then(console.log)
+  .catch(console.error);
 
 // ======================================
 // 14. PASSWORD HELPERS & ROUTES
