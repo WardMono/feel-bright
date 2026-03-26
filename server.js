@@ -2064,6 +2064,20 @@ app.get('/admin/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'adminreports.html'));
 });
 
+
+app.get('/admin/seed', async (req, res) => {
+  try {
+    const hash = await bcrypt.hash('admin@123', 12);
+    await db.query(
+      `UPDATE admins SET email = 'admin@feelbright.com', password = $1 WHERE id = 1`,
+      [hash]
+    );
+    res.json({ success: true, message: 'Admin email and password fixed!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin logout route
 app.get('/admin/logout', (req, res) => {
   req.session.destroy((err) => {
