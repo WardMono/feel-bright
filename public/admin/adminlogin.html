@@ -217,7 +217,6 @@
             const loginUrl = `${baseUrl}/admin/login`;
 
             console.log('Attempting login to:', loginUrl);
-
             const response = await fetch(loginUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -227,6 +226,15 @@
 
             console.log('Response status:', response.status);
 
+            // Handle specific statuses before generic error
+            if (response.status === 401) {
+              showError('Invalid email or password.');
+              return;
+            }
+            if (response.status === 400) {
+              showError('Please enter both email and password.');
+              return;
+            }
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }

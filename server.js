@@ -16,6 +16,9 @@ const puppeteer = require('puppeteer');
 const sseClients = new Set();
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const port = process.env.PORT || 3000;
 
 // --- Stats sequencing (monotonic) ---
@@ -1848,6 +1851,22 @@ app.get('/admin/archived-content', async (req, res) => {
 // ======================================
 // 13. SERVER START
 // ======================================
+
+// TEMPORARY — delete after visiting /admin/seed once
+app.get('/admin/seed', async (req, res) => {
+  const email = 'admin@feelbright.com';
+  const plainPassword = 'YourPasswordHere123!';
+  try {
+    const exists = await db.query('SELECT id FROM admins WHERE email = $1', [email]);
+    if (exists.rows.length > 0) return res.json({ message: 'Admin already exists' });
+    const hash = await bcrypt.hash(plainPassword, 12);
+    await db.query('INSERT INTO admins (email, password, name) VALUES ($1, $2, $3)', [email, hash, 'Admin']);
+    res.json({ success: true, message: `Admin created: ${email}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
