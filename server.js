@@ -10,7 +10,12 @@ const multer = require('multer');
 const fs = require('fs');
 const db = require('./databasepq.js');
 const jwt = require('jsonwebtoken');
-const puppeteer = require('puppeteer');
+
+const pgSession = require('connect-pg-simple')(session);
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const chromium = require('@sparticuz/chromium');
+const puppeteerCore = require('puppeteer-core');
 
 
 const sseClients = new Set();
@@ -23,11 +28,6 @@ const port = process.env.PORT || 3000;
 
 // --- Stats sequencing (monotonic) ---
 let statsSeq = 0;
-
-//STATIC FILES
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads/music', express.static(path.join(__dirname, 'public/uploads/music')));
-app.use('/uploads/profiles', express.static(path.join(__dirname, 'public/uploads/profiles')));
 
 // ======================
 // Robust counts + SSE
@@ -91,34 +91,18 @@ async function notifyStatsChange() {
 // ======================================
 // 2. MULTER FILE UPLOAD & STORAGE CONFIG
 // ======================================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'public/uploads/';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-const upload = multer({ storage: storage });
 
-const profilePicStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = './public/uploads/profiles';
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-      console.log(`📁 Created folder: ${dir}`);
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    console.log(`📸 Uploading profile picture: ${uniqueName}`);
-    cb(null, uniqueName);
-  }
+const cloudStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'feelbright/uploads', resource_type: 'auto' }
 });
-const uploadProfilePic = multer({ storage: profilePicStorage });
+const upload = multer({ storage: cloudStorage });
+
+const profileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'feelbright/profiles', resource_type: 'image' }
+});
+const uploadProfilePic = multer({ storage: profileStorage });
 
 // ======================================
 // 3. EMAIL TRANSPORTER (Nodemailer)
@@ -136,18 +120,22 @@ const transporter = nodemailer.createTransport({
 // ======================================
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-  secret: 'feelbright_secret_key',
+  store: new pgSession({
+    pool: db,
+    tableName: 'session',
+    createTableIfMissing: true  // auto-creates the session table!
+  }),
+  secret: process.env.SESSION_SECRET || 'feelbright_secret_key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 15 * 60 * 1000  // Change from 24 hours to 15 minutes
+    maxAge: 15 * 60 * 1000
   },
-  rolling: true  // Add this - resets maxAge on each request
+  rolling: true
 }));
 
 const requireAdmin = (req, res, next) => {
@@ -161,8 +149,25 @@ const requireAdmin = (req, res, next) => {
     return res.status(401).json({ success: false, error: 'Admin access required' });
   }
 
-  res.redirect('/admin/adminlogin.html');
+  res.redirect('/admin/login');
 };
+
+const ADMIN_PUBLIC_ROUTES = new Set(['/login', '/login.html', '/adminlogin.html']);
+app.use('/admin', (req, res, next) => {
+  const isAdminLoginPost = req.method === 'POST' && req.path === '/login';
+  const isPublicRoute = ADMIN_PUBLIC_ROUTES.has(req.path);
+
+  if (isPublicRoute || isAdminLoginPost) {
+    return next();
+  }
+
+  return requireAdmin(req, res, next);
+});
+
+//STATIC FILES (served after admin/session guard)
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads/music', express.static(path.join(__dirname, 'public/uploads/music')));
+app.use('/uploads/profiles', express.static(path.join(__dirname, 'public/uploads/profiles')));
 
 // Prevent caching of resource lists (admin uses these)
 app.use('/resources', (req, res, next) => {
@@ -1222,14 +1227,6 @@ app.post(
   }
 );
 
-// Helper to get existing hero image path if not replacing
-async function getExistingHeroImage(client, contentId) {
-  const r = await client.query(
-    'SELECT hero_image FROM content_article WHERE content_id = $1 LIMIT 1',
-    [contentId]
-  );
-  return r.rows[0]?.hero_image || '';
-}
 
 // Archive a reading material
 app.post('/admin/reading/draft/:id', async (req, res) => {
@@ -1855,12 +1852,6 @@ app.get('/admin/archived-content', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-module.exports = app;
-const bcrypt = require('bcrypt');
-
-bcrypt.compare('admin1234', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMoVqpBpnkGm7lY6.5MaE4IXHK')
-  .then(console.log)
-  .catch(console.error);
 
 // ======================================
 // 14. PASSWORD HELPERS & ROUTES
@@ -1984,6 +1975,13 @@ async function updateStatsCounts() {
   }
 }
 // Admin login API route
+app.get('/admin/login', (req, res) => {
+  if (req.session.admin) {
+    return res.redirect('/admin/dashboard');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'admin', 'adminlogin.html'));
+});
+
 app.post('/admin/login', async (req, res) => {
   console.log('Admin login attempt:', req.body.email); // Debug log
 
@@ -2048,7 +2046,7 @@ app.post('/admin/login', async (req, res) => {
 // Admin dashboard route (protected)
 app.get('/admin/dashboard', (req, res) => {
   if (!req.session.admin) {
-    return res.redirect('/admin/login.html');
+    return res.redirect('/admin/login');
   }
   res.sendFile(path.join(__dirname, 'public', 'admin', 'adminreports.html'));
 });
@@ -2061,7 +2059,7 @@ app.get('/admin/logout', (req, res) => {
     if (err) {
       console.error('Logout error:', err);
     }
-    res.redirect('/admin/login.html');
+    res.redirect('/admin/login');
   });
 });
 // Test route to check if server is running
@@ -3121,9 +3119,11 @@ app.post('/api/results/download-pdf', async (req, res) => {
     const htmlTemplate = generateReportHTML(user, { overall_pct: overallPct, created_at: new Date() }, normalizedBreakdown);
 
     // Launch Puppeteer and generate PDF
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    const browser = await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
@@ -3819,15 +3819,10 @@ The FeelBright Team
     });
   }
 });
-async function getStats() {
-  try {
-    const response = await fetch("http://localhost:3000/admin/stats"); // Use the full URL
-    const data = await response.json();
-    console.log('Stats:', data);
-  } catch (err) {
-    console.error('Error fetching stats:', err);
-  }
-}
 
-// Call the function to get stats on page load or on an interval
-getStats();
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
