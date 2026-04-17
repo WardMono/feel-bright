@@ -1991,6 +1991,13 @@ app.post('/admin/login', async (req, res) => {
   console.log('Admin login attempt:', req.body.email); // Debug log
 
   const { email, password } = req.body;
+  const normalizedEmail = (email || '').toLowerCase().trim();
+
+  const adminEmailAllowlist = new Set(
+    [process.env.ADMIN_EMAIL, process.env.MAIL_USER, ...(process.env.ADMIN_EMAILS || '').split(',')]
+      .filter(Boolean)
+      .map((item) => item.toLowerCase().trim())
+  );
 
   // Validate input
   if (!email || !password) {
@@ -2001,27 +2008,53 @@ app.post('/admin/login', async (req, res) => {
   }
 
   try {
-    // Check if admin exists in the admin table
-    const result = await db.query(
-      'SELECT * FROM admins WHERE email = $1',
-      [email.toLowerCase().trim()] // Normalize email
-    );
+    let admin = null;
 
-    if (result.rows.length === 0) {
-      console.log('Admin not found:', email); // Debug log
+    try {
+      // Preferred source: dedicated admins table (if present)
+      const result = await db.query(
+        'SELECT * FROM admins WHERE email = $1',
+        [normalizedEmail]
+      );
+      admin = result.rows[0] || null;
+    } catch (queryError) {
+      // Neon/prod schema may not have admins table yet; fallback to users + allowlist.
+      if (queryError?.code !== '42P01') throw queryError;
+      console.warn('admins table missing; using users + admin allowlist fallback');
+    }
+
+    if (!admin) {
+      const userResult = await db.query(
+        'SELECT id, first_name, last_name, email, password, created_at FROM users WHERE email = $1',
+        [normalizedEmail]
+      );
+      const user = userResult.rows[0] || null;
+
+      if (user && adminEmailAllowlist.has(normalizedEmail)) {
+        admin = {
+          id: user.id,
+          name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+          email: user.email,
+          password: user.password,
+          created_at: user.created_at
+        };
+      }
+    }
+
+    if (!admin) {
+      console.log('Admin not found:', normalizedEmail); // Debug log
       return res.status(401).json({
         success: false,
         error: 'Invalid admin credentials'
       });
     }
 
-    const admin = result.rows[0];
     console.log('Admin found:', admin.email); // Debug log
 
     // Verify password
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
-      console.log('Password mismatch for:', email); // Debug log
+      console.log('Password mismatch for:', normalizedEmail); // Debug log
       return res.status(401).json({
         success: false,
         error: 'Invalid admin credentials'
@@ -2033,10 +2066,11 @@ app.post('/admin/login', async (req, res) => {
       id: admin.id,
       name: admin.name,
       email: admin.email,
-      createdAt: admin.created_at
+      createdAt: admin.created_at,
+      role: 'admin'
     };
 
-    console.log('Admin login successful:', email); // Debug log
+    console.log('Admin login successful:', normalizedEmail); // Debug log
     res.json({ success: true });
 
   } catch (error) {
