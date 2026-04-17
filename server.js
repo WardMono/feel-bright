@@ -1846,12 +1846,17 @@ app.get('/admin/archived-content', async (req, res) => {
 });
 
 // ======================================
-// 13. SERVER START
+// 13. SERVER START / EXPORT
 // ======================================
+// Export Express app for Vercel serverless runtime.
+module.exports = app;
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+// Start HTTP server only when running directly (local dev/prod server).
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}
 
 // ======================================
 // 14. PASSWORD HELPERS & ROUTES
